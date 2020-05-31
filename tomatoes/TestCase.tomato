@@ -1,0 +1,26 @@
+App Name: MyWebApp
+Version: 0.0.1
+Release date: July 10 2020
+
+
+Sprint 3
+
+Feature: Home Page
+Given user is on Instagram landing page, *CLICKED on login_field and types #password_field "stosimon@gmailcom"
+and then *TYPEDTH in the a #password_field *CLICKED on login_field and types #password_field "stosimon@gmailcom" fhdjhfjdddgf jhgvgv jhvvgvhgjhvj
+
+
+
+Scenario: Page is visible:
+if i'm on the page, when i *click on the login_field #login_field, make sure #login_field is *Visible and isLost
+some text
+and *clicked on #login_field [password] fdfv (fdf) "dfvdfv" fvdfv <dfvdvd>, cuke_it! <make sure the value is twice
+as big>
+
+data source
+
+
+
+
+
+
