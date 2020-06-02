@@ -9,4 +9,4 @@ class PageObject:
 
 po = PageObject('login_field')
 if True:
-    print('hey!', po.home_page[1])
+    print('hey!', po.home_page,  po.__dict__.keys())
