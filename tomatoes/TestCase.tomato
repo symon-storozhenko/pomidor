@@ -5,22 +5,26 @@ Release date: July 10 2020
 
 Sprint 3
 
-Feature: Home Page
-Given user is on Instagram landing page, *CLICKED on login_field and types #password_field "stosimon@gmailcom"
-and then *TYPEDTH in the a #password_field *CLICKED on login_field and types #password_field "stosimon@gmailcom" fhdjhfjdddgf jhgvgv jhvvgvhgjhvj
-
+Feature: Home_Page
+Story JIRA-2299
+Given user *TYPEDTH in the a #password_field
 
 
 Scenario: Page is visible:
 if i'm on the page, when i *click on the login_field #login_field, make sure #login_field is *Visible and isLost
 some text
-and *clicked on #login_field [password] fdfv (fdf) "dfvdfv" fvdfv <dfvdvd>, cuke_it! <make sure the value is twice
-as big>
+and *clicked on #login_field [password] fdfv (fdf) "dfvdfv" fvdfv <dfvdvd>,
+--and *wait for #5 seconds
+--cuke_it <make sure the #password_field value is twice as big as #login_field> #TODO  implement cuke method
+--data source:        # TODO implement passing multiple data as part of send_keys() action
+--#password_field = (34345,34535,34534,345345)
+--#login_field = (
 
-data source
 
-
-
+Story JIRA-3344
+Feature: Home_Page
+Second Feature!!!
+Given user is on Instagram landing page, *CLICKOs on login_field and types #password_field
 
 
 
