@@ -7,7 +7,7 @@ Sprint 3
 
 Feature: Home_Page
 Story JIRA-2299
-Given user *TYPEDTH in the a #password_field
+Given user *TYPETH in the a #password_field
 
 
 Scenario: Page is visible:

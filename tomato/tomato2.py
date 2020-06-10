@@ -52,14 +52,22 @@ all_tomatoes_dir = '/Users/myco/PycharmProjects/tomato3/tomatoes'
 # print(f'Tomatoes folder is found! --> {tomato_dir.exists}')
 smoke_tests_dir = '/Users/myco/PycharmProjects/tomato2/tomatoes/SmokeTest'
 regression_tests_dir = '/Users/myco/PycharmProjects/tomato2/tomatoes/RegressionSuite'
+one = '/Users/myco/PycharmProjects/tomato3/tomatoes/TestCase.tomato'
 
 
 def generate_list_of_tomato_files(tomato_directory):
     tomato_files_list = []
-    print('List of files:')
-    for enum, path in enumerate(tomato_directory.rglob('*.tomato'), 1):  # or use .glob('**/*.oat')
+    tom_dir = pathlib.Path(tomato_directory)
+    print(f'List of files: {tom_dir}')
+    # one-file scenario
+    if tomato_directory.endswith('.tomato'):
+        print('Fist!!')
+        tomato_files_list.append(tomato_directory)
+        print(f'1: {tomato_files_list}')
+    for enum, path in enumerate(tom_dir.glob('**/*.tomato')):  # or use .glob('**/*.oat')
         tomato_files_list.append(path)
-        print(f'{enum}: {path}')
+        print(f'{enum+1}: {path}')
+    print(f'tomato_files_list -> {tomato_files_list}')
     return tomato_files_list
 
 
@@ -226,7 +234,7 @@ def define_test_paragraphs(strList, filepath, first_paragraph_line, scenario_tit
 
 def go_thru_tomato_file(func):
     scenario_number = 0
-    for file_number, filepath in enumerate(func, 1):
+    for file_number, filepath in enumerate(func):
         # scenario_number = 0
         with open(filepath) as file:
             for total_lines_count, row in enumerate(file, 1):
@@ -268,7 +276,7 @@ def go_thru_tomato_file(func):
 
 def go_thru_tomato_file_with_feature(func, feature):
     scenario_number = 0
-    for file_number, filepath in enumerate(func, 1):
+    for file_number, filepath in enumerate(func):
         # scenario_number = 0
         with open(filepath) as file:
             for total_lines_count, row in enumerate(file, 1):
@@ -279,7 +287,7 @@ def go_thru_tomato_file_with_feature(func, feature):
             first_paragraph_line = ''
             feature_instances = 0
             for line_num, line in enumerate(tomato_file):
-                if line.lower().startswith('feature'):# TODO implement feature feature
+                if line.lower().startswith('feature'):# TODO - finish feature feature
                     line_list = re.split(r'[;,.!?\s]', line)
                     # print(f'Line List! --> {line_list}')
                     for f in line_list:
@@ -318,9 +326,6 @@ def go_thru_tomato_file_with_feature(func, feature):
                                     scenarioSteps = ''
                                     scenario_number += 1
                                     break
-                                    if test_paragraph:
-                                        scenario_number += 1
-                                    scenarioSteps = ''
                         else:
                             continue
                 else:
@@ -328,9 +333,11 @@ def go_thru_tomato_file_with_feature(func, feature):
     return file_number, scenario_number
 
 
-def go_thru_tomato_file_with_story(func, story, exact_story_name=False):
+
+def go_thru_tomato_file_with_story(func, story, exact_story_name=False):    # best-working def
+    global file_number
     scenario_number = 0
-    for file_number, filepath in enumerate(func, 1):
+    for file_number, filepath in enumerate(func):
         # scenario_number = 0
         with open(filepath) as file:
             for total_lines_count, row in enumerate(file, 1):
@@ -341,17 +348,17 @@ def go_thru_tomato_file_with_story(func, story, exact_story_name=False):
             first_paragraph_line = ''
             feature_instances = 0
             for line_num, line in enumerate(tomato_file):
-                if line.lower().startswith('story'):# TODO implement feature feature
+                if line.lower().startswith('story'):
                     line_list = re.split(r'[;,.!?\s]', line)
-                    # print(f'Line List! --> {line_list}')
-                    for f in line_list:
+                    print(f'Story Line ! --> {line_list}')
+                    for f in line_list[1:]:
                         if exact_story_name:
                             if f == story:
                                 print(f'Found exact STORY!!!!!!!!')
                                 feature_instances += 1
                         else:
-                            if f.__contains__(story):
-                                print(f'Found STORY!!!!!!!!')
+                            if f.lower().__contains__(story.lower()):
+                                print(f'Found STORY!!!!!!!! -> {f}\n')
                                 print(f'Line before inner loop--> {line}')
                                 feature_instances += 1
                         if feature_instances > 0:
@@ -387,6 +394,7 @@ def go_thru_tomato_file_with_story(func, story, exact_story_name=False):
                                     scenario_number += 1
                                     feature_instances = 0
                                     break
+                            break
                         else:
                             continue
                 else:
@@ -397,34 +405,38 @@ def go_thru_tomato_file_with_story(func, story, exact_story_name=False):
 class Tomato:
     @staticmethod
     def run_scripts(dir_path, verbose=True):
-        # go_thru_tomato_file(generate_list_of_tomato_files(pathlib.Path(dir_path)))
-        file_number, scenario_number = go_thru_tomato_file(
-            generate_list_of_tomato_files(pathlib.Path(dir_path)))
+        file_num, scenario_number = go_thru_tomato_file(
+            generate_list_of_tomato_files(dir_path))
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_number}')  #
+            print(f'Number of files used --> {file_num+1}')  #
             print(f'Number of scenarios --> {scenario_number}')
 
     @staticmethod
     def run_features(dir_path, feature_value, verbose=True):
         # go_thru_tomato_file_with_feature(
-        #     generate_list_of_tomato_files(pathlib.Path(dir_path)), feature_value)
+        #     generate_list_of_tomato_files(pathlib.Path(dir_path)), feature_value) # TODO add one-file scenario
         file_number, scenario_number = go_thru_tomato_file_with_feature(
-            generate_list_of_tomato_files(pathlib.Path(dir_path)), feature_value)
+            generate_list_of_tomato_files(dir_path), feature_value)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_number}')  #
+            print(f'Number of files used --> {file_number+1}')  #
             print(f'Number of scenarios --> {scenario_number}')
 
     @staticmethod
-    def run_story(dir_path, feature_value, exact_story_name=False, verbose=True):
-        file_number, scenario_number = go_thru_tomato_file_with_story(
-            generate_list_of_tomato_files(pathlib.Path(dir_path)),
+    def run_story(dir_path, feature_value, exact_story_name=False, verbose=True): # TODO add one-file scenario
+        file_num, scenario_number = go_thru_tomato_file_with_story(
+            generate_list_of_tomato_files(dir_path),
             feature_value, exact_story_name)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_number}')  #
+            print(f'Number of files used --> {file_num+1}')  #
             print(f'Number of scenarios --> {scenario_number}')
+
+    @staticmethod
+    def how_many_files(dir_path):
+        a = generate_list_of_tomato_files(dir_path)
+        print(a)
 
 
 @mark.smoke
