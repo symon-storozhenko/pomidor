@@ -3,8 +3,8 @@ Version: 0.0.1
 Release date: July 10 2020
 
 
-Sprint 3
-
+--Sprint 3 TODO implement Sprint run
+Reporting reporting
 Feature: Home_Page
 Story JIRA-2299
 Given user *TYPETH in the a #password_field
