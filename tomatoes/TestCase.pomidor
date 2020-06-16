@@ -4,10 +4,10 @@ Release date: July 10 2020
 
 
 --Sprint 3 TODO implement Sprint run
-Reporting reporting
+Reporting haha
 Feature: Home_Page
 Story JIRA-2299
-Given user *TYPETH in the a #password_field
+Given users *TYPETH 'stosimon@gmail.com' in the a #password_field rty
 
 
 Scenario: Page is visible:
@@ -24,7 +24,6 @@ and *clicked on #login_field [password] fdfv (fdf) "dfvdfv" fvdfv <dfvdvd>,
 Story JIRA-3344
 Feature: Home_Page
 Second Feature!!!
-Given user is on Instagram landing page, *CLICKOs on login_field and types #password_field
-
-
+Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field
+ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field and ["third"]
 

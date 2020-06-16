@@ -13,6 +13,7 @@ class BackwardAction:
             '*not visible': 'test'
         }
 
+board_keys = ['Enter', 'Esc']
 
 vector = 'forward_action_dictionary'
 
