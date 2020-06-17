@@ -15,9 +15,15 @@ to = Pomidor(po.home_page)
 
 all_tomato_scripts = '/Users/myco/PycharmProjects/tomato3/tomatoes'
 one_file = '/Users/myco/PycharmProjects/tomato3/tomatoes/TestCase.pomidor'
-# to.run_scripts(all_tomato_scripts, verbose=True) # todo block the print output
+to.run_scripts(all_tomato_scripts, verbose=True) # todo block the print output
+no_obj_found = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/'\
+                         'no_obj_found.pomidor'
+
+scratch = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/'\
+                         'scratch.pomidor'
+to.run_scripts(scratch)
 # to.run_features(one_file, "E_Page")
-# to.run_story(one_file, "jiRA")  # , exact_story_name=True)
+# to.run_story(one_file, "jira-3344", exact_story_name=True)
 #
 # print("Hey!")
 # to.run_custom_identifier(all_tomato_scripts, 'reporting', 'h')    # TODO - implement dry_run=True option
@@ -32,4 +38,4 @@ def run_smoke_test(pomidor_function):  # TODO implement concurrency with pytest
     print(f'Smoke test passed!')
 
 
-run_smoke_test(to.run_scripts(one_file))
+# run_smoke_test(to.run_scripts(one_file))

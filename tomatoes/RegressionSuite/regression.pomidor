@@ -8,7 +8,7 @@ Then login_field I *CLICKoS 13, and type
 on the #login_field 20. and *CLICKED in #login_field #login_field is *visible and
 
 
-and *TYPED in #login_field password_field -test is visible and *types on #password_field
+and *TYPED 'DAMN!' in #login_field password_field -test is visible and *types 'LOL' on #password_field
 clickleth password_field
 
 

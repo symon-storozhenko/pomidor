@@ -11,6 +11,17 @@ from selenium.webdriver.common.by import By
 import time
 
 
+class PomidorSyntaxError(Exception):
+    """ Pomidor syntax error class. """
+    def __init__(self, *args, **kwargs):  # real signature unknown
+        pass
+
+
+class PomidorObjectNotFound(Exception):
+    """ Page object error class. """
+    def __init__(self, *args, **kwargs):  # real signature unknown
+        pass
+
 def action_func(objc, act, wait=10,
                 locator='XPATH'):  # TODO implement passing wait parameter
     return f'WebDriverWait(driver, {wait}).until(ec.presence_of_element_' \
@@ -40,6 +51,8 @@ def generate_list_of_pomidor_files(tomato_directory):
         tomato_files_list.append(path)
         print(f'{enum + 1}: {path}')
     # print(f'tomato_files_list -> {tomato_files_list}')
+    if tomato_files_list == []:
+        raise FileNotFoundError(f'No pomidor files found in the directory')
     return tomato_files_list
 
 
@@ -96,16 +109,23 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                         else:
                             continue
                     if bk_obj_count > 1:
-                        raise Exception(
-                            f'\nMore than one object is found! Make sure to put only one '
-                            f'pertinent item before "{action_item}" (backward action) '
-                            f'\nPlease review: "{first_paragraph_line.strip()}"'
+                        raise PomidorSyntaxError(   # Negative test covered
+                            """ Negative tested in file
+                            'more_than_1_obj_bckwrd_action_except.pomidor' """
+                            
+                            f'\nMore than one object is found! Make sure to '
+                            f'put only one '
+                            f'pertinent item before "{action_item}"'
+                            f' (backward action) ' 
+                            f'\nPlease review:"{first_paragraph_line.strip()}"'
                             f'\nFile name --> {filepath}'
-                            f'\nParagraph starts on line --> {scenario_title_line_num}.\n\n'
+                            f'\nParagraph starts on line -->'
+                            f' {scenario_title_line_num}.\n\n' 
                             f'Examples:'
                             f'\n*Click on #page and #cart is *visible --> '
                             f'allowed \n '
-                            f'*Click on #page and #profile and #cart is *visible --> '
+                            f'*Click on #page and #profile and #cart is '
+                            f'*visible --> ' 
                             f'NOT allowed')
                     else:
                         pass
@@ -127,7 +147,10 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                         # search for any orphan objects
                         for orphan_obj in strList[latest_index:action_index]:
                             if orphan_obj.startswith("#"):
-                                raise Exception(
+                                raise PomidorSyntaxError(   #Covered
+                                    """ Negative syntax to test located in
+                                    'orphan_obj_b4_frwd_action.pomidor' file"""
+                                    
                                     f'\n\n{"*" * 58}\nOrphan object found -> {orphan_obj}. '
                                     f'Please '
                                     f'associate an action (*) with this object.\n '
@@ -145,7 +168,9 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                                 page_obj_index]:
                                     if str_slice_item.startswith(
                                             "*"):  # if actions left by mistake
-                                        raise Exception(
+                                        raise PomidorSyntaxError(   # Covered
+                                            """ Negative tested with file 
+                                            'two_actions.pomidor' """
                                             f'\n\n{"*" * 58}\nWhich action to use with '
                                             f'{page_object}? '
                                             f'{strList_item} (forward action) or '
@@ -161,7 +186,9 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                         break
             # Perform action on the object
             if not object_found:
-                raise Exception(
+                raise PomidorSyntaxError(   # Covered
+                    """ Negative tested in file 'no_obj_found.pomidor' """
+                    
                     f'\n\n{"*" * 58}\nno object found for action "{strList_item}'
                     f'\nPlease review: "{filepath}",--> line {line_num}')
             else:
@@ -172,13 +199,16 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                 print('                check dict first+++++++++++++++')
                 tom = Pomidor(obj_dict)
                 if page_object not in tom.obj_dict:
-                    raise Exception(f'Page object NOT is Found! ---> '
+                    raise PomidorObjectNotFound(    # Covered
+                        """ Negative tested in file 
+                        'obj_not_found_in_page_factory.pomidor' """
+                        f'Page object NOT is Found! ---> '
                                     f'#{page_object}'
                                     f'\nPlease review: '
                                     f'"{first_paragraph_line.strip()}"'
                                     f'\nFile name --> {filepath}'
                                     f'\nParagraph starts on line --> '
-                                    f'{scenario_title_line_num}.\n\n')
+                                    f'{scenario_title_line_num+1}.\n\n')
                 print(f'?????????????Object_source via Tomato class/PO --> '
                       f'{tom.get_dict_obj(page_object)}')
                 page_object_src = tom.get_dict_obj(page_object)[1]
@@ -235,7 +265,8 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
             f'otherwise, comment out the whole paragraph with quotes """ <paragraph> """')
     for obj_last in strList[latest_index:]:
         if obj_last.startswith('#'):
-            raise Exception(
+            raise PomidorSyntaxError(   # Covered
+                """ Negative tested in file 'last_orphan_obj.pomidor' """
                 f'\n{"*" * 58}\nOrphan object found -> {obj_last}. '
                 f'Please '
                 f'associate an action (*) with this object.\n '
@@ -250,7 +281,7 @@ def go_thru_pomidor_file(func, obj_dict):
     scenario_number = 0
     for file_number, filepath in enumerate(func):
         with open(filepath) as file:
-            for total_lines_count, row in enumerate(file, 1):
+            for total_lines_count, row in enumerate(file):
                 continue
         with open(filepath) as tomato_file:
             print(f'\nOpening file --> {filepath}\n')
@@ -269,11 +300,11 @@ def go_thru_pomidor_file(func, obj_dict):
                     scenarioSteps += line
                 if (scenarioSteps != '' and line in ['\n', '\r\n']) or (
                         scenarioSteps != '' and line_num == total_lines_count):
-                    print(f'LINE IS -----> {line}')
+                    print(f'LINE IS -----> {line} at {line_num}')
                     print(
                         f"\nBegin test:\n ----{first_paragraph_line.strip()}----"
                         f"\nActions and Assertions performed:")
-                    scenarioSteps += line
+                    # scenarioSteps += line
                     # with regex
                     print(f'srtList --> {scenarioSteps}')
                     test_paragraph = \
@@ -294,7 +325,7 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
     for file_number, filepath in enumerate(func):
         # scenario_number = 0
         with open(filepath) as file:
-            for total_lines_count, row in enumerate(file, 1):
+            for total_lines_count, row in enumerate(file):
                 continue
         with open(filepath) as tomato_file:
             print(f'\nOpening file --> {filepath}\n')
@@ -343,7 +374,7 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                                     print(
                                         f"\nBegin test:\n ----{first_paragraph_line.strip()}----"
                                         f"\nActions and Assertions performed:")
-                                    scenarioSteps += line
+                                    # scenarioSteps += line
                                     # print(f'srtList --> {strList}')
                                     latest_index = 0
                                     action_counter = 0
@@ -432,13 +463,13 @@ class Pomidor:
         return self.obj_dict.get(obj_key)
 
 
-@mark.smoke
+# @mark.smoke
 def test_smoke_tomato_runner():
     go_thru_pomidor_file(
         generate_list_of_pomidor_files(pathlib.Path(smoke_tests_dir)))
 
 
-@mark.regression
+# @mark.regression
 def test_regression_tomato():
     go_thru_pomidor_file(
         generate_list_of_pomidor_files(pathlib.Path(all_tomatoes_dir)))

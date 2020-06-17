@@ -12,7 +12,7 @@ Feature: Reporting || Jira-1453, Use case 1:  Simple test login_field with Home 
 *CLICKoS on the #login_field 20. and *CLICKED in #login_field #login_field is *visible and
 
 
-and *TYPED in #login_field password_field -test is visible and *types on #password_field
+and *TYPED 'in' #login_field password_field -test is visible and *types 'hehe' on #password_field
 clickleth password_field
 
 

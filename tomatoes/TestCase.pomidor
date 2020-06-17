@@ -1,29 +1,41 @@
-App Name: MyWebApp
-Version: 0.0.1
-Release date: July 10 2020
-
-
---Sprint 3 TODO implement Sprint run
-Reporting haha
-Feature: Home_Page
-Story JIRA-2299
+--App Name: MyWebApp
+--Version: 0.0.1
+--Release date: July 10 2020
+--
+--
+----Sprint 3 TODO implement Sprint run
+--Reporting haha
+--Feature: Home_Page
+--Story JIRA-2299
 Given users *TYPETH 'stosimon@gmail.com' in the a #password_field rty
+--
+--
+--Scenario: Page is visible:
+--if i'm on the page, when i *click on the login_field #login_field, make sure #login_field is *Visible and isLost
+--some text
+--and *clicked on #login_field [password] fdfv (fdf) "dfvdfv" fvdfv <dfvdvd>,
+----and *wait for #5 seconds
+----cuke_it <make sure the #password_field value is twice as big as #login_field> #TODO  implement cuke method
+----data source:        # TODO implement passing multiple data as part of send_keys() action
+----#password_field = (34345,34535,34534,345345)
+----#login_field = (
+--
+--
 
+--
+--
+--
+--I *click on the #login_field and	the #password_field is *visible
+--Then *type 'heyhey' in the #password_field	End of Test case
 
-Scenario: Page is visible:
-if i'm on the page, when i *click on the login_field #login_field, make sure #login_field is *Visible and isLost
-some text
-and *clicked on #login_field [password] fdfv (fdf) "dfvdfv" fvdfv <dfvdvd>,
---and *wait for #5 seconds
---cuke_it <make sure the #password_field value is twice as big as #login_field> #TODO  implement cuke method
---data source:        # TODO implement passing multiple data as part of send_keys() action
---#password_field = (34345,34535,34534,345345)
---#login_field = (
-
-
+----I *click on #password_field #todo resolve Exception: Page object NOT is Found! ---> #password_fieldI
+--I click on #password_field is *visible
+--
+--Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field
+--ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field
 Story JIRA-3344
 Feature: Home_Page
-Second Feature!!!
+--Second Feature!!!
+--
 Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field
-ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field and ["third"]
-
+ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field
