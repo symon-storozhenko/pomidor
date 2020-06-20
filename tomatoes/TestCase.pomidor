@@ -28,7 +28,7 @@ Given users *TYPETH 'stosimon@gmail.com' in the a #password_field rty
 --I *click on the #login_field and	the #password_field is *visible
 --Then *type 'heyhey' in the #password_field	End of Test case
 
-----I *click on #password_field #todo resolve Exception: Page object NOT is Found! ---> #password_fieldI
+----I *click on #password_field
 --I click on #password_field is *visible
 --
 --Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field

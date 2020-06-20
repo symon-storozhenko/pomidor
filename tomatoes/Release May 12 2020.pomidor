@@ -2,7 +2,7 @@ Release:
 
 Sprint:
 
-Feature: Home Page    Jira-1111
+Feature: Home_Page    Jira-1111
 When I *click "stosimon@gmail.com" on the #login_field I get tomato :)
 data source:
 

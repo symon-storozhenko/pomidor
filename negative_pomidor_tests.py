@@ -34,11 +34,62 @@ class TestPomidor():
 
     def test_pomidor_run_story(self):
         scenario_num = to.run_story(run_three_3344_stories, '3344')
-        assert scenario_num == 3    # TODO: run_story does not read last line!!!
+        assert scenario_num == 3
+
+    def test_pomidor_run_feature(self):
+        scenario_num = to.run_features(run_three_3344_stories, 'Report')
+        assert scenario_num == 3
 
     def test_pomidor_run_story_with_general_script(self):
         scenario_num = to.run_scripts(run_three_3344_stories)
         assert scenario_num == 4
+
+    def test_pomidor_run_exact_story_name(self): # "Jira1 NOT Jira 1 !!
+        scenario_num = to.run_story(run_three_3344_stories, "JIRA-3344_2",
+                                    exact_match=True)
+        assert scenario_num == 1
+
+    def test_pomidor_run_exact_feature_name(self):  # Repo1 not Repo 1 !
+        scenario_num = to.run_features(run_three_3344_stories, "Reporting",
+                                       exact_match=True)
+        assert scenario_num == 2
+
+    def test_pomidor_pass_several_stories_to_run(self):
+        # TODO pass_several_stories_to_run
+        pass
+
+    def test_pomidor_run_custom_marker(self):
+        # TODO custom_marker
+        scenario_num = to.run_custom_identifier(run_three_3344_stories,
+                                                "Custom_Marker", "Get_Marker")
+        pass
+
+    def test_pomidor_several_custom_markers(self):
+        # TODO several custom markers
+        pass
+
+    def test_pomidor_list_all_story_values(self):
+        marker_list_length, unique_num = \
+            to.list_all_marker_values(run_three_3344_stories,
+                                                "story")
+        assert marker_list_length == 6
+
+    def test_pomidor_list_all_feature_values(self):
+        marker_list_length, unique_num = \
+            to.list_all_marker_values(run_three_3344_stories,
+                                                       "featurE")
+        assert marker_list_length == 5
+
+    def test_pomidor_list_unique_story_values(self):
+        marker_list_length, unique_num = \
+            to.list_all_marker_values(run_three_3344_stories,
+                                                "story")
+        assert unique_num == 5
+
+    def test_pomidor_list_unique_feature_values(self):
+        marker_list_length, unique_num = to.list_all_marker_values(run_three_3344_stories,
+                                                       "featurE")
+        assert unique_num == 4
 
 
 class TestPomidorSyntaxPositive:

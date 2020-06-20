@@ -59,7 +59,6 @@ def generate_list_of_pomidor_files(tomato_directory):
 def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                            scenario_title_line_num, line_num,
                            obj_dict):
-    # global action_index    # TODO removed June 14, 2020
     latest_index = 0
     action_counter = 0
     obj_counter = 0
@@ -411,6 +410,33 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
     return file_number, scenario_number
 
 
+def list_all_mark_values(func, feature_type):  # best-working
+    scenario_number = 0
+    marker_values = []
+    for file_number, filepath in enumerate(func):
+        with open(filepath) as file:
+            for total_lines_count, row in enumerate(file):
+                continue
+        with open(filepath) as tomato_file:
+            print(f'\nOpening file --> {filepath}\n')
+            scenarioSteps = ''
+            first_paragraph_line = ''
+            feature_instances = 0
+            line_counter = 0
+            for line_num, line in enumerate(tomato_file):
+                # print(f'======= ===== General MARKER Line #{line_num}====== ======')
+                if line.lower().startswith(feature_type.lower()):
+                    line = line.upper()
+                    line_list = re.split(r'[;,.!?\s]', line)
+                    line_list.pop(0)
+                    marker_values += line_list
+                    while "" in marker_values:
+                        marker_values.remove("")
+                    print(f'{feature_type} \n\n++++++++MARKER Line ! --> '
+                          f'{marker_values}++++++++++\n')
+    return marker_values, len(marker_values)
+
+
 class Pomidor:
 
     def __init__(self, obj_dict):
@@ -460,6 +486,16 @@ class Pomidor:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_num + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
+
+    @staticmethod
+    def list_all_marker_values(dir_path, feature_type):
+        marker_list, markers_num = list_all_mark_values(generate_list_of_pomidor_files(
+            dir_path), feature_type)
+        print(f'{feature_type} total list : {marker_list}')
+        print(f"There're {markers_num} values found total")
+        print(f"\nUnique {feature_type} list: {set(marker_list)}")
+        print(f"Unique number of {feature_type} is {len(set(marker_list))}")
+        return markers_num, len(set(marker_list))
 
     @staticmethod
     def run_standalone_custom_identifier(dir_path, feature_value,

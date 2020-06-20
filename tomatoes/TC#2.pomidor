@@ -7,7 +7,8 @@ Sprint
 
 clickleth *clickowski then click on #password_field login_field
 
-Feature: Reporting || Jira-1453, Use case 1:  Simple test login_field with Home #login_field button *visible click 9
+Feature: Reporting || Jira-1453,
+Use case 1:  Simple test login_field with Home #login_field button *visible click 9
 --Comment INSIDE!! *Clickakawski on # login_field Then login_field I * 13, and type
 *CLICKoS on the #login_field 20. and *CLICKED in #login_field #login_field is *visible and
 
