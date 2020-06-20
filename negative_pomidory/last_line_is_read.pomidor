@@ -1,0 +1,8 @@
+Test case
+first paragraph *click on #login_field
+
+Second case
+second paragraph *click on #password_field
+
+first paragraph *click on #login_field
+second paragraph *click on #password_field fdgfd

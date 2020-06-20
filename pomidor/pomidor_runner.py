@@ -274,6 +274,7 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                 f'\nFile name --> {filepath}'
                 f'\nParagraph starts on line --> '
                 f'{scenario_title_line_num}')
+    print('SCENARIO COMPLETED!!!!')
     return scenario_with_action
 
 
@@ -302,7 +303,8 @@ def go_thru_pomidor_file(func, obj_dict):
                         scenarioSteps != '' and line_num == total_lines_count):
                     print(f'LINE IS -----> {line} at {line_num}')
                     print(
-                        f"\nBegin test:\n ----{first_paragraph_line.strip()}----"
+                        f"\nBegin test:\n ----{first_paragraph_line.strip()}"
+                        f"----\n\n"
                         f"\nActions and Assertions performed:")
                     # scenarioSteps += line
                     # with regex
@@ -320,10 +322,8 @@ def go_thru_pomidor_file(func, obj_dict):
 
 def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                                     exact_story_name=False):  # best-working
-    # global file_number
     scenario_number = 0
     for file_number, filepath in enumerate(func):
-        # scenario_number = 0
         with open(filepath) as file:
             for total_lines_count, row in enumerate(file):
                 continue
@@ -332,10 +332,17 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
             scenarioSteps = ''
             first_paragraph_line = ''
             feature_instances = 0
+            line_counter = 0
             for line_num, line in enumerate(tomato_file):
+                if line == 0:
+                    continue
+                else:
+                    line_counter += 1
+                print(f'======= ===== General Line #{line_num}====== ======')
                 if line.lower().startswith(feature_type.lower()):
                     line_list = re.split(r'[;,.!?\s]', line)
-                    print(f'{feature_type} Line ! --> {line_list}')
+                    print(f'{feature_type} \n\n++++++++STORY Line ! --> '
+                          f'{line_list}++++++++++\n')
                     for f in line_list[1:]:
                         if exact_story_name:
                             if f == story:
@@ -343,53 +350,62 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                                 feature_instances += 1
                         else:
                             if story.lower() in f.lower():  # f.lower().__contains__(story.lower()):
-                                print(f'Found {feature_type}!!!!!!!! -> {f}\n')
+                                print(f'$@@@@@@@@@@@@$$ FOUND {feature_type}!!!!!!!! -> {f}\n')
                                 print(f'Line before inner loop--> {line}')
                                 feature_instances += 1
-                        if feature_instances > 0:
-                            for line_num_in, line in enumerate(tomato_file,
-                                                               line_num):
-                                print(
-                                    f'Line is - >{line}. Line num --> '
-                                    f'{line_num}')
+                    if feature_instances > 0:
+                        for line_num_in, line in enumerate(tomato_file,
+                                                           line_counter):
+                            line_counter += 1
+                            print(
+                                f'Text "{line}" is on line num --> '
+                                f'{line_num_in+1}')
 
-                                # if feature_bool:
-                                if scenarioSteps == '' and (line in ['\n',
-                                                                     '\r\n']
-                                                            or line.startswith(
-                                            '--')):
+                            # if feature_bool:
+                            if scenarioSteps == '' and (line in ['\n',
+                                                                 '\r\n']
+                                                        or line.startswith(
+                                        '--')):
+                                continue
+                            else:
+                                if scenarioSteps == '':
+                                    first_paragraph_line = line
+                                    scenario_title_line_num = line_num
+                                if scenarioSteps != '' and line.startswith(
+                                        '--'):
                                     continue
-                                else:
-                                    if scenarioSteps == '':
-                                        first_paragraph_line = line
-                                        scenario_title_line_num = line_num
-                                    if scenarioSteps != '' and line.startswith(
-                                            '--'):
-                                        continue
-                                    scenarioSteps += line
-                                if (scenarioSteps != '' and line in ['\n',
-                                                                     '\r\n']) or (
-                                        scenarioSteps != '' and line_num == total_lines_count):
-                                    print(f'LINE IS -----> {line}')
-                                    print(
-                                        f"\nBegin test:\n ----{first_paragraph_line.strip()}----"
-                                        f"\nActions and Assertions performed:")
-                                    # scenarioSteps += line
-                                    # print(f'srtList --> {strList}')
-                                    latest_index = 0
-                                    action_counter = 0
-                                    test_paragraph = define_test_paragraphs(
-                                        scenarioSteps, filepath,
-                                        first_paragraph_line,
-                                        scenario_title_line_num,
-                                        line_num, obj_dict)
-                                    scenarioSteps = ''
+                                scenarioSteps += line
+                            if (scenarioSteps != '' and line in ['\n',
+                                                                 '\r\n']) \
+                                    or (
+                                    scenarioSteps != '' and line_counter-1 ==
+                                    total_lines_count+1):
+                                print(f'total_lines_count -> {total_lines_count}')
+                                print(f'LINE IS -----> {line} at '
+                                      f'{line_num_in}')
+                                print(
+                                    f"\nBegin test:\n ----"
+                                    f"{first_paragraph_line.strip()}----\n"
+                                    f"\nActions and Assertions performed:")
+                                # scenarioSteps += line
+                                # print(f'srtList --> {strList}')
+                                latest_index = 0
+                                action_counter = 0
+                                test_paragraph = define_test_paragraphs(
+                                    scenarioSteps, filepath,
+                                    first_paragraph_line,
+                                    scenario_title_line_num,
+                                    line_num, obj_dict)
+                                if test_paragraph:
                                     scenario_number += 1
-                                    feature_instances = 0
-                                    break
-                            break
-                        else:
-                            continue
+                                scenarioSteps = ''
+                                feature_instances = 0
+                                break
+                            # line_num = line_num_in
+                        # break
+                    else:
+                        line_counter += 1
+                        continue
                 else:
                     continue
     return file_number, scenario_number
@@ -411,32 +427,35 @@ class Pomidor:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_num + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
+        return scenario_number
 
-    def run_features(self, dir_path, feature_value, exact_story_name=False,
+    def run_features(self, dir_path, feature_value, exact_match=False,
                      verbose=True):
         file_number, scenario_number = go_thru_pomidor_file_with_story(
             generate_list_of_pomidor_files(dir_path), "feature", feature_value,
-            self.obj_dict, exact_story_name)
+            self.obj_dict, exact_match)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_number + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
+        return scenario_number
 
-    def run_story(self, dir_path, feature_value, exact_story_name=False,
+    def run_story(self, dir_path, feature_value, exact_match=False,
                   verbose=True):
         file_num, scenario_number = go_thru_pomidor_file_with_story(
-            generate_list_of_pomidor_files(dir_path),
-            feature_value, self.obj_dict, exact_story_name)
+            generate_list_of_pomidor_files(dir_path), "story",
+            feature_value, self.obj_dict, exact_match)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_num + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
+        return scenario_number
 
     def run_custom_identifier(self, dir_path, feature_type, feature_value,
-                              exact_story_name=False, verbose=True):
+                              exact_match=False, verbose=True):
         file_num, scenario_number = go_thru_pomidor_file_with_story(
             generate_list_of_pomidor_files(dir_path), feature_type,
-            feature_value, self.obj_dict, exact_story_name)
+            feature_value, self.obj_dict, exact_match)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_num + 1}')  #

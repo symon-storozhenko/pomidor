@@ -33,9 +33,11 @@ Given users *TYPETH 'stosimon@gmail.com' in the a #password_field rty
 --
 --Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field
 --ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field
-Story JIRA-3344
+Story JIRA-3349
 Feature: Home_Page
 --Second Feature!!!
---
 Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field
 ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field
+
+Story JIRA-3344
+first paragraph *click on #password_field

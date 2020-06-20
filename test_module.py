@@ -14,14 +14,18 @@ to = Pomidor(po.home_page)
 # print(f'Locators! {loc}')
 
 all_tomato_scripts = '/Users/myco/PycharmProjects/tomato3/tomatoes'
-one_file = '/Users/myco/PycharmProjects/tomato3/tomatoes/TestCase.pomidor'
-to.run_scripts(all_tomato_scripts, verbose=True) # todo block the print output
+one_file = 'tomatoes/TestCase.pomidor'
+# to.run_scripts(all_tomato_scripts, verbose=True) # todo block the print output
 no_obj_found = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/'\
                          'no_obj_found.pomidor'
+last_line_3_scenarios = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/'\
+                         'last_line_is_read.pomidor'
 
 scratch = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/'\
                          'scratch.pomidor'
-to.run_scripts(scratch)
+
+# to.run_scripts(one_file)
+to.run_story(one_file, '3344')
 # to.run_features(one_file, "E_Page")
 # to.run_story(one_file, "jira-3344", exact_story_name=True)
 #
@@ -33,9 +37,9 @@ to.run_scripts(scratch)
 # Pomidor.how_many_files(all_tomato_scripts)
 #
 #
-def run_smoke_test(pomidor_function):  # TODO implement concurrency with pytest
-    pomidor_function
-    print(f'Smoke test passed!')
+# def run_smoke_test(pomidor_function):  # TODO implement concurrency with pytest
+#     pomidor_function
+#     print(f'Smoke test passed!')
 
 
 # run_smoke_test(to.run_scripts(one_file))
