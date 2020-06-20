@@ -37,6 +37,7 @@ class TestPomidor():
         assert scenario_num == 3
 
     def test_pomidor_run_feature(self):
+        """Can't run theis yet"""
         scenario_num = to.run_features(run_three_3344_stories, 'Report')
         assert scenario_num == 3
 
@@ -59,10 +60,9 @@ class TestPomidor():
         pass
 
     def test_pomidor_run_custom_marker(self):
-        # TODO custom_marker
         scenario_num = to.run_custom_identifier(run_three_3344_stories,
                                                 "Custom_Marker", "Get_Marker")
-        pass
+        assert scenario_num == 1
 
     def test_pomidor_several_custom_markers(self):
         # TODO several custom markers

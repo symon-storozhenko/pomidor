@@ -419,10 +419,6 @@ def list_all_mark_values(func, feature_type):  # best-working
                 continue
         with open(filepath) as tomato_file:
             print(f'\nOpening file --> {filepath}\n')
-            scenarioSteps = ''
-            first_paragraph_line = ''
-            feature_instances = 0
-            line_counter = 0
             for line_num, line in enumerate(tomato_file):
                 # print(f'======= ===== General MARKER Line #{line_num}====== ======')
                 if line.lower().startswith(feature_type.lower()):
@@ -486,6 +482,7 @@ class Pomidor:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_num + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
+        return scenario_number
 
     @staticmethod
     def list_all_marker_values(dir_path, feature_type):
@@ -528,6 +525,7 @@ def test_smoke_tomato_runner():
 def test_regression_tomato():
     go_thru_pomidor_file(
         generate_list_of_pomidor_files(pathlib.Path(all_tomatoes_dir)))
+
 
 # Pomidor.run_features(all_tomatoes_dir, "Home_Page")
 

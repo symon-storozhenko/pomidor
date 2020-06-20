@@ -16,13 +16,13 @@ Feature: Reporting
 Tahen for granted and "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field
 ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field
 
-Custom_mArker get_marker55
+Custom_mArker get_marker
 Story JIRA-3344_2
 Feature: Reporting
 sStory 2
 first paragraph *click on #password_field
 
-
+Custom_Marker Get_marker2 (should fail)
 Story JIRA-3344_3 55
 Feature: Reporting3 5
 Sstory 3
