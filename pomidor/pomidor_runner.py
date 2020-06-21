@@ -338,11 +338,12 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                 else:
                     line_counter += 1
                 print(f'======= ===== General Line #{line_num}====== ======')
-                if line.lower().startswith(feature_type.lower()):
+                if feature_type.lower() in line.lower():
                     line_list = re.split(r'[;,.!?\s]', line)
                     print(f'{feature_type} \n\n++++++++STORY Line ! --> '
                           f'{line_list}++++++++++\n')
-                    for f in line_list[1:]:
+                    # feature_index = line_list.index(feature_type)
+                    for f in line_list:
                         if exact_story_name:
                             if f == story:
                                 print(f'Found exact {feature_type}!!!!!!!!')
@@ -421,14 +422,17 @@ def list_all_mark_values(func, feature_type):  # best-working
             print(f'\nOpening file --> {filepath}\n')
             for line_num, line in enumerate(tomato_file):
                 # print(f'======= ===== General MARKER Line #{line_num}====== ======')
-                if line.lower().startswith(feature_type.lower()):
+                if feature_type.lower() in line.lower():
                     line = line.upper()
                     line_list = re.split(r'[;,.!?\s]', line)
-                    line_list.pop(0)
+                    print(f"line_list --> ((((({line_list}")
+                    for i in line_list:
+                        if i.startswith(feature_type.upper()):
+                            line_list.remove(i)
                     marker_values += line_list
                     while "" in marker_values:
                         marker_values.remove("")
-                    print(f'{feature_type} \n\n++++++++MARKER Line ! --> '
+                    print(f'{feature_type.upper()} \n\n++++++++MARKER Line ! --> '
                           f'{marker_values}++++++++++\n')
     return marker_values, len(marker_values)
 
@@ -454,7 +458,7 @@ class Pomidor:
     def run_features(self, dir_path, feature_value, exact_match=False,
                      verbose=True):
         file_number, scenario_number = go_thru_pomidor_file_with_story(
-            generate_list_of_pomidor_files(dir_path), "feature", feature_value,
+            generate_list_of_pomidor_files(dir_path), "@feature", feature_value,
             self.obj_dict, exact_match)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
@@ -465,7 +469,7 @@ class Pomidor:
     def run_story(self, dir_path, feature_value, exact_match=False,
                   verbose=True):
         file_num, scenario_number = go_thru_pomidor_file_with_story(
-            generate_list_of_pomidor_files(dir_path), "story",
+            generate_list_of_pomidor_files(dir_path), "@story",
             feature_value, self.obj_dict, exact_match)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')

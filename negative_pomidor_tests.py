@@ -26,7 +26,7 @@ last_line_3_scenarios = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/'
 run_three_3344_stories = "negative_pomidory/run_story.pomidor"
 
 
-class TestPomidor():
+class TestPomidor:
     def test_pomidor_empty_dir(self):
         with pytest.raises(FileNotFoundError):
             to.run_scripts(empty_str)
@@ -61,7 +61,7 @@ class TestPomidor():
 
     def test_pomidor_run_custom_marker(self):
         scenario_num = to.run_custom_identifier(run_three_3344_stories,
-                                                "Custom_Marker", "Get_Marker")
+                                                "@Custom_Marker", "Get_Marker")
         assert scenario_num == 1
 
     def test_pomidor_several_custom_markers(self):
@@ -71,24 +71,24 @@ class TestPomidor():
     def test_pomidor_list_all_story_values(self):
         marker_list_length, unique_num = \
             to.list_all_marker_values(run_three_3344_stories,
-                                                "story")
+                                                "@story")
         assert marker_list_length == 6
 
     def test_pomidor_list_all_feature_values(self):
         marker_list_length, unique_num = \
             to.list_all_marker_values(run_three_3344_stories,
-                                                       "featurE")
+                                                       "@featurE")
         assert marker_list_length == 5
 
     def test_pomidor_list_unique_story_values(self):
         marker_list_length, unique_num = \
             to.list_all_marker_values(run_three_3344_stories,
-                                                "story")
+                                                "@story")
         assert unique_num == 5
 
     def test_pomidor_list_unique_feature_values(self):
         marker_list_length, unique_num = to.list_all_marker_values(run_three_3344_stories,
-                                                       "featurE")
+                                                       "@featurE")
         assert unique_num == 4
 
 
@@ -98,7 +98,7 @@ class TestPomidorSyntaxPositive:
         assert scenario_num == 3
 
 
-class TestPomidorSyntaxNegative():
+class TestPomidorSyntaxNegative:
     def test_pomidor_more_than_1_obj_bckwrd_action_except(self):
         with pytest.raises(PomidorSyntaxError):
             to.run_scripts(more_than_1_back)

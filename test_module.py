@@ -25,6 +25,7 @@ scratch = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/'\
                          'scratch.pomidor'
 
 to.list_all_marker_values(all_tomato_scripts, "featu")
+to.run_custom_identifier(all_tomato_scripts, 'When', 'I')
 # to.run_scripts(one_file)
 # to.run_story(one_file, '3344')
 # to.run_features(one_file, "E_Page")
