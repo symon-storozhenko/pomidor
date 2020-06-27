@@ -15,8 +15,8 @@ Given users *TYPETH 'stosimon@gmail.com' in the a #password_field rty
 --some text
 --and *clicked on #login_field [password] fdfv (fdf) "dfvdfv" fvdfv <dfvdvd>,
 ----and *wait for #5 seconds
-----cuke_it <make sure the #password_field value is twice as big as #login_field> #TODO  implement cuke method
-----data source:        # TODO implement passing multiple data as part of send_keys() action
+----cuke_it <make sure the #password_field value is twice as big as #login_field> #TODO  implement @cuke method
+----data source:        # TODO implement @data_feed passing multiple data as part of send_keys() action
 ----#password_field = (34345,34535,34534,345345)
 ----#login_field = (
 --

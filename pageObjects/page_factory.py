@@ -4,7 +4,19 @@ class PageObject:
             'login_field': ['XPATH', "//input[@name=\"username\"]"],
             'password_field': ['XPATH', "//input[@name=\"password\"]"],
             'submit_button': ['CSS', "//button[@type=\"submit\"]"],
+            'about_link': ['LINK_TEXT', "About"],
         }
+
+    # available locators:
+    # ID = "id"
+    # XPATH = "xpath"
+    # LINK_TEXT = "link text"
+    # PARTIAL_LINK_TEXT = "partial link text"
+    # NAME = "name"
+    # TAG_NAME = "tag name"
+    # CLASS_NAME = "class name"
+    # CSS_SELECTOR = "css selector"
+
 
     # def get_obj(self):
 

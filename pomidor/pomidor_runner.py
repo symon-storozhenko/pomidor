@@ -1,13 +1,14 @@
 import glob
+import functools
 import pathlib
 from pytest import mark
 import re
 from pomidor.actions import ForwardAction, BackwardAction
 # from InstaLogin import login_field
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.common.by import By
+# from selenium import webdriver
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as ec
+# from selenium.webdriver.common.by import By
 import time
 
 
@@ -26,6 +27,12 @@ def action_func(objc, act, wait=10,
                 locator='XPATH'):  # TODO implement passing wait parameter
     return f'WebDriverWait(driver, {wait}).until(ec.presence_of_element_' \
            f'located((By.{locator},\'{objc}\'))).{act}'
+
+def navigate(driver, url):
+    return f'{driver}.get("{url}")'
+
+def quit(driver):
+    return  f'{driver}.quit()'
 
 
 print('\n\n-------\nSTART:\n-------\n\n')
@@ -58,7 +65,7 @@ def generate_list_of_pomidor_files(tomato_directory):
 
 def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                            scenario_title_line_num, line_num,
-                           obj_dict):
+                           obj_dict, driver):
     latest_index = 0
     action_counter = 0
     obj_counter = 0
@@ -69,7 +76,10 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
     print(f'str_in_brackets --> {str_in_brackets}')
     print(f"str_in_quotes --> {str_in_quotes} ")
     strList = re.split(r'[;,.!?\s]', scenarioSteps)
+    tom = Pomidor(driver, obj_dict)
 
+    if tom.before_test.has_been_called: # TODO added before
+        print(f'FUnction was called!')
     for position, strList_item in enumerate(strList[latest_index:]):
         object_found = False
         action_found = False
@@ -196,7 +206,6 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                 page_object = page_object.strip('#')
                 # page_obj_source = home_page_dict[page_object][1]
                 print('                check dict first+++++++++++++++')
-                tom = Pomidor(obj_dict)
                 if page_object not in tom.obj_dict:
                     raise PomidorObjectNotFound(    # Covered
                         """ Negative tested in file 
@@ -274,10 +283,14 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                 f'\nParagraph starts on line --> '
                 f'{scenario_title_line_num}')
     print('SCENARIO COMPLETED!!!!')
+    if tom.after_test.has_been_called:  # TODO added quit
+        print("After Test was called!")
+        # driver = after_test
+        # exec(quit(driver))
     return scenario_with_action
 
 
-def go_thru_pomidor_file(func, obj_dict):
+def go_thru_pomidor_file(func, obj_dict, driver):
     scenario_number = 0
     for file_number, filepath in enumerate(func):
         with open(filepath) as file:
@@ -312,7 +325,7 @@ def go_thru_pomidor_file(func, obj_dict):
                         define_test_paragraphs(scenarioSteps, filepath,
                                                first_paragraph_line,
                                                scenario_title_line_num,
-                                               line_num, obj_dict)
+                                               line_num, obj_dict, driver)
                     if test_paragraph:
                         scenario_number += 1
                     scenarioSteps = ''
@@ -320,7 +333,7 @@ def go_thru_pomidor_file(func, obj_dict):
 
 
 def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
-                                    exact_story_name=False):  # best-working
+                                    driver, exact_story_name=False):  # best-working
     scenario_number = 0
     for file_number, filepath in enumerate(func):
         with open(filepath) as file:
@@ -395,7 +408,7 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                                     scenarioSteps, filepath,
                                     first_paragraph_line,
                                     scenario_title_line_num,
-                                    line_num, obj_dict)
+                                    line_num, obj_dict, driver)
                                 if test_paragraph:
                                     scenario_number += 1
                                 scenarioSteps = ''
@@ -437,18 +450,40 @@ def list_all_mark_values(func, feature_type):  # best-working
     return marker_values, len(marker_values)
 
 
+def trackcalls(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        wrapper.has_been_called = True
+        return func(*args, **kwargs)
+    wrapper.has_been_called = False
+    return wrapper
+
+
 class Pomidor:
 
-    def __init__(self, obj_dict):
+    def __init__(self, driver, obj_dict):
+        self.driver = driver
         self.obj_dict = obj_dict
 
     def __repr__(self):
         return f'Pomidor object with page object dictionary:\n' \
                f' {self.obj_dict}'
 
+    @trackcalls
+    def before_test(self, url):
+        self.driver.get(url)
+        # pass
+
+    @trackcalls
+    def after_test(self):
+        self.driver.quit()
+        # pass
+
+
     def run_scripts(self, dir_path, verbose=True):
         file_num, scenario_number = go_thru_pomidor_file(
-            generate_list_of_pomidor_files(dir_path), self.obj_dict)
+            generate_list_of_pomidor_files(dir_path), self.obj_dict,
+            self.driver)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_num + 1}')  #
@@ -456,10 +491,12 @@ class Pomidor:
         return scenario_number
 
     def run_features(self, dir_path, feature_value, exact_match=False,
-                     verbose=True):
+                     verbose=True, before_test=None,
+                    after_test=None):
         file_number, scenario_number = go_thru_pomidor_file_with_story(
             generate_list_of_pomidor_files(dir_path), "@feature", feature_value,
-            self.obj_dict, exact_match)
+            self.obj_dict, self.driver, exact_match,
+            before_test, after_test)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_number + 1}')  #
@@ -467,10 +504,12 @@ class Pomidor:
         return scenario_number
 
     def run_story(self, dir_path, feature_value, exact_match=False,
-                  verbose=True):
+                  verbose=True, before_test=None,
+                    after_test=None):
         file_num, scenario_number = go_thru_pomidor_file_with_story(
             generate_list_of_pomidor_files(dir_path), "@story",
-            feature_value, self.obj_dict, exact_match)
+            feature_value, self.obj_dict, exact_match,
+            before_test, after_test)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_num + 1}')  #

@@ -7,3 +7,4 @@ Sprint:
 Feature:    Jira-1111
 Story: TFS-909, TFS_117
 When I *click on the #login_field I get tomato :)
+and *type ""hey!"" on the #password_field. Word "hey" should be *displayed
