@@ -15,8 +15,6 @@ class ForwardAction:
             '*type': 'send_keys("Yoyo!!!!")',
             '*clear': 'clear()',
         #     ActionChains:
-
-
         }
 
 

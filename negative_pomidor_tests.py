@@ -1,10 +1,19 @@
-from pageObjects.page_factory import PageObject
+from pageObjects.page_factory import PageObject, BaseURL
 from pomidor.pomidor_runner import Pomidor
 from pomidor.pomidor_runner import PomidorSyntaxError, PomidorObjectNotFound
 import pytest
+from selenium import webdriver
 
+art_url = 'http://www.patreon.com'
 po = PageObject()
-to = Pomidor(po.home_page)
+burl = BaseURL()
+# driver = None  #
+# driver = webdriver.Chrome()
+to = Pomidor('Chrome', po.home_page, art_url, burl.urls)
+to.before_tests_launch_url()
+to.quit()
+# to.before_test('http://www.google.com')
+# to.after_test()
 
 empty_str = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/empty_dir'
 all_tomato_scripts = '/Users/myco/PycharmProjects/tomato3/negative_pomidory'
@@ -91,6 +100,17 @@ class TestPomidor:
                                                        "@featurE")
         assert unique_num == 4
 
+    def test_pomidor_list_unique_url_marker_values(self):
+        marker_list_length, unique_num = \
+            to.list_all_marker_values(run_three_3344_stories,
+                                                "@base_url")
+        assert unique_num == 1
+
+    def test_pomidor_list_all_url_marker_values(self):
+        marker_list_length, unique_num = \
+            to.list_all_marker_values(run_three_3344_stories,
+                                                "@base_url")
+        assert marker_list_length == 2
 
 class TestPomidorSyntaxPositive:
     def test_pomidor_last_line_is_read(self):

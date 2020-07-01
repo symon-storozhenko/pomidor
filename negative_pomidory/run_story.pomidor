@@ -2,6 +2,8 @@
 @Story:    Jira-3344_0
 --When I *click on the #login_field I get tomato :)
 
+
+
 @Story JIRA-3344_0
 @Story
 @Feature: Home_Page
@@ -10,11 +12,14 @@ Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs 
 ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field
 
 
+@base_url reporting_page
 @Story JIRA-0044_0
   @Feature: Reporting
 --Second Feature!!!
 Tahen for granted and "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs on login_field and types #password_field
 ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder' in #login_field
+
+
 
  @Custom_mArker:-+ get_marker
    @StOry: JIRA-3344_2
@@ -22,8 +27,11 @@ ans *type 'stosimon@gmail.com' in #password_field and *type 'second bodybuilder'
 sStory 2
  first paragraph *click on #password_field
 
+
+
 @Custom_Marker Get_marker2 (should fail)
     @Story JIRA-3344_3 55
 @Feature: Reporting3 5
+@base_url reporting_page
 Sstory 3
 first paragraph *click on #password_field number 3
