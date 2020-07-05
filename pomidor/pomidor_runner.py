@@ -306,7 +306,7 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                 f'{scenario_title_line_num}')
     print('SCENARIO COMPLETED!!!!')
     if Pomidor.quit.has_been_called \
-            and browser_initialized:  # TODO added quit
+            and browser_initialized:
         time.sleep(1)
         pom_driver.quit()
         print('\nDriver QUIT!!\n')

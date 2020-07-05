@@ -17,7 +17,6 @@ burl = BaseURL()
 pomi = Pomidor('Chrome', po.home_page, art_url, burl.urls)
 # TODO - initialize Pomidor without base_url
 # TODO - initialize Pomidor object without browser?
-# TODO - implement @base_url marker
 
 
 print(f'POMI -> {pomi}')
