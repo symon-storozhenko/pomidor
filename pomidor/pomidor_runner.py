@@ -6,9 +6,9 @@ import re
 from pomidor.actions import ForwardAction, BackwardAction
 # from InstaLogin import login_field
 from selenium import webdriver
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as ec
-# from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.by import By
 import time
 
 
@@ -25,8 +25,11 @@ class PomidorObjectNotFound(Exception):
 
 def action_func(objc, act, wait=10,
                 locator='XPATH'):  # TODO implement passing wait parameter
-    return f'WebDriverWait(driver, {wait}).until(ec.presence_of_element_' \
+    return f'WebDriverWait(driver, {wait}).until(ec.visibility_of_element_' \
            f'located((By.{locator},\'{objc}\'))).{act}'
+
+# TODO implement until function for other actions, like clickable, etc.
+
 
 def navigate(driver, url):
     return f'{driver}.get("{url}")'
@@ -65,13 +68,13 @@ def generate_list_of_pomidor_files(tomato_directory):
 
 def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
                            scenario_title_line_num, line_num,
-                           obj_dict, driver, url):
+                           obj_dict, driver, url, wait=10):
     latest_index = 0
     action_counter = 0
     obj_counter = 0
     tied_obj = False
     scenario_with_action = False
-    str_in_quotes = re.findall(r" \'(.+?)\'", scenarioSteps)
+    str_in_quotes = re.findall(r" \'\'(.+?)\'\'", scenarioSteps)
     str_in_brackets = re.findall(r" \[(.+?)\]", scenarioSteps)
     print(f'str_in_brackets --> {str_in_brackets}')
     print(f"str_in_quotes --> {str_in_quotes} ")
@@ -79,239 +82,259 @@ def define_test_paragraphs(scenarioSteps, filepath, first_paragraph_line,
     # tom = Pomidor(browser, obj_dict, url)
     browser_initialized = False
 
-    for position, strList_item in enumerate(strList[latest_index:]):
-        object_found = False
-        action_found = False
-        if strList_item.startswith("*"):
-            scenario_with_action = True
-            print(f'\n-Printing from latest index in paragraph -->'
-                  f'\n {strList[latest_index:]}')  # whole TC in one string
-            backward_action = False
-            act = ForwardAction()
-            bact = BackwardAction()
-            backward_action_dict = bact.backward_actions_dictionary
-            forward_action_dict = act.forward_action_dictionary
-            print(f'FOWRD dICT --> {forward_action_dict}')
+    try:
+        for position, strList_item in enumerate(strList[latest_index:]):
+            object_found = False
+            action_found = False
+            if strList_item.startswith("*"):
+                scenario_with_action = True
+                print(f'\n-Printing from latest index in paragraph -->'
+                      f'\n {strList[latest_index:]}')  # whole TC in one string
+                backward_action = False
+                act = ForwardAction()
+                bact = BackwardAction()
+                backward_action_dict = bact.backward_actions_dictionary
+                forward_action_dict = act.forward_action_dictionary
+                print(f'FOWRD dICT --> {forward_action_dict}')
 
-            # Iterate over forward actions
-            for action_in_bckwrd_list in backward_action_dict.keys():
-                # look for backward action first
-                print(
-                    f'SUCCESS -> for action_in_bckwrd_list in '
-                    f'backward_actions_dict.keys():')
-                if strList_item.lower().startswith(action_in_bckwrd_list):
-                    action_counter += 1
-                    action_found = True
-                    backward_action = True
-                    action_index = position
-                    action_item = action_in_bckwrd_list
-                    bk_obj_count = 0
-                    for page_objects in strList[latest_index:action_index]:
-                        if page_objects.startswith(
-                                "#"):  # if back_obj is found
-                            page_object = page_objects  # to prevent obj in
-                            # front to reassign value
-                            # print(f'Object is found! --> {page_object}')
-                            object_found = True
-                            bk_obj_count += 1
-                        else:
-                            continue
-                    if bk_obj_count > 1:
-                        raise PomidorSyntaxError(   # Negative test covered
-                            """ Negative tested in file
-                            'more_than_1_obj_bckwrd_action_except.pomidor' """
-                            
-                            f'\nMore than one object is found! Make sure to '
-                            f'put only one '
-                            f'pertinent item before "{action_item}"'
-                            f' (backward action) ' 
-                            f'\nPlease review:"{first_paragraph_line.strip()}"'
-                            f'\nFile name --> {filepath}'
-                            f'\nParagraph starts on line -->'
-                            f' {scenario_title_line_num}.\n\n' 
-                            f'Examples:'
-                            f'\n*Click on #page and #cart is *visible --> '
-                            f'allowed \n '
-                            f'*Click on #page and #profile and #cart is '
-                            f'*visible --> ' 
-                            f'NOT allowed')
-                    else:
-                        pass
-                    break
-            if action_found:
-                latest_index = action_index + 1
-                latest_artifact = strList_item
-            if not action_found:
                 # Iterate over forward actions
-                for action_in_forward_list in forward_action_dict:
-                    # if forward action is found
-                    if strList_item.lower().startswith(action_in_forward_list):
-                        # print(f'One TUPLE MATCH --> keyword "{strList_item}"
-                        #       f'contains action -> {action_in_forward_list}')
-                        action_found = True
+                for action_in_bckwrd_list in backward_action_dict.keys():
+                    # look for backward action first
+                    print(
+                        f'SUCCESS -> for action_in_bckwrd_list in '
+                        f'backward_actions_dict.keys():')
+                    if strList_item.lower().startswith(action_in_bckwrd_list):
                         action_counter += 1
+                        action_found = True
+                        backward_action = True
                         action_index = position
-                        action_item = action_in_forward_list
-                        # search for any orphan objects
-                        for orphan_obj in strList[latest_index:action_index]:
-                            if orphan_obj.startswith("#"):
-                                raise PomidorSyntaxError(   #Covered
-                                    """ Negative syntax to test located in
-                                    'orphan_obj_b4_frwd_action.pomidor' file"""
-                                    
-                                    f'\n\n{"*" * 58}\nOrphan object found -> {orphan_obj}. '
-                                    f'Please '
-                                    f'associate an action (*) with this object.\n '
-                                    f'\nPlease review: "{first_paragraph_line.strip()}"'
-                                    f'\nFile name --> {filepath}'
-                                    f'\nParagraph starts on line --> '
-                                    f'{scenario_title_line_num}')
-                        for obj_position, page_object in enumerate(
-                                strList[action_index:]):  # frwd obj
-                            if page_object.startswith("#"):  # if obj is found
+                        action_item = action_in_bckwrd_list
+                        bk_obj_count = 0
+                        for page_objects in strList[latest_index:action_index]:
+                            if page_objects.startswith(
+                                    "#"):  # if back_obj is found
+                                page_object = page_objects  # to prevent obj in
+                                # front to reassign value
+                                # print(f'Object is found! --> {page_object}')
                                 object_found = True
-                                page_obj_index = position + obj_position
-                                latest_index = page_obj_index + 1
-                                for str_slice_item in strList[action_index + 1:
-                                page_obj_index]:
-                                    if str_slice_item.startswith(
-                                            "*"):  # if actions left by mistake
-                                        raise PomidorSyntaxError(   # Covered
-                                            """ Negative tested with file 
-                                            'two_actions.pomidor' """
-                                            f'\n\n{"*" * 58}\nWhich action to use with '
-                                            f'{page_object}? '
-                                            f'{strList_item} (forward action) or '
-                                            f'{str_slice_item} (undefined vector action)? '
-                                            f'\nPlease review: '
-                                            f'"{first_paragraph_line.strip()}"\nFile name '
-                                            f'--> {filepath}\nParagraph starts on line -->'
-                                            f' {scenario_title_line_num}')
-                                break
+                                bk_obj_count += 1
                             else:
-                                object_found = False
                                 continue
+                        if bk_obj_count > 1:
+                            raise PomidorSyntaxError(   # Negative test covered
+                                """ Negative tested in file
+                                'more_than_1_obj_bckwrd_action_except.pomidor' """
+                                
+                                f'\nMore than one object is found! Make sure to '
+                                f'put only one '
+                                f'pertinent item before "{action_item}"'
+                                f' (backward action) ' 
+                                f'\nPlease review:"{first_paragraph_line.strip()}"'
+                                f'\nFile name --> {filepath}'
+                                f'\nParagraph starts on line -->'
+                                f' {scenario_title_line_num}.\n\n' 
+                                f'Examples:'
+                                f'\n*Click on #page and #cart is *visible --> '
+                                f'allowed \n '
+                                f'*Click on #page and #profile and #cart is '
+                                f'*visible --> ' 
+                                f'NOT allowed')
+                        else:
+                            pass
                         break
-            # Perform action on the object
-            if not object_found:
-                raise PomidorSyntaxError(   # Covered
-                    """ Negative tested in file 'no_obj_found.pomidor' """
-                    
-                    f'\n\n{"*" * 58}\nno object found for action "{strList_item}'
-                    f'\nPlease review: "{filepath}",--> line {line_num}')
-            else:
-                obj_counter += 1
-                tied_obj = True
-                page_object = page_object.strip('#')
-                # page_obj_source = home_page_dict[page_object][1]
-                print('                check dict first+++++++++++++++')
-                if page_object not in obj_dict:
-                    raise PomidorObjectNotFound(    # Covered
-                        """ Negative tested in file 
-                        'obj_not_found_in_page_factory.pomidor' """
-                        f'Page object NOT is Found! ---> '
-                                    f'#{page_object}'
-                                    f'\nPlease review: '
-                                    f'"{first_paragraph_line.strip()}"'
-                                    f'\nFile name --> {filepath}'
-                                    f'\nParagraph starts on line --> '
-                                    f'{scenario_title_line_num+1}.\n\n')
-                print(f'?????????????Object_source via Tomato class/PO --> '
-                      f'{Pomidor.get_dict_obj(page_object)}')
-                page_object_src = obj_dict.get(page_object)[1]
-                page_obj_locator = obj_dict.get(page_object)[0]
-                print(f'page_object_src --> {page_object_src}')
-                print(f'page_obj_locator  --> {page_obj_locator}')
-                # if page_object_src not in
-                print(f'Latest index --> {latest_index}')
-                print(f"\nActions and Assertions performed:")
-                # if forward or backward action
-                if not browser_initialized and \
-                    Pomidor.before_tests_launch_url.has_been_called:
-                    pomidor = Pomidor(driver, obj_dict, url)
-                    # global pom_driver
-                    pom_driver = pomidor.define_browser()
-                    # pomidor.driver = webdriver.Chrome()
-                    # pomidor.\
-                    pom_driver.get(url)
-                    browser_initialized = True
-                    # url1 = driver.command_executor._url
-                    # curr_session_id = driver.session_id
-                    # exec(f'{driver}.get("{url}")')
-                    print(f'FUnction was called!')
-                if backward_action:
-                    b_act = backward_action_dict.get(action_item)
-                    print(f'BACKWARD ACTION --> {b_act}')
-                    # Perform actual selenium backward action manipulations
-                    # exec(action_func(page_object_src,
-                    # backward_actions_dict.get(action_item),
-                    #                  locator=home_page_dict[page_object][0]))
-                    print(
-                        f'- {page_object} is {strList_item.strip("*")} - PASS')
+                if action_found:
                     latest_index = action_index + 1
-                    # del strList[:latest_index]
+                    latest_artifact = strList_item
+                if not action_found:
+                    # Iterate over forward actions
+                    for action_in_forward_list in forward_action_dict:
+                        # if forward action is found
+                        if strList_item.lower().startswith(action_in_forward_list):
+                            # print(f'One TUPLE MATCH --> keyword "{strList_item}"
+                            #       f'contains action -> {action_in_forward_list}')
+                            action_found = True
+                            action_counter += 1
+                            action_index = position
+                            action_item = action_in_forward_list
+                            # search for any orphan objects
+                            for orphan_obj in strList[latest_index:action_index]:
+                                if orphan_obj.startswith("#"):
+                                    raise PomidorSyntaxError(   #Covered
+                                        """ Negative syntax to test located in
+                                        'orphan_obj_b4_frwd_action.pomidor' file"""
+                                        
+                                        f'\n\n{"*" * 58}\nOrphan object found -> {orphan_obj}. '
+                                        f'Please '
+                                        f'associate an action (*) with this object.\n '
+                                        f'\nPlease review: "{first_paragraph_line.strip()}"'
+                                        f'\nFile name --> {filepath}'
+                                        f'\nParagraph starts on line --> '
+                                        f'{scenario_title_line_num}')
+                            for obj_position, page_object in enumerate(
+                                    strList[action_index:]):  # frwd obj
+                                if page_object.startswith("#"):  # if obj is found
+                                    object_found = True
+                                    page_obj_index = position + obj_position
+                                    latest_index = page_obj_index + 1
+                                    for str_slice_item in strList[action_index + 1:
+                                    page_obj_index]:
+                                        if str_slice_item.startswith(
+                                                "*"):  # if actions left by mistake
+                                            raise PomidorSyntaxError(   # Covered
+                                                """ Negative tested with file 
+                                                'two_actions.pomidor' """
+                                                f'\n\n{"*" * 58}\nWhich action to use with '
+                                                f'{page_object}? '
+                                                f'{strList_item} (forward action) or '
+                                                f'{str_slice_item} (undefined vector action)? '
+                                                f'\nPlease review: '
+                                                f'"{first_paragraph_line.strip()}"\nFile name '
+                                                f'--> {filepath}\nParagraph starts on line -->'
+                                                f' {scenario_title_line_num}')
+                                    break
+                                else:
+                                    object_found = False
+                                    continue
+                            break
+                # Perform action on the object
+                if not object_found:
+                    raise PomidorSyntaxError(   # Covered
+                        """ Negative tested in file 'no_obj_found.pomidor' """
+                        
+                        f'\n\n{"*" * 58}\nno object found for action "{strList_item}'
+                        f'\nPlease review: "{filepath}",--> line {line_num}')
                 else:
-                    f_act = forward_action_dict.get(action_item)
-                    print(f"f_act --> {f_act}")
-                    print(f"action_item --> {action_item} ")
-                    if action_item == "*type":
-                        # Perform actual selenium forward action manipulations
-                        print(action_func(page_object_src,
-                                          f"send_keys(\"{str_in_quotes.pop(0)}\")",
-                                          # locator=home_page_dict[page_object][
-                                          #     0]))
-                                          ))
-                    # act = f_act.forward_action_dictionary
-                    print(f'FORWARD ACTION --> {f_act}')
-                    # Perform actual selenium forward action manipulations
-                    # exec(action_func(page_obj_source,
-                    # forward_action_dict.get(action_item),
-                    #                  locator=home_page_dict[page_object][0]))
-                    print(
-                        f'- {strList_item.strip("*")} on {page_object} - PASS')
-                    latest_index = page_obj_index + 1
-                    # del strList[:latest_index]
+                    obj_counter += 1
+                    tied_obj = True
+                    page_object = page_object.strip('#')
+                    # page_obj_source = home_page_dict[page_object][1]
+                    print('                check dict first+++++++++++++++')
+                    if page_object not in obj_dict:
+                        raise PomidorObjectNotFound(    # Covered
+                            """ Negative tested in file 
+                            'obj_not_found_in_page_factory.pomidor' """
+                            f'Page object NOT is Found! ---> '
+                                        f'#{page_object}'
+                                        f'\nPlease review: '
+                                        f'"{first_paragraph_line.strip()}"'
+                                        f'\nFile name --> {filepath}'
+                                        f'\nParagraph starts on line --> '
+                                        f'{scenario_title_line_num+1}.\n\n')
+                    print(f'?????????????Object_source via Tomato class/PO --> '
+                          f'{Pomidor.get_dict_obj(page_object)}')
+                    page_object_src = obj_dict.get(page_object)[1]
+                    page_obj_locator = obj_dict.get(page_object)[0]
+                    print(f'page_object_src --> {page_object_src}')
+                    print(f'page_obj_locator  --> {page_obj_locator}')
+                    # if page_object_src not in
+                    print(f'Latest index --> {latest_index}')
+                    print(f"\nActions and Assertions performed:")
+                    # if forward or backward action
+                    if not browser_initialized and \
+                        Pomidor.before_tests_launch_url.has_been_called:
+                        pomidor = Pomidor(driver, obj_dict, url)
+                        # global pom_driver
+                        pom_driver = pomidor.define_browser()
+                        browser_initialized = True
+                        # pomidor.driver = webdriver.Chrome()
+                        # pomidor.\
+                        pom_driver.get(url)
+                        # url1 = driver.command_executor._url
+                        # curr_session_id = driver.session_id
+                        # exec(f'{driver}.get("{url}")')
+                        print(f'FUnction was called!')
+                    if backward_action:
+                        act = backward_action_dict.get(action_item)
+                    else:
+                        act = forward_action_dict.get(action_item)
 
-                    # driver = webdriver.Remote(command_executor=url1,
-                    #                           desired_capabilities={})
-                    # # driver.close()
-                    # driver.session_id = curr_session_id
-                    # # exec(f'{driver}.quit()')
-                    # driver.get('http://www.google.com')
-                    # driver.close()
-                    # print(f'{driver}.quit()')
-                    print("After Test was called!")
-        elif strList_item.startswith('#') and not tied_obj:
-            obj_counter += 1
-            object_found = True
-            object = strList_item
-    if action_counter < 1:
-        scenarioSteps = scenarioSteps.strip()
-        scenario_with_action = False
-        print(
-            f'\nNo actions are found in test --> "{first_paragraph_line.strip()}"'
-            f'\nFile name --> {filepath}.\nParagraph starts on line --> '
-            f'{scenario_title_line_num}.\nPlease add actions (*) and their objects (#), '
-            f'otherwise, comment out the whole paragraph with quotes """ <paragraph> """')
-    for obj_last in strList[latest_index:]:
-        if obj_last.startswith('#'):
-            raise PomidorSyntaxError(   # Covered
-                """ Negative tested in file 'last_orphan_obj.pomidor' """
-                f'\n{"*" * 58}\nOrphan object found -> {obj_last}. '
-                f'Please '
-                f'associate an action (*) with this object.\n '
-                f'\nPlease review: "{first_paragraph_line.strip()}"'
-                f'\nFile name --> {filepath}'
-                f'\nParagraph starts on line --> '
-                f'{scenario_title_line_num}')
-    print('SCENARIO COMPLETED!!!!')
-    if Pomidor.quit.has_been_called \
-            and browser_initialized:
-        time.sleep(1)
-        pom_driver.quit()
-        print('\nDriver QUIT!!\n')
-        # driver = after_test
-        # exec(quit(driver))
+                    act_func = which_action(pom_driver, act, page_object_src,
+                                            page_obj_locator, str_in_quotes)
+                    print(act_func)
+                    print(f'str_in quotes -> {str_in_quotes}')
+                    print(pom_driver)
+                    # acttt = '''WebDriverWait(pom_driver, 10).until(ec.element_to_be_clickable(
+                    #     (By.XPATH, "//a[text()='About']"))).click()'''
+                    exec(act_func)
+                    # print(click(act, act_func))
+                    # exec(click(act, act_func))
+
+
+                    if backward_action:
+                        b_act = backward_action_dict.get(action_item)
+                        print(f'BACKWARD ACTION --> {b_act}')
+                        # Perform actual selenium backward action manipulations
+                        # exec(action_func(page_object_src,
+                        # backward_actions_dict.get(action_item),
+                        #                  locator=home_page_dict[page_object][0]))
+                        print(
+                            f'- {page_object} is {strList_item.strip("*")} - PASS')
+                        latest_index = action_index + 1
+                        # del strList[:latest_index]
+                    else:
+                        f_act = forward_action_dict.get(action_item)
+                        print(f"f_act --> {f_act}")
+                        print(f"action_item --> {action_item} ")
+                        if action_item == "*type":  # TODO click/type funcs
+                            # Perform actual selenium forward action manipulations
+                            print(action_func(page_object_src,
+                                              f"send_keys(\"{str_in_quotes.pop(0)}\")",
+                                              # locator=home_page_dict[page_object][
+                                              #     0]))
+                                              ))
+                        # act = f_act.forward_action_dictionary
+                        print(f'FORWARD ACTION --> {f_act}')
+                        # Perform actual selenium forward action manipulations
+                        # exec(action_func(page_obj_source,
+                        # forward_action_dict.get(action_item),
+                        #                  locator=home_page_dict[page_object][0]))
+                        print(
+                            f'- {strList_item.strip("*")} on {page_object} - PASS')
+                        latest_index = page_obj_index + 1
+                        # del strList[:latest_index]
+
+                        # driver = webdriver.Remote(command_executor=url1,
+                        #                           desired_capabilities={})
+                        # # driver.close()
+                        # driver.session_id = curr_session_id
+                        # # exec(f'{driver}.quit()')
+                        # driver.get('http://www.google.com')
+                        # driver.close()
+                        # print(f'{driver}.quit()')
+                        print("After Test was called!")
+            elif strList_item.startswith('#') and not tied_obj:
+                obj_counter += 1
+                object_found = True
+                object = strList_item
+        if action_counter < 1:
+            scenarioSteps = scenarioSteps.strip()
+            scenario_with_action = False
+            print(
+                f'\nNo actions are found in test --> "{first_paragraph_line.strip()}"'
+                f'\nFile name --> {filepath}.\nParagraph starts on line --> '
+                f'{scenario_title_line_num}.\nPlease add actions (*) and their objects (#), '
+                f'otherwise, comment out the whole paragraph with quotes """ <paragraph> """')
+        for obj_last in strList[latest_index:]:
+            if obj_last.startswith('#'):
+                raise PomidorSyntaxError(   # Covered
+                    """ Negative tested in file 'last_orphan_obj.pomidor' """
+                    f'\n{"*" * 58}\nOrphan object found -> {obj_last}. '
+                    f'Please '
+                    f'associate an action (*) with this object.\n '
+                    f'\nPlease review: "{first_paragraph_line.strip()}"'
+                    f'\nFile name --> {filepath}'
+                    f'\nParagraph starts on line --> '
+                    f'{scenario_title_line_num}')
+        print('SCENARIO COMPLETED!!!!')
+    finally:
+        if Pomidor.quit.has_been_called \
+                and browser_initialized:
+            time.sleep(1)
+            pom_driver.quit()
+            print('\nDriver QUIT!!\n')
+            # driver = after_test
+            # exec(quit(driver))
+        pass
     return scenario_with_action
 
 
@@ -488,6 +511,38 @@ def list_all_mark_values(func, feature_type):  # best-working
                     print(f'{feature_type.upper()} \n\n++++++++MARKER Line ! --> '
                           f'{marker_values}++++++++++\n')
     return marker_values, len(marker_values)
+
+
+# Action functions:
+def action_func_visible(driver, act, obj_source, wait, locator):  # TODO implement passing wait parameter
+    return f'WebDriverWait(pom_driver, {wait}).until(ec.visibility_of_element_' \
+           f'located((By.{locator},\"{obj_source}\"))).{act}'
+
+
+def send_keys_func(str_list):
+    return f"send_keys(\"{str_list.pop(0)}\")"
+
+
+def action_func_clickable(driver, act, obj_source, locator, wait, *str_list):  # TODO implement passing wait parameter
+    if act == "click()" or act == "send_keys()":
+        if act == "send_keys()":
+            act = send_keys_func(str_list)
+    return f'WebDriverWait(pom_driver, {wait}).until(ec.element_to_be_clickable((By.{locator}, \"{obj_source}\"))).{act}'
+             # WebDriverWait(driver, 10).until(ec.element_to_be_clickable((By.XPATH,"//a[text()='About']"))).click()
+
+
+def click(act, element):
+    return f'{element}.{act}'
+
+
+def which_action(driver, act, obj_source, locator, wait=10, *str_list):
+    if act == "click()" or act == "send_keys()":
+        func = action_func_clickable(driver, act, obj_source, locator, 10, *str_list)
+    else:
+        func = action_func_visible(driver, act, obj_source, wait, locator)
+    return func
+
+
 
 
 def trackcalls(func):

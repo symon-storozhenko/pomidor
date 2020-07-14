@@ -5,14 +5,19 @@ Release date:
 Sprint:
 @base_url reporting_page
 @Feature:    Jira-1111
-When I *click on the #search_field
-I get tomato *click on the #search_field :)
+When I *click on the #google_about_link
+--I get tomato *type ''Hello'' on the #google_search_field :)
 
 @base_url reporting_page
-When I *click on the #search_field I get tomato *click on the #search_field :)
+When I *click on the #google_about_link
+--When I *click on the #search_field I get tomato *click on the #search_field :)
+--
+--When I *click on the #search_field I ge
+t tomato *click on the #search_field :)
 
-When I *click on the #search_field I get tomato *click on the #search_field :)
+ba da da
 
 @base_url reporting_page
-When I *click on the #search_field I get tomato *click on the #search_field :)
+When I *click on the #google_about_link
+--When I *click on the #search_field I get tomato *click on the #search_field :)
 

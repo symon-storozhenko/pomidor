@@ -2,7 +2,7 @@ class ForwardAction:
     def __init__(self, action):
         self.forward_action_dictionary = {
             '*click': 'click()',
-            '*type': 'send_keys("Yoyo!!!!")'
+            '*type': 'send_keys()'
         }[action]
 
 class BackwardAction:
