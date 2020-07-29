@@ -1,27 +1,27 @@
 # pomidor
 
 :tomato:
-# **BDD-style, Selenium-driven browser automation with Python**
-##(with Agile in mind :) )
-### A simple and code-less approach to automating `click()` and `send_keys()` selenium actions straight from your Jira stories 
+# **A BDD-style Selenium-driven browser automation with Python** 
+## (with Agile in mind :nerd_face: )
+### Fast and flexible approach to automating `click()` and `send_keys()` selenium actions straight from your Jira stories 
 
 ### Example:
 ![Pomidor syntax](pomidor_1.png)
 
-Here, you can see that actions prepended with "*" (*click) and page object is marked with "#" (#contact_us).
+Here, you can see that __action__ is prepended with a star (__*click__) and __page object__ is marked with hashtag (**#contact_us**).
 
 Note: To accomodate natural language, any variations of actions are allowed,
 as long as the root stays unchanged: 
-Example: __*Click__ed or __*tyPE__d
+Example: ***Click**ed or ***tyPE**d
 
 
 ### Quick Start:
-1. Create a Page Factory class like so:
+1. Create a Page Factory class with a dictionary, like shown below:
 
 ![Page factory](page_obj_dict.png)
 
 
-2. Write your first Pomidor test case:
+2. Write your first Pomidor test case and place it in dedicated folder (Ex.: pomidor_files):
 
 ![Pomidor syntax](pomidor_file.png)
 
