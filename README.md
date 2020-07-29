@@ -18,7 +18,7 @@ Example: __*Click__ed or __*tyPE__d
 ### Quick Start:
 1. Create a Page Factory class like so:
 
-![Pomidor syntax](images/page_obj_dict.png)
+![Pomidor syntax](page_obj_dict.png)
 
 2. 
 ###### This is an <h6> tag
