@@ -1,37 +1,27 @@
-from pageObjects.page_factory import PageObject, BaseURL
+from tests.pageObjects.page_factory import PageObject, BaseURL
 from pomidor.pomidor_runner import Pomidor
 from pomidor.pomidor_runner import PomidorSyntaxError, PomidorObjectNotFound
 import pytest
-from selenium import webdriver
 
-art_url = 'http://www.patreon.com'
+art_url = 'https://pomidor-automation.com/'
 po = PageObject()
 burl = BaseURL()
-# driver = None  #
-# driver = webdriver.Chrome()
+
 to = Pomidor('Chrome', po.home_page, art_url, burl.urls)
 to.before_tests_launch_url()
 to.quit()
-# to.before_test('http://www.google.com')
-# to.after_test()
 
-empty_str = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/empty_dir'
-all_tomato_scripts = '/Users/myco/PycharmProjects/tomato3/negative_pomidory'
-one_file = '/negative_pomidory/two_actions.pomidor'
-more_than_1_back = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/' \
+empty_str = 'negative_pomidory/empty_dir'
+all_tomato_scripts = 'tomato3/tests/negative_pomidory'
+one_file = 'negative_pomidory/two_actions.pomidor'
+more_than_1_back = 'negative_pomidory/' \
                    'more_than_1_obj_bckwrd_action_except.pomidor'
-orph_obj_b4_frwd_act = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/' \
-                       'orphan_obj_b4_frwd_action.pomidor'
-two_actions = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/' \
-              'two_actions.pomidor'
-no_obj_found = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/' \
-               'no_obj_found.pomidor'
-no_obj_in_page_fctry = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/' \
-                       'obj_not_found_in_page_factory.pomidor'
-last_orphan_obj = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/' \
-                  'last_orphan_obj.pomidor'
-last_line_3_scenarios = '/Users/myco/PycharmProjects/tomato3/negative_pomidory/' \
-                        'last_line_is_read.pomidor'
+orph_obj_b4_frwd_act = 'negative_pomidory/orphan_obj_b4_frwd_action.pomidor'
+two_actions = 'negative_pomidory/two_actions.pomidor'
+no_obj_found = 'negative_pomidory/no_obj_found.pomidor'
+no_obj_in_page_fctry= 'negative_pomidory/obj_not_found_in_page_factory.pomidor'
+last_orphan_obj = 'negative_pomidory/last_orphan_obj.pomidor'
+last_line_3_scenarios = 'negative_pomidory/last_line_is_read.pomidor'
 run_three_3344_stories = "negative_pomidory/run_story.pomidor"
 
 
@@ -42,7 +32,7 @@ class TestPomidor:
             print("Sucess")
 
     def test_pomidor_run_story(self):
-        scenario_num = to.run_story(run_three_3344_stories, '3344')
+        scenario_num = to.run_story(run_three_3344_stories, '3344', wait=3)
         assert scenario_num == 3
 
     def test_pomidor_run_feature(self):
@@ -70,7 +60,8 @@ class TestPomidor:
 
     def test_pomidor_run_custom_marker(self):
         scenario_num = to.run_custom_identifier(run_three_3344_stories,
-                                                "@Custom_Marker", "Get_Marker")
+                                                "@Custom_Marker", "Get_Marker",
+                                                exact_match=True)
         assert scenario_num == 1
 
     def test_pomidor_several_custom_markers(self):
@@ -142,12 +133,3 @@ class TestPomidorSyntaxNegative:
     def test_pomidor_last_orphan_obj(self):
         with pytest.raises(PomidorSyntaxError):
             to.run_scripts(last_orphan_obj)
-
-
-
-# class TestPomidorPositive():
-#     def test_pomidor_more_than_1_obj_bckwrd_action_except(self):
-#         to.run_scripts(more_than_1_back)
-#
-#     def test_pomidor_orphan_obj_b4_frwd_action(self):
-#         to.run_scripts(orph_obj_b4_frwd_act)

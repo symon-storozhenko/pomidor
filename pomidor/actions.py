@@ -12,7 +12,7 @@ class ForwardAction:
     def __init__(self):
         self.forward_action_dictionary = {
             '*click': 'click()',
-            '*type': 'send_keys("Yoyo!!!!")',
+            '*type': 'send_keys()',
             '*clear': 'clear()',
         #     ActionChains:
         }
