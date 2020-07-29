@@ -23,11 +23,12 @@ Example: __*Click__ed or __*tyPE__d
 
 2. Write your first Pomidor test case:
 
-![Pomidor syntax](Pomidor_syntax.png)
+![Pomidor syntax](pomidor_file.png)
 
 
 3. Create a runner file, import page factory dictionary and point to a test.pomidor directory as shown below:
 
 ![Runner file](runner_file_layout.png)
+
 
 4. Run your first Automation test! 
