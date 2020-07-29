@@ -6,7 +6,7 @@
 ### A simple and code-less approach to automating `click()` and `send_keys()` selenium actions straight from your Jira stories 
 
 ### Example:
-![Pomidor syntax](images/pomidor_1.png)
+![Pomidor syntax](pomidor_1.png)
 
 Here, you can see that actions prepended with "*" (*click) and page object is marked with "#" (#contact_us).
 
@@ -18,7 +18,16 @@ Example: __*Click__ed or __*tyPE__d
 ### Quick Start:
 1. Create a Page Factory class like so:
 
-![Pomidor syntax](page_obj_dict.png)
+![Page factory](page_obj_dict.png)
 
-2. 
-###### This is an <h6> tag
+
+2. Write your first Pomidor test case:
+
+![Pomidor syntax](Pomidor_syntax.png)
+
+
+3. Create a runner file, import page factory dictionary and point to a test.pomidor directory as shown below:
+
+![Runner file](runner_file_layout.png)
+
+4. Run your first Automation test! 
