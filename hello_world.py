@@ -18,7 +18,7 @@ pomi = Pomidor('Chrome', po.home_page, art_url, burl.urls)
 # TODO - initialize Pomidor without base_url
 # TODO - initialize Pomidor object without browser?
 
-
+a = 45
 print(f'POMI -> {pomi}')
 pomi.before_tests_launch_url()
 pomi.quit()
