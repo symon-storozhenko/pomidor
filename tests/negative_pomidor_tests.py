@@ -8,8 +8,12 @@ po = PageObject()
 burl = BaseURL()
 
 to = Pomidor('Chrome', po.home_page, art_url, burl.urls)
-to.before_tests_launch_url()
-to.quit()
+
+to.delete_all_cookies()
+to.max_window()
+
+# to.before_tests_launch_url()
+# to.quit()
 
 empty_str = 'negative_pomidory/empty_dir'
 all_tomato_scripts = 'tomato3/tests/negative_pomidory'

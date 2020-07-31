@@ -16,7 +16,9 @@ Example: ***Click**ed or ***tyPE**d
 
 
 ### Quick Start:
-1. >**pip install pomidor**
+1. Install pomidor
+
+![Page factory](images/pip install pomidor2.png)
 
 2. Create a Page Factory class with a dictionary, like shown below:
 

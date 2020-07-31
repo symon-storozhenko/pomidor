@@ -221,12 +221,16 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     # if page_object_src not in
                     print(f'Latest index --> {latest_index}')
                     print(f"\nActions and Assertions performed:")
-                    if not browser_initialized and \
-                            Pomidor.before_tests_launch_url.has_been_called:
+                    if not browser_initialized:
+                        # and Pomidor.before_tests_launch_url.has_been_called:
                         pomidor = Pomidor(driver, obj_dict, url)
                         pom_driver = pomidor.define_browser()
                         browser_initialized = True
                         pom_driver.get(url)
+                        if Pomidor.max_window.has_been_called:
+                            pom_driver.maximize_window()
+                        if Pomidor.delete_all_cookies.has_been_called:
+                            pom_driver.delete_all_cookies()
 
                     # if forward or backward action
                     if backward_action:
@@ -241,6 +245,13 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     print(f'ZZZZ! -> act_func : {act_func}')
                     print(f'str_in quotes -> {str_in_quotes}')
                     print(pom_driver)
+                    if act == 'send_keys()':
+                        exec(f'WebDriverWait(pom_driver, '
+                             f'{wait}).until(ec.element_to_be_clickable('
+                             f'(By.{page_obj_locator}, '
+                             f'\"{page_object_src}\"))).clear()')
+                        # TODO add test verifying the content of send_keys()
+                        time.sleep(1)
                     exec(act_func)
             elif strList_item.startswith('#') and not tied_obj:
                 obj_counter += 1
@@ -268,8 +279,9 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     f'{scenario_title_line_num}')
         print('SCENARIO COMPLETED!!!!')
     finally:
-        if Pomidor.quit.has_been_called and browser_initialized:
-            time.sleep(1)
+        if browser_initialized:
+            # Pomidor.quit.has_been_called and :
+            # time.sleep(1)
             pom_driver.quit()
             print('\nDriver QUIT!!\n')
         pass
@@ -489,6 +501,7 @@ def action_func_clickable(act, obj_source, locator, str_list, wait):
     if act == "click()" or act == "send_keys()":
         if act == "send_keys()":
             act, str_list = send_keys_func(str_list)
+
     return f'WebDriverWait(pom_driver, {wait}).until(ec.element_to_be_' \
            f'clickable((By.{locator}, \"{obj_source}\"))).{act}', str_list
 
@@ -557,6 +570,14 @@ class Pomidor:
 
     @trackcalls
     def quit(self):
+        pass
+
+    @trackcalls
+    def max_window(self):
+        pass
+
+    @trackcalls
+    def delete_all_cookies(self):
         pass
 
     def run_scripts(self, dir_path, verbose=True, wait=10):
