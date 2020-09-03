@@ -1,6 +1,5 @@
 from selenium.webdriver.common.keys import Keys
 
-
 #direct driver.actions
 # driver.get("http://www.python.org")
 # driver.title
@@ -21,13 +20,13 @@ class ForwardAction:
 class BackwardAction:
     def __init__(self):
         self.backward_actions_dictionary = {
+            '*page_title': 'title',
             '*visible': 'is_displayed()',
             '*not visible': 'test',
             '*enabled': 'is_enabled()',
             '*selected': 'is_selected()',
-
-
         }
+
 
 #obj.send_keys(Keys.RETURN)
 board_keys = ['RETURN', 'Esc']
@@ -55,8 +54,6 @@ board_keys = ['RETURN', 'Esc']
 # Example:
 # wait = WebDriverWait(driver, 10)
 # element = wait.until(EC.element_to_be_clickable((By.ID, 'someid')))
-
-
 
 vector = 'forward_action_dictionary'
 

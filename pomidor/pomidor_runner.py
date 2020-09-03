@@ -57,7 +57,7 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
     obj_counter = 0
     tied_obj = False
     scenario_with_action = False
-    str_in_quotes = re.findall(r" \'(.+?)\'", scenarioSteps)
+    str_in_quotes = re.findall(r"\'(.+?)\'", scenarioSteps)
     str_in_brackets = re.findall(r" \[(.+?)\]", scenarioSteps)
     print(f'str_in_brackets --> {str_in_brackets}')
     print(f"str_in_quotes --> {str_in_quotes} ")
@@ -79,9 +79,10 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                 backward_action_dict = bact.backward_actions_dictionary
                 forward_action_dict = act.forward_action_dictionary
                 print(f'FOWRD dICT --> {forward_action_dict}')
-
                 # Iterate over forward actions
                 for action_in_bckwrd_list in backward_action_dict.keys():
+                    if action_in_bckwrd_list == '*page_title':
+                        pass
                     # look for backward action first
                     print(
                         f'SUCCESS -> for action_in_bckwrd_list in '
@@ -224,13 +225,17 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     if not browser_initialized:
                         # and Pomidor.before_tests_launch_url.has_been_called:
                         pomidor = Pomidor(driver, obj_dict, url)
-                        pom_driver = pomidor.define_browser()
+                        driver = pomidor.define_browser()
                         browser_initialized = True
-                        pom_driver.get(url)
+                        driver.get(url)
+                        driver.title
+                        # driver.
                         if Pomidor.max_window.has_been_called:
-                            pom_driver.maximize_window()
+                            driver.maximize_window()
+                        if Pomidor.fullscreen.has_been_called:
+                            driver.fullscreen_window()
                         if Pomidor.delete_all_cookies.has_been_called:
-                            pom_driver.delete_all_cookies()
+                            driver.delete_all_cookies()
 
                     # if forward or backward action
                     if backward_action:
@@ -244,13 +249,17 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                                                            wait)
                     print(f'ZZZZ! -> act_func : {act_func}')
                     print(f'str_in quotes -> {str_in_quotes}')
-                    print(pom_driver)
+                    print(driver)
                     if act == 'send_keys()':
-                        exec(f'WebDriverWait(pom_driver, '
+                        exec(f'WebDriverWait(driver, '
                              f'{wait}).until(ec.element_to_be_clickable('
                              f'(By.{page_obj_locator}, '
                              f'\"{page_object_src}\"))).clear()')
                         # TODO add test verifying the content of send_keys()
+                        # TODO add *text_value_is [of #page_obj] or #page_obj has *text_value of 'Blah'
+                        # TODO add *page_title_is 'Practice - Pomidor Auto...'
+                        # TODO create test paragraph skeleton - all actions are enumerated and
+                        #  appropriate StrList index is used
                         time.sleep(1)
                     exec(act_func)
             elif strList_item.startswith('#') and not tied_obj:
@@ -282,10 +291,34 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
         if browser_initialized:
             # Pomidor.quit.has_been_called and :
             # time.sleep(1)
-            pom_driver.quit()
+            driver.quit()
             print('\nDriver QUIT!!\n')
         pass
     return scenario_with_action
+
+
+def pomidor_pro_func(code_string, driver, obj_dict, url):
+    try:
+        # and Pomidor.before_tests_launch_url.has_been_called:
+        pomidor = Pomidor(driver, obj_dict, url)
+        driver = pomidor.define_browser()
+        browser_initialized = True
+        driver.get(url)
+        driver.title
+        # driver.
+        if Pomidor.max_window.has_been_called:
+            driver.maximize_window()
+        if Pomidor.fullscreen.has_been_called:
+            driver.fullscreen_window()
+        if Pomidor.delete_all_cookies.has_been_called:
+            driver.delete_all_cookies()
+    finally:
+        if browser_initialized:
+            # Pomidor.quit.has_been_called and :
+            # time.sleep(1)
+            driver.quit()
+            print('\nDriver QUIT!!\n')
+        pass
 
 
 def go_thru_pomidor_file(func, obj_dict, driver, base_url, urls, wait):
@@ -342,7 +375,7 @@ def go_thru_pomidor_file(func, obj_dict, driver, base_url, urls, wait):
 def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                                     driver, base_url, urls,
                                     exact_story_name, wait):
-    """Open one .pomidor file at a time and pick test case paragraphs marked
+    """Open a .pomidor file, one at a time, and pick test case paragraphs marked
     with a passed @marker value (Ex."@story", "@feature" or your own custom
     marker, one by one, top to bottom"""
 
@@ -358,12 +391,16 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
             feature_instances = 0
             line_counter = 0
             url = base_url
+            pro = False
+            first_pro_line = False
+            browser_initialized = False
             for line_num, line in enumerate(tomato_file):
                 if line == 0:
                     continue
                 else:
                     line_counter += 1
                 print(f'======= ===== General Line #{line_num}====== ======')
+                # choose type of marker to run
                 if '@base_url' in line:
                     line_list = re.split(r'[;,.!?\s]', line)
                     ad_hoc_url = line_list[1]
@@ -384,49 +421,99 @@ def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                                 print(f'$@$$ FOUND {feature_type}! -> {f}\n')
                                 print(f'Line before inner loop--> {line}')
                                 feature_instances += 1
-                    if feature_instances > 0:
-                        for line_num_in, line in enumerate(tomato_file,
-                                                           line_counter):
-                            line_counter += 1
-                            print(f'Text "{line}" is on line num --> '
-                                  f'{line_num_in + 1}')
+                if '@data' in line:
+                    line_list = re.split(r'[;,.!?\s]', line)
+                    ad_hoc_url = line_list[1]
+                    url = urls.get(ad_hoc_url)
+                    print(f'@data is caught -> ! {url}')
+                if feature_instances > 0:
+                    for line_num_in, line in enumerate(tomato_file,
+                                                       line_counter):
+                        line_counter += 1
+                        print(f'Text "{line}" is on line num --> '
+                              f'{line_num_in + 1}')
 
-                            # if feature_bool:
-                            if scenarioSteps == '' and (line in ['\n', '\r\n']
-                                                        or line.startswith(
-                                        '--')):  # .pomidor comment
+                        # if feature_bool:
+                        if scenarioSteps == '' and (line in ['\n', '\r\n']
+                                                    or line.startswith(
+                                    '--')):  # .pomidor comment
+                            continue
+                        else:
+                            if not pro and line.startswith('"""'):
+                                print("@pro is found!")
+                                pro = True
+                                first_pro_line = True
+                            if scenarioSteps == '':
+                                print("after @pro is found!")
+                                first_paragraph_line = line
+                                scenario_title_line_num = line_num
+                            if scenarioSteps != '' and line.startswith(
+                                    '--'):
                                 continue
+                            if pro:
+                                if first_pro_line:
+                                    first_pro_line = False
+                                else:
+                                    print("@not""")
+                                    scenarioSteps = scenarioSteps + line + '\n'
+                                    print(f'!!scenarioSteps-> {scenarioSteps}')
                             else:
-                                if scenarioSteps == '':
-                                    first_paragraph_line = line
-                                    scenario_title_line_num = line_num
-                                if scenarioSteps != '' and line.startswith(
-                                        '--'):
-                                    continue
                                 scenarioSteps += line
-                            if (scenarioSteps != '' and line in ['\n', '\r\n']) \
-                                    or (
-                                    scenarioSteps != '' and line_counter - 1 ==
-                                    total_lines_count + 1):
-                                print(f'total_lines_count:{total_lines_count}')
-                                print(f'LINE IS -----> {line} at '
-                                      f'{line_num_in}')
-                                print(
-                                    f"\nBegin test:\n ----"
-                                    f"{first_paragraph_line.strip()}----\n"
-                                    f"\nActions and Assertions performed:")
-                                latest_index = 0
-                                action_counter = 0
-                                test_paragraph = define_test_paragraphs(
-                                    scenarioSteps, filepath,
-                                    first_paragraph_line,
-                                    scenario_title_line_num,
-                                    line_num, obj_dict, driver, url, wait)
-                                if test_paragraph:
-                                    scenario_number += 1
-                                scenarioSteps = ''
-                                feature_instances = 0
-                                break
+                                print("Captured wrong scenarioSteps!!")
+                        if pro and (scenarioSteps != ''
+                                     and line.startswith('"""')):
+                            scenarioSteps = scenarioSteps.strip('\n"""')
+                            print(f'PROscenarioSteps --> {scenarioSteps}')
+                            try:
+                                if not browser_initialized:
+                                    # and Pomidor.before_tests_launch_url.has_been_called:
+                                    pomidor = Pomidor(driver, obj_dict, url)
+                                    driver = pomidor.define_browser()
+                                    browser_initialized = True
+                                    if Pomidor.max_window.has_been_called:
+                                        driver.maximize_window()
+                                    if Pomidor.fullscreen.has_been_called:
+                                        driver.fullscreen_window()
+                                    if Pomidor.delete_all_cookies.has_been_called:
+                                        driver.delete_all_cookies()
+                                    exec(scenarioSteps)
+                                    time.sleep(1)
+                            finally:
+                                if browser_initialized:
+                                    # browser_initialized = False
+                                    # Pomidor.quit.has_been_called and :
+                                    # time.sleep(1)
+                                    driver.quit()
+                                    print('\nDriver QUIT!!\n')
+                                pass
+                            pro = False
+                            scenario_number += 1
+                            scenarioSteps = ''
+                            feature_instances = 0
+                            break
+                        if not pro and (scenarioSteps != ''
+                                        and line in ['\n', '\r\n']) or (
+                                scenarioSteps != '' and line_counter - 1 ==
+                                total_lines_count + 1):
+                            print(f'total_lines_count:{total_lines_count}')
+                            print(f'LINE IS -----> {line} at '
+                                  f'{line_num_in}')
+                            print(
+                                f"\nBegin test:\n ----"
+                                f"{first_paragraph_line.strip()}----\n"
+                                f"\nActions and Assertions performed:")
+                            latest_index = 0
+                            action_counter = 0
+                            test_paragraph = define_test_paragraphs(
+                                scenarioSteps, filepath,
+                                first_paragraph_line,
+                                scenario_title_line_num,
+                                line_num, obj_dict, driver, url, wait)
+                            if test_paragraph:
+                                scenario_number += 1
+                            scenarioSteps = ''
+                            feature_instances = 0
+                            break
                     else:
                         line_counter += 1
                         url = base_url
@@ -478,7 +565,7 @@ def action_func_visible(driver, act, obj_source, locator, wait):
     """Function to construct a string with expected condition:
     visibility_of_element_located"""
 
-    return f'WebDriverWait(pom_driver, {wait}).until(ec.visibility_of_' \
+    return f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
            f'element_located((By.{locator},\"{obj_source}\"))).{act}'
 
 
@@ -502,7 +589,7 @@ def action_func_clickable(act, obj_source, locator, str_list, wait):
         if act == "send_keys()":
             act, str_list = send_keys_func(str_list)
 
-    return f'WebDriverWait(pom_driver, {wait}).until(ec.element_to_be_' \
+    return f'WebDriverWait(driver, {wait}).until(ec.element_to_be_' \
            f'clickable((By.{locator}, \"{obj_source}\"))).{act}', str_list
 
 
@@ -574,6 +661,10 @@ class Pomidor:
 
     @trackcalls
     def max_window(self):
+        pass
+
+    @trackcalls
+    def fullscreen(self):
         pass
 
     @trackcalls

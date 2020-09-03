@@ -11,8 +11,9 @@ to = Pomidor('Chrome', po.home_page, art_url, burl.urls)
 
 to.delete_all_cookies()
 to.max_window()
+# to.fullscreen()
 
-# to.before_tests_launch_url()
+to.before_tests_launch_url()
 # to.quit()
 
 empty_str = 'negative_pomidory/empty_dir'
@@ -27,6 +28,13 @@ no_obj_in_page_fctry= 'negative_pomidory/obj_not_found_in_page_factory.pomidor'
 last_orphan_obj = 'negative_pomidory/last_orphan_obj.pomidor'
 last_line_3_scenarios = 'negative_pomidory/last_line_is_read.pomidor'
 run_three_3344_stories = "negative_pomidory/run_story.pomidor"
+pro_pomidor = 'negative_pomidory/pro.pomidor'
+
+
+class TestPomidorPro:
+    def test_pomidor_pro(self):
+        scenario_num = to.run_story(pro_pomidor, '3422')
+        assert scenario_num == 3
 
 
 class TestPomidor:
@@ -38,6 +46,11 @@ class TestPomidor:
     def test_pomidor_run_story(self):
         scenario_num = to.run_story(run_three_3344_stories, '3344', wait=3)
         assert scenario_num == 3
+
+    def test_pomidor_run_url_story(self):
+        scenario_num = to.run_story(run_three_3344_stories, 'JIRA-0044_0',
+                                    wait=2)
+        assert scenario_num == 1
 
     def test_pomidor_run_feature(self):
         """Can't run theis yet"""

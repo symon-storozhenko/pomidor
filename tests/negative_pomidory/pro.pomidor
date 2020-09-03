@@ -1,0 +1,28 @@
+
+@Feature:   Jira-1110
+@story 3422
+"""
+
+driver.get("https://google.com")
+
+driver.title
+
+"""
+
+@Feature:   Jira-1110
+@story 3422
+"""
+
+driver.get("https://patreon.com")
+driver.title
+
+"""
+
+@Feature:   Jira-1110
+@story 3422
+"""
+
+driver.get("https://facebook.com")
+driver.title
+
+"""
