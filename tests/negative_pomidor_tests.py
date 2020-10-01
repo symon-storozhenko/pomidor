@@ -13,7 +13,7 @@ to.delete_all_cookies()
 to.max_window()
 # to.fullscreen()
 
-to.before_tests_launch_url()
+# to.before_tests_launch_url()
 # to.quit()
 
 empty_str = 'negative_pomidory/empty_dir'

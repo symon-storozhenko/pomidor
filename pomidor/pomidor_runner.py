@@ -27,7 +27,7 @@ print('\n\n-------\nSTART:\n-------\n\n')
 
 
 def generate_list_of_pomidor_files(tomato_directory):
-    """Go through a gived directory and create a list of filenames with
+    """Goes through a gived directory and creates a list of filenames with
     .pomidor extension"""
 
     tomato_files_list = []
@@ -50,7 +50,7 @@ def generate_list_of_pomidor_files(tomato_directory):
 def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                            scenario_title_line_num, line_num,
                            obj_dict, driver, url, wait):
-    """Go over a particular test case paragraph and execute all actions"""
+    """Goes over a particular test case paragraph and executes all actions"""
 
     latest_index = 0
     action_counter = 0
@@ -298,6 +298,8 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
 
 
 def pomidor_pro_func(code_string, driver, obj_dict, url):
+    """Not used..."""
+
     try:
         # and Pomidor.before_tests_launch_url.has_been_called:
         pomidor = Pomidor(driver, obj_dict, url)
@@ -322,7 +324,7 @@ def pomidor_pro_func(code_string, driver, obj_dict, url):
 
 
 def go_thru_pomidor_file(func, obj_dict, driver, base_url, urls, wait):
-    """Open one .pomidor file at a time and pick test case paragraphs,  one by
+    """Opens one .pomidor file at a time and picks test case paragraphs, one by
     one, top to bottom"""
 
     scenario_number = 0
@@ -375,9 +377,9 @@ def go_thru_pomidor_file(func, obj_dict, driver, base_url, urls, wait):
 def go_thru_pomidor_file_with_story(func, feature_type, story, obj_dict,
                                     driver, base_url, urls,
                                     exact_story_name, wait):
-    """Open a .pomidor file, one at a time, and pick test case paragraphs marked
-    with a passed @marker value (Ex."@story", "@feature" or your own custom
-    marker, one by one, top to bottom"""
+    """Opens a .pomidor file, one at a time, and picks test case paragraphs
+    marked with a passed @marker value (Ex."@story", "@feature" or your own
+    custom marker, one by one, top to bottom"""
 
     scenario_number = 0
     for file_number, filepath in enumerate(func):
@@ -557,7 +559,6 @@ def list_all_mark_values(func, feature_type):
                     print(f'{feature_type.upper()} \n\n++++MARKER Line ! --> '
                           f'{marker_values}++++++++++\n')
     return marker_values, len(marker_values)
-
 
 # Selenium action functions:
 
