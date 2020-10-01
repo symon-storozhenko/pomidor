@@ -18,7 +18,7 @@ Example: ***Click**ed or ***tyPE**d
 ### Quick Start:
 Install pomidor
 
-![Page factory](images/pip install pomidor2.png)
+![Page factory](images/pip_install_pomidor2.png)
 
 Create a Page Factory class with a dictionary that contains page objects. (Example shown below)
 
@@ -33,7 +33,7 @@ Write your first test_case.pomidor file (extension must be ".pomidor") and place
 
 Create a runner file, import page factory dictionary, Pomidor class and exceptions (keep in mind, your page objects package name may differ from what's shown below)
 
-![Runner file](images/import pomidor methods.png)
+![Runner file](images/import_pomidor_methods.png)
 
 In the same runner file, specify url and page object instance, and pass them to Pomidor class instance. Then, run your first test case as shown below:
 
@@ -42,10 +42,10 @@ In the same runner file, specify url and page object instance, and pass them to 
 
 Run your first Automation test! :rocket:
 
-#Next in development:
+# Next in development:
 - asserts with *displayed and *selected
 
-#PyCharm plugin developers for ".pomidor" extension needed!
+# PyCharm plugin developers for ".pomidor" extension needed!
 
 Clone it, fork it, bring any new ideas.
 
