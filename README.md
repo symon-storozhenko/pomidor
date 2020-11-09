@@ -22,7 +22,7 @@ Install pomidor
 
 Create a Page Factory class with a dictionary that contains page objects. (Example shown below)
 
-![Page factory](images/page_obj_dict.png)
+![Page factory1](images/page_obj_dict.png)
 
 
 Write your first test_case.pomidor file (extension must be ".pomidor") and place it in dedicated folder (Ex.: pomidor_files):
@@ -37,7 +37,7 @@ Create a runner file, import page factory dictionary, Pomidor class and exceptio
 
 In the same runner file, specify url and page object instance, and pass them to Pomidor class instance. Then, run your first test case as shown below:
 
-![Runner file](images/init_pomidor_class.png)
+![Runner file1](images/init_pomidor_class.png)
 
 
 Run your first Automation test! :rocket:

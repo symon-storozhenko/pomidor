@@ -1,0 +1,48 @@
+!    Pomidor Plugin purpose:
+!
+!1. Highlight some keywords and special characters
+!2. Display tomato icon - DONE
+!
+!    Pomidor syntax highlight rules:
+!
+!1. Markers @feature, @url and @data are color highlighted only at
+!   the beginning of line
+!2. Marker values (ex. smoke_test, login) are color highlighted one or more
+!    space (space or tab) after marker
+!3. Case-insensitive actions are highlighted. Actions are:
+!    - click, clicks, clicked
+!    - type, types, typed
+!    - displayed, not_displayed (some more assert actions will be added later)
+!4. '#' should get highlighted. (All page objects will be prefixed with '#'
+!   by framework/plugin user)
+!5. '[' and ']' are highlighted
+!6. '<<' and '>>' are highlighted
+!7. ' """ ' (triple double quotes) are highlighted
+
+
+! This is a comment Pomidor syntax example
+
+! TC#1
+@feature regression, smoke_test
+@data   test_data.csv
+@url https://www.google.com
+If user clicked on the #login_button and typed <<username>> in the
+#login_field and _types [password123] in #login_password, #welcome_text is
+displayed and #fail_text is not_displayed!
+
+
+! TC #2
+@feature smoke_test, login
+@url        https://www.google.com
+!This is a comment
+Click on the #home_button. Type [user1] in
+#name_field. Make sure #profile_created_text is displayed.
+
+
+! TC #3 (with raw Python code)
+@feature smoke_test
+@url        https://www.google.com
+"""
+driver.title
+driver.find_element_by_css_selector(button_menu).click()
+"""

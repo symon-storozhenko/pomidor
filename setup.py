@@ -5,15 +5,15 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pomidor", # Replace with your own username
-    version="0.0.1",
+    version="0.0.2",
     author="Symon Storozhenko",
     author_email="symon.storozhenko@gmail.com",
-    description="A BDD-style Selenium-driven browser automation with Python",
+    description="A BDD-style Selenium-driven browser automation in Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/symon-storozhenko/pomidor",
     packages=setuptools.find_packages(),
-    install_requires=['selenium'],
+    install_requires=['selenium', 'pytest'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",

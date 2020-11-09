@@ -1,39 +1,30 @@
 @Story:    Jira-3344_0
 --When I *click on the #login_field I get tomato :)
 
-
-
-@Story JIRA-3344_0
-@Story
-@Feature: Home_Page
+@Feature: Report
 Second // Feature comment
 Given "her we go!" user is on he's big boots's Instagram landing page, *CLICKOs
-on login_field and types #practice_menu_button page_title
-ans *type 'stosimon@gmail.com' in #name_field and *type 'Second bodybuilder' in #name_field
+on login_field #practice_menu_button page_title
+ans *type ['stosimon@gmail.com]' in #name_field and *type ['Second bodybuilder'] in #name_field
+--dfvd
 
-
-@base_url practice_page
-@Story JIRA-0044_0
-  @Feature: Reporting
+--dvdvd
+@Feature: Report
+@url practice_page
 --Second Feature!!!
 Tahen for granted and "her we go!" user is on he's big boots's Instagram landing page,
 *CLICKOs on login_field and types #name_field
-ans *type 'stosimon@gmail.com' in #name_field and *type 'third bodybuilder' in #name_field
+ans *type ['stosimon@gmail].com' in #name_field and *type ['third bodybuilder'] in #name_field
 and *clickowski on the #back_home_button
 
 
-@Custom_mArker:-+ Get_Marker
-   @StOry: JIRA-3344_2 2
- @Feature: Reporting
+@Feature: Reporting Shouldn't pick this up'
  sStory 2
  first paragraph *click on #practice_menu_button
 
-
-@base_url practice_page
-@Custom_Marker Get_marker2 (should fail)
-    @Story JIRA-3344_3
+@Feature: Report, 5
+@url practice_page
 --"The last story in this file"
-@Feature: Reporting3 5
 Sstory 3
-first paragraph *click on #name_field and *type 'failing marker' in #name_field number 3
+first paragraph *click on #name_field and *type ['failing marker'] in #name_field number 3
 

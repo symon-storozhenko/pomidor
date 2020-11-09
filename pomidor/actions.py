@@ -1,6 +1,5 @@
-from selenium.webdriver.common.keys import Keys
 
-#direct driver.actions
+# direct driver.actions
 # driver.get("http://www.python.org")
 # driver.title
 # driver.close()
