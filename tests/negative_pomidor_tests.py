@@ -15,8 +15,8 @@ to = Pomidor("Chrome", po.home_page, url, urls=burl.urls)
 # to.max_window()
 # to.fullscreen()
 
-to.before_tests_launch_url()
-to.quit()
+# to.before_tests_launch_url()
+# to.quit()
 
 empty_str = 'negative_pomidory/empty_dir'
 all_tomato_scripts = 'tomato3/tests/negative_pomidory'

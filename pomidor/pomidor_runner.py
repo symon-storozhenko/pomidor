@@ -224,19 +224,21 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     # print(f'Latest index --> {latest_index}')
                     # print(f"\nActions and Assertions performed:")
                     print(f'URL -----> {url}')
-                    # pomidor = Pomidor(driver, obj_dict, url)
-                    # driver = pomidor.define_browser()
-                    # driver.get(url)
-                    # if pomidor.define_browser.has_been_called:
-                    #     print("\n\n\nYAYA\n\n\n\n")
-                    #     pass
-                    if not browser_initialized \
-                            and Pomidor.before_tests_launch_url.has_been_called:
+
+                    # if browser_initialized and not \
+                    #     Pomidor.before_tests_launch_url.has_been_called:
+                    #     browser_initialized = True
+                    #     driver.get(url)
+                    #     driver.title
+
+                    if not browser_initialized:
+                        # and Pomidor.before_tests_launch_url.has_been_called:
                         pomidor = Pomidor(driver, obj_dict, url)
                         driver = pomidor.define_browser()
                         browser_initialized = True
                         driver.get(url)
-                        driver.title
+
+
                     # if not browser_initialized and \
                     #         not Pomidor.define_browser.has_been_called:
                     #     # driver = pomidor.define_browser()
@@ -413,15 +415,6 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                     line_counter += 1
                 print(f'======= ===== General Line #{line_num}====== ======')
                 # choose type of marker to run
-
-                # @feature
-                # @tcname
-                tcname = None
-                param = None
-                # @data
-                # @url
-
-
                 if "@feature" in line.lower():
                     line_list = re.split(r'[;,.!?\s]', line)
                     for f in line_list:
