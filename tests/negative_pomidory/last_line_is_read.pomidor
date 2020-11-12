@@ -1,8 +1,12 @@
-Test case
+@url home_page
+Test case 1
 first paragraph *click on #practice_menu_button
 
-Second case
+@url home_page
+Second case 2
 second paragraph *click on #practice_menu_button
 
-first paragraph *click on #practice_menu_button
+@url home_page
+TC 3
+*click on #practice_menu_button
 second paragraph *click on #name_field fdgfd

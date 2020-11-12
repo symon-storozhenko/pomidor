@@ -2,10 +2,10 @@ class BaseURL:
 
     def __init__(self):
         self.urls = {
-            'home_page': 'http://www.patreon.com',
+            'home_page': 'https://pomidor-automation.com',
             'reporting_page': 'https://www.google.com',
             'practice_page': 'https://pomidor-automation.com/practice/',
-            'pomidor_home_url': 'https://pomidor-automation.com'
+            'patreon_home_url': 'http://www.patreon.com'
 
         }
 

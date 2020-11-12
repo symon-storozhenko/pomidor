@@ -58,4 +58,3 @@ vector = 'forward_action_dictionary'
 
 act = ForwardAction()
 
-print(act.forward_action_dictionary)

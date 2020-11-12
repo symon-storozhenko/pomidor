@@ -312,6 +312,32 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
     return scenario_with_action
 
 
+def pomidor_pro_func(code_string, driver, obj_dict, url):
+    """Not used..."""
+
+    try:
+        # and Pomidor.before_tests_launch_url.has_been_called:
+        pomidor = Pomidor(driver, obj_dict, url)
+        driver = pomidor.define_browser()
+        browser_initialized = True
+        driver.get(url)
+        driver.title
+        # driver.
+        if Pomidor.max_window.has_been_called:
+            driver.maximize_window()
+        if Pomidor.fullscreen.has_been_called:
+            driver.fullscreen_window()
+        if Pomidor.delete_all_cookies.has_been_called:
+            driver.delete_all_cookies()
+    finally:
+        if browser_initialized:
+            # Pomidor.quit.has_been_called and :
+            # time.sleep(1)
+            driver.quit()
+            print('\nDriver QUIT!!\n')
+        pass
+
+
 def go_thru_pomidor_file(func, obj_dict, driver, base_url, urls, wait):
     """Opens one .pomidor file at a time and picks test case paragraphs, one by
     one, top to bottom"""
