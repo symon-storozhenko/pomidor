@@ -12,25 +12,19 @@ import time
 
 class PomidorSyntaxError(Exception):
     """ Pomidor syntax error class. """
-
     def __init__(self, *args, **kwargs):
         pass
 
 
 class PomidorObjectNotFound(Exception):
     """ Page object error class. """
-
     def __init__(self, *args, **kwargs):
         pass
 
 
-print('\n\n-------\nSTART:\n-------\n\n')
-
-
-def generate_list_of_pomidor_files(tomato_directory):
-    """Goes through a gived directory and creates a list of filenames with
+def generate_list_of_pomidor_files(tomato_directory: str) -> list:
+    """Goes through a given directory and creates a list of filenames with
     .pomidor extension"""
-
     tomato_files_list = []
     tom_dir = pathlib.Path(tomato_directory)
     print(f'List of files: {tom_dir}')
@@ -41,18 +35,43 @@ def generate_list_of_pomidor_files(tomato_directory):
             tom_dir.rglob(f'*{Pomidor.extension}')):  # or .glob('**/*.oat')
         tomato_files_list.append(path)
         print(f'{enum + 1}: {path}')
-
     # print(f'tomato_files_list -> {tomato_files_list}')
-    if tomato_files_list == []:
+    if not tomato_files_list:
         raise FileNotFoundError(f'No pomidor files found in the directory')
-    return tuple(tomato_files_list)
+    return tomato_files_list
+
+
+class PomidorInit:
+    """Creates an object of with the WebDriver based on Browser passed
+     (Ex. "Chrome", "Firefox", etc.)
+    """
+
+    extension = '.pomidor'
+
+    def __init__(self, browser, url):
+        self.browser = browser
+        self.url = url
+
+    def __repr__(self):
+            return f'Pomidor object with {self.browser} browser'
+
+    def define_browser(self):
+        if self.browser == 'Chrome':
+            with webdriver.Chrome() as driver:
+                driver.get(self.url)
+        if self.browser == 'Firefox':
+            with webdriver.Firefox() as driver:
+                driver.get(self.url)
+        return driver
+
+
+
 
 
 def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                            scenario_title_line_num, line_num,
-                           obj_dict, driver, url, wait):
+                           obj_dict, driver, url, wait) -> str:
     """Goes over a particular test case paragraph and executes all actions"""
-
     latest_index = 0
     action_counter = 0
     obj_counter = 0
