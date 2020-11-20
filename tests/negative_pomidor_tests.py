@@ -7,13 +7,9 @@ import concurrent.futures
 
 url = 'https://pomidor-automation.com/'
 page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
-print(page_obj)
-print(page_obj.get("practice_page")[1])
-burl = BaseURL()
-urls = Pomidor.additional_urls("pageObjects/urls.csv")
-# driver = webdriver.Chrome()
-to = Pomidor("Chrome", page_obj, url, urls=urls)
-# to = Pomidor("Chrome", "pageObjects/page_objects.csv", url, urls=burl.urls)
+addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
+
+to = Pomidor("Chrome", page_obj, url, urls=addtl_urls)
 
 
 # to.delete_all_cookies()

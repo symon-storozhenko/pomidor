@@ -1,19 +1,23 @@
 from pomidor.pomidor_init import BrowserInit, PomidorObjAndURL, Pom
+from pomidor.actions import ForwardAction, BackwardAction
 
 # pomi = BrowserInit("Chrome", 'https://pomidor-automation.com/')
 # driver = pomi.define_browser()
 # with driver as d:
 #     d.get('https://pomidor-automation.com/practice/')
 
-d = {}
-d["ff"] = "eferf", "fvdvfdv"
+act = ForwardAction()
+bact = BackwardAction()
+backward_action_dict = bact.backward_actions_dictionary
+forward_action_dict = act.forward_action_dictionary
+
+d = backward_action_dict.keys()
 print(d)
 
-pomi = PomidorObjAndURL("page_objects.csv", urls_file="ok.csv")
-print(pomi.get_obj_param("practice_page"))
-print(pomi.addt_urls())
+for item in forward_action_dict.values():
+    print(item)
 
-po2 = Pom("Chrome", 'https://pomidor-automation.com/', "page_objects.csv",
-          urls="ok.csv")
+if "click()" in forward_action_dict.keys():
+    print("yay!")
 
 

@@ -9,9 +9,13 @@
 class ForwardAction:
     def __init__(self):
         self.forward_action_dictionary = {
-            '*click': 'click()',
-            '*type': 'send_keys()',
-            '*clear': 'clear()',
+            'click': 'click()',
+            'clicks': 'click()',
+            'clicked': 'click()',
+            'type': 'send_keys()',
+            'types': 'send_keys()',
+            'typed': 'send_keys()',
+            'clear': 'clear()',
         #     ActionChains:
         }
 
@@ -19,11 +23,11 @@ class ForwardAction:
 class BackwardAction:
     def __init__(self):
         self.backward_actions_dictionary = {
-            '*page_title': 'title',
-            '*visible': 'is_displayed()',
-            '*not visible': 'test',
-            '*enabled': 'is_enabled()',
-            '*selected': 'is_selected()',
+            'page_title': 'title',
+            'visible': 'is_displayed()',
+            'not visible': 'test',
+            'enabled': 'is_enabled()',
+            'selected': 'is_selected()',
         }
 
 

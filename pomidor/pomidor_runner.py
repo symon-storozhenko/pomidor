@@ -86,31 +86,36 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
     # tom = Pomidor(browser, obj_dict, url)
     browser_initialized = False
 
+    act = ForwardAction()
+    bact = BackwardAction()
+    backward_action_dict = bact.backward_actions_dictionary
+    forward_action_dict = act.forward_action_dictionary
+
     try:
         for position, strList_item in enumerate(strList[latest_index:]):
             object_found = False
             action_found = False
-            if strList_item.startswith("*"):  # TODO: remove star
+            if strList_item.lower() in backward_action_dict or\
+                strList_item.lower() in forward_action_dict:
                 scenario_with_action = True
                 # print(f'\n-Printing from latest index in paragraph -->'
                 #       f'\n {strList[latest_index:]}')  # whole TC in one string
                 backward_action = False
-                act = ForwardAction()
-                bact = BackwardAction()
-                backward_action_dict = bact.backward_actions_dictionary
-                forward_action_dict = act.forward_action_dictionary
+
                 # print(f'FOWRD dICT --> {forward_action_dict}')
                 # Iterate over forward actions
-                for action_in_bckwrd_list in backward_action_dict.keys():
-                    if action_in_bckwrd_list == '*page_title':
+                for action_in_bckwrd_list in backward_action_dict:
+                    if action_in_bckwrd_list == 'page_title':
                         pass
                     # look for backward action first
                     # print(
                     #     f'SUCCESS -> for action_in_bckwrd_list in '
                     #     f'backward_actions_dict.keys():')
-                    if strList_item.lower().startswith(action_in_bckwrd_list):
+                    # if strList_item.lower().startswith(action_in_bckwrd_list):
+                    if strList_item.lower() in backward_action_dict:
                         action_counter += 1
                         action_found = True
+                        print(f'\n\n\n999@ - {strList_item}\n\n\n')
                         backward_action = True
                         action_index = position
                         action_item = action_in_bckwrd_list
@@ -140,10 +145,10 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                                 f'\nParagraph starts on line -->'
                                 f' {scenario_title_line_num}.\n\n'
                                 f'Examples:'
-                                f'\n*Click on #page and #cart is *visible --> '
+                                f'\nClick on #page and #cart is visible --> '
                                 f'allowed \n '
-                                f'*Click on #page and #profile and #cart is '
-                                f'*visible --> '
+                                f'Click on #page and #profile and #cart is '
+                                f'visible --> '
                                 f'NOT allowed')
                         else:
                             pass
@@ -155,12 +160,13 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     # Iterate over forward actions
                     for action_in_frwrd_lst in forward_action_dict:
                         # if forward action is found
-                        if strList_item.lower(). \
-                                startswith(action_in_frwrd_lst):
+                        if strList_item.lower() in forward_action_dict:
                             action_found = True
+                            print(f'\n\n\n999@FORWARD - {strList_item}\n\n')
                             action_counter += 1
                             action_index = position
-                            action_item = action_in_frwrd_lst
+                            action_item = strList_item.lower()
+                            print(f'\n\n99@Action item {action_item}\n\n')
                             # search for any orphan objects
                             for orphan_obj in strList[latest_index:
                             action_index]:
@@ -172,7 +178,7 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
 
                                         f'\n\n{"*" * 58}\nOrphan object found '
                                         f'-> {orphan_obj}. Please associate an'
-                                        f' action (*) with this object.\n '
+                                        f' action with this object.\n '
                                         f'\nPlease review: '
                                         f'"{frst_prgrph_line.strip()}"'
                                         f'\nFile name --> {filepath}'
@@ -187,7 +193,8 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                                     latest_index = page_obj_index + 1
                                     for str_slice_item in strList[action_index
                                                                   + 1:page_obj_index]:
-                                        if str_slice_item.startswith("*"):
+                                        if str_slice_item in \
+                                                forward_action_dict.keys():
                                             # if actions left by mistake
                                             raise PomidorSyntaxError(
                                                 """ Negative tested with file 
@@ -213,7 +220,7 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     raise PomidorSyntaxError(
                         """ Negative tested in file 'no_obj_found.pomidor' """
 
-                        f'\n\n{"*" * 58}\nno object found for action '
+                        f'\n\n\nno object found for action '
                         f'"{strList_item}'
                         f'\nPlease review: "{filepath}",--> line {line_num}')
                 else:
@@ -276,6 +283,7 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                         act = backward_action_dict.get(action_item)
                     else:
                         act = forward_action_dict.get(action_item)
+                    print(f'\n\n\n\n999! - {act}\n\n\n')
                     act_func, str_in_quotes = which_action(act,
                                                            page_object_src,
                                                            page_obj_locator,
@@ -306,8 +314,9 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
             print(f'\nNo actions are found in test --> "'
                   f'{frst_prgrph_line.strip()}"\nFile name --> {filepath}.'
                   f'\nParagraph starts on line --> {scenario_title_line_num}.'
-                  f'\nPlease add actions (*) and their objects (#), otherwise,'
-                  f'comment out the whole paragraph with double dashes: "--" ')
+                  f'\nPlease add actions and their objects (#), otherwise,'
+                  f'comment out the whole paragraph with double exclamation'
+                  f'marks: "!!" ')
         for obj_last in strList[latest_index:]:
             if obj_last.startswith('#'):
                 raise PomidorSyntaxError(
@@ -641,7 +650,7 @@ def which_action(act, obj_source, locator, str_list, wait):
     """Function to determine which action type need to be used, based on the
     selenium action"""
 
-    print(f'str_list  in which action ++ {str_list}')
+    print(f'str_list  in which action {act} ++ {str_list}')
     if act == "click()" or act == "send_keys()":
         func, str_list = action_func_clickable(act, obj_source, locator,
                                                str_list, wait)
@@ -682,7 +691,7 @@ class Pomidor:
                f'and driver {self.driver}'
 
     @classmethod
-    def get_page_objects(cls, obj_d):
+    def get_page_objects(cls, obj_d: str) -> dict:
         with open(obj_d) as csv_file:
             csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
             obj_dicto = {rows['name'].strip(): (rows['selector'].strip(),
@@ -691,7 +700,7 @@ class Pomidor:
         return obj_dicto
 
     @classmethod
-    def additional_urls(cls, urls_file):
+    def additional_urls(cls, urls_file: str) -> dict:
         with open(urls_file) as csv_url_file:
             csv_reader = DictReader(csv_url_file, delimiter=',', quotechar='"')
             url_dict = {rows['name'].strip(): rows['url'].strip() for rows in
