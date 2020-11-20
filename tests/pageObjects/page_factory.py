@@ -14,8 +14,8 @@ class PageObject:
     def __init__(self):
         self.home_page = {
             # Home page:
-            'practice_page': ['CSS_SELECTOR', 'button#menu'],
-            'practice_menu_button': ['LINK_TEXT', 'Practice'],
+            'practice_page': ('CSS_SELECTOR', 'button#menu'),
+            'practice_menu_button': ('LINK_TEXT', 'Practice'),
             'non_existent_obj': ['LINK_TEXT', 'Yo'],
 
             # Practice page:

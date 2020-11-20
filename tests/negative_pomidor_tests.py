@@ -6,10 +6,15 @@ import pytest
 import concurrent.futures
 
 url = 'https://pomidor-automation.com/'
-po = PageObject()
+page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
+print(page_obj)
+print(page_obj.get("practice_page")[1])
 burl = BaseURL()
+urls = Pomidor.additional_urls("pageObjects/urls.csv")
 # driver = webdriver.Chrome()
-to = Pomidor("Chrome", po.home_page, url, urls=burl.urls)
+to = Pomidor("Chrome", page_obj, url, urls=urls)
+# to = Pomidor("Chrome", "pageObjects/page_objects.csv", url, urls=burl.urls)
+
 
 # to.delete_all_cookies()
 # to.max_window()

@@ -3,9 +3,7 @@ from csv import DictReader
 
 
 class BrowserInit:
-    """Creates an object of the WebDriver based on Browser passed
-     (Ex. "Chrome", "Firefox", etc.) and gets a default url
-    """
+    """Creates an object of the WebDriver gets a default url"""
     extension = '.pomidor'
 
     def __init__(self, browser, url):
@@ -15,6 +13,9 @@ class BrowserInit:
     def __repr__(self):
         return f'Pomidor object with {self.browser} browser and ' \
                f'{self.url} default url'
+
+    def return_url(self, url):
+        return self.url
 
     def define_browser(self):
         if self.browser == 'Chrome':
@@ -29,8 +30,8 @@ class BrowserInit:
 class PomidorObjAndURL:
     """Class for keeping a page objects repo and additional urls"""
 
-    def __init__(self, page_obj_file, urls=None):
-        self.urls = urls
+    def __init__(self, page_obj_file, urls_file=None):
+        self.urls_file = urls_file
         self.page_obj_file = page_obj_file
 
     def __repr__(self):
@@ -40,15 +41,30 @@ class PomidorObjAndURL:
 
     def get_page_objects(self):
         with open(self.page_obj_file) as csv_file:
-            csv_reader = DictReader(csv_file, delimiter=',')
-            obj_dict = {}
-            for line_count, row in enumerate(csv_reader):
-                obj_dict[row["name"]] = row["selector"], row["value"]
-                # obj_dict = {rows['name']: (rows['selector'], row['value'])
-                #             for rows in csv_reader}
+            csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
+            obj_dict = {rows['name'].strip(): (rows['selector'].strip(),
+                        rows['value']) for rows in csv_reader}
         return obj_dict
 
-# d = {}
-# d["ff"] = "eferf", "fvdvfdv"
-# print(d)
-# mydict = {rows[0]:rows[1] for rows in reader}
+    def addt_urls(self):
+        with open(self.urls_file) as csv_url_file:
+            csv_reader = DictReader(csv_url_file, delimiter=',', quotechar='"')
+            url_dict = {rows['name'].strip(): rows['url'].strip() for rows in
+                        csv_reader}
+        return url_dict
+
+    def get_obj_param(self, obj_name):
+        obj_dict = self.get_page_objects()
+        page_obj_src = obj_dict.get(obj_name)[0]
+        page_obj_val = obj_dict.get(obj_name)[1]
+        return page_obj_src, page_obj_val
+
+
+class Pom:
+
+    def __init__(self, browser, url, page_obj, urls=None):
+        self.browser = browser
+        self.url = BrowserInit.return_url(url)
+        self.page_obj = PomidorObjAndURL.get_page_objects(page_obj)
+
+        driver = BrowserInit.define_browser(browser)

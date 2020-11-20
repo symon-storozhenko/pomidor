@@ -2,6 +2,8 @@ import concurrent.futures
 import functools
 import pathlib
 import re
+from csv import DictReader
+
 from pomidor.actions import ForwardAction, BackwardAction
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,12 +14,14 @@ import time
 
 class PomidorSyntaxError(Exception):
     """ Pomidor syntax error class. """
+
     def __init__(self, *args, **kwargs):
         pass
 
 
 class PomidorObjectNotFound(Exception):
     """ Page object error class. """
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -53,7 +57,7 @@ class PomidorInit:
         self.url = url
 
     def __repr__(self):
-            return f'Pomidor object with {self.browser} browser'
+        return f'Pomidor object with {self.browser} browser'
 
     def define_browser(self):
         if self.browser == 'Chrome':
@@ -63,9 +67,6 @@ class PomidorInit:
             with webdriver.Firefox() as driver:
                 driver.get(self.url)
         return driver
-
-
-
 
 
 def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
@@ -256,7 +257,6 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                         driver = pomidor.define_browser()
                         browser_initialized = True
                         driver.get(url)
-
 
                     # if not browser_initialized and \
                     #         not Pomidor.define_browser.has_been_called:
@@ -520,7 +520,6 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                             finally:
                                 if browser_initialized and \
                                         Pomidor.quit.has_been_called:
-
                                     # browser_initialized = False
                                     # Pomidor.quit.has_been_called and :
                                     # time.sleep(1)
@@ -675,11 +674,35 @@ class Pomidor:
         self.obj_dict = obj_dict
         self.url = url
         self.driver = driver
+        # self.obj_repo = self.get_page_objects()
 
     def __repr__(self):
         return f'Pomidor object with page object dictionary:\n' \
                f' {self.obj_dict}' \
                f'and driver {self.driver}'
+
+    @classmethod
+    def get_page_objects(cls, obj_d):
+        with open(obj_d) as csv_file:
+            csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
+            obj_dicto = {rows['name'].strip(): (rows['selector'].strip(),
+                                                rows['value']) for rows in
+                         csv_reader}
+        return obj_dicto
+
+    @classmethod
+    def additional_urls(cls, urls_file):
+        with open(urls_file) as csv_url_file:
+            csv_reader = DictReader(csv_url_file, delimiter=',', quotechar='"')
+            url_dict = {rows['name'].strip(): rows['url'].strip() for rows in
+                        csv_reader}
+        return url_dict
+
+    def get_obj_param(self, obj_name):
+        obj_dict = self.get_page_objects()
+        page_obj_src = obj_dict.get(obj_name)[0]
+        page_obj_val = obj_dict.get(obj_name)[1]
+        return page_obj_src, page_obj_val
 
     @trackcalls
     def before_tests_launch_url(self):
