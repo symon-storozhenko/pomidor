@@ -1,4 +1,6 @@
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
 from tests.pageObjects.page_factory import PageObject, BaseURL
 from pomidor.pomidor_runner import Pomidor
 from pomidor.pomidor_runner import PomidorSyntaxError, PomidorObjectNotFound
@@ -33,6 +35,7 @@ last_line_3_scenarios = 'negative_pomidory/last_line_is_read.pomidor'
 run_three_3344_stories = "negative_pomidory/run_story.pomidor"
 pro_pomidor = 'negative_pomidory/pro.pomidor'
 smoke_test_dir = 'negative_pomidory/SmokeTest'
+assert_actions = 'negative_pomidory/assert_actions.pomidor'
 
 
 to.run_features(run_three_3344_stories, 'Report')
@@ -56,8 +59,18 @@ class TestPomidor:
         scenario_num = to.run_features(run_three_3344_stories, 'Report')
         assert scenario_num == 3
 
+    def test_pomidor_run_is_displayed(self):
+        scenario_num = to.run_features(run_three_3344_stories, "Reporting")
+        assert scenario_num == 1
 
+    def test_pomidor_run_is_displayed_negative(self):
+        with pytest.raises(TimeoutException):
+            to.run_features(assert_actions, "Is_Displayed")
+        # scenario_num = to.run_features(assert_actions, "Is_Displayed")
+        # assert scenario_num == 1
 
+        #
+        #
     #
     #
     # def test_pomidor_run_exact_feature_name(self):  # Repo1 not Repo 1 !

@@ -4,6 +4,8 @@ import pathlib
 import re
 from csv import DictReader
 
+from selenium.webdriver.chrome.options import Options
+
 from pomidor.actions import ForwardAction, BackwardAction
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -118,7 +120,7 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                         print(f'\n\n\n999@ - {strList_item}\n\n\n')
                         backward_action = True
                         action_index = position
-                        action_item = action_in_bckwrd_list
+                        action_item = strList_item
                         bk_obj_count = 0
                         for page_objects in strList[latest_index:action_index]:
                             if page_objects.startswith(
@@ -298,10 +300,9 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                              f'(By.{page_obj_locator}, '
                              f'\"{page_object_src}\"))).clear()')
                         # TODO add test verifying the content of send_keys()
-                        # TODO add *text_value_is [of #page_obj] or #page_obj has *text_value of 'Blah'
-                        # TODO add *page_title_is 'Practice - Pomidor Auto...'
-                        # TODO create test paragraph skeleton - all actions are enumerated and
-                        #  appropriate StrList index is used
+                        # TODO add asserts, like "is_displayed"
+                        # TODO add "page_title" assert
+
                         time.sleep(1)
                     exec(act_func)
             elif strList_item.startswith('#') and not tied_obj:
@@ -450,15 +451,15 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                             # or, f.lower().__contains__(story.lower()):
                             print(f'$@$$ FOUND {feature}! -> {f}\n')
                             feature_instances += 1
-                elif "@tcname" in line.lower():
+                elif "@tcname" in line.lower(): # TODO: implement @tcname
                     line_list = re.split(r'[;,.!?\s]', line)
                     tcname = line_list[1]
                     print(f'@TCName = {tcname}')
-                elif "@param" in line.lower():
+                elif "@param" in line.lower(): # TODO: implement @param
                     line_list = re.split(r'[;,.!?\s]', line)
                     param = line_list[1]
                     print(f'@param = {param}')
-                elif '@data' in line:
+                elif '@data' in line: # TODO: implement @data
                     line_list = re.split(r'[;,.!?\s]', line)
                     datafile = line_list[1]
                     url = urls.get(ad_hoc_url)
@@ -610,7 +611,7 @@ def list_all_mark_values(func, feature_type):
 
 # Selenium action functions:
 
-def action_func_visible(driver, act, obj_source, locator, wait):
+def action_func_visible(act, obj_source, locator, wait):
     """Function to construct a string with expected condition:
     visibility_of_element_located"""
 
@@ -720,6 +721,9 @@ class Pomidor:
     @trackcalls
     def define_browser(self):
         if self.driver == 'Chrome':
+            # chrome_options = Options()
+            # chrome_options.add_argument("--headless")
+            # driver = webdriver.Chrome(options=chrome_options)
             driver = webdriver.Chrome()
         if self.driver == 'Firefox':
             driver = webdriver.Firefox()

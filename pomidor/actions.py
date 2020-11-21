@@ -23,8 +23,8 @@ class ForwardAction:
 class BackwardAction:
     def __init__(self):
         self.backward_actions_dictionary = {
-            'page_title': 'title',
-            'visible': 'is_displayed()',
+            'page_title': 'titles',
+            'displayed': 'is_displayed()',
             'not visible': 'test',
             'enabled': 'is_enabled()',
             'selected': 'is_selected()',
