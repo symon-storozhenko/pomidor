@@ -25,9 +25,9 @@ class BackwardAction:
         self.backward_actions_dictionary = {
             'page_title': 'titles',
             'displayed': 'is_displayed()',
-            'not visible': 'test',
             'enabled': 'is_enabled()',
             'selected': 'is_selected()',
+            'not_displayed': 'is_displayed()',
         }
 
 

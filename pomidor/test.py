@@ -1,5 +1,8 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+import pytest
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
 
 from pomidor.pomidor_init import BrowserInit, PomidorObjAndURL, Pom
 from selenium.webdriver.support import expected_conditions as ec
@@ -43,10 +46,16 @@ try:
 
     # fake_obj = driver.find_element_by_link_text("Fake")
     # back_home_button, CSS_SELECTOR, a.wp - block - button__link
+
+    exec(f'with pytest.raises(TimeoutException):\n\t'
+        f'WebDriverWait(driver, 5).until(ec.element_to_be_clickable'
+         f'((By.CSS_SELECTOR,"va.wp-block-button__link"))).is_displayed()')
+
+
     back_home_button = driver.find_element_by_css_selector("a.wp-block-button__link")
     # back_home_button.is_displayed()
-    WebDriverWait(driver, 5).until(ec.element_to_be_clickable((By.CSS_SELECTOR,
-                                                "va.wp-block-button__link")))
+    # WebDriverWait(driver, 5).until(ec.element_to_be_clickable((By.CSS_SELECTOR,
+    #                                             "va.wp-block-button__link")))
     print("back_home_button is displayed")
 
     name_field = driver.find_element_by_css_selector("input#name")

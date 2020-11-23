@@ -3,7 +3,9 @@ import functools
 import pathlib
 import re
 from csv import DictReader
+import pytest
 
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 
 from pomidor.actions import ForwardAction, BackwardAction
@@ -71,6 +73,11 @@ class PomidorInit:
         return driver
 
 
+act = ForwardAction()
+bact = BackwardAction()
+backward_action_dict = bact.backward_actions_dictionary
+forward_action_dict = act.forward_action_dictionary
+
 def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                            scenario_title_line_num, line_num,
                            obj_dict, driver, url, wait) -> str:
@@ -87,12 +94,6 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
     strList = re.split(r'[;,.!?\s]', scenarioSteps)
     # tom = Pomidor(browser, obj_dict, url)
     browser_initialized = False
-
-    act = ForwardAction()
-    bact = BackwardAction()
-    backward_action_dict = bact.backward_actions_dictionary
-    forward_action_dict = act.forward_action_dictionary
-
     try:
         for position, strList_item in enumerate(strList[latest_index:]):
             object_found = False
@@ -282,9 +283,11 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
 
                     # if forward or backward action
                     if backward_action:
-                        act = backward_action_dict.get(action_item)
+                        # act = backward_action_dict.get(action_item)
+                        act = action_item
                     else:
-                        act = forward_action_dict.get(action_item)
+                        # act = forward_action_dict.get(action_item)
+                        act = action_item
                     print(f'\n\n\n\n999! - {act}\n\n\n')
                     act_func, str_in_quotes = which_action(act,
                                                            page_object_src,
@@ -294,13 +297,12 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                     # print(f'ZZZZ! -> act_func : {act_func}')
                     # print(f'str_in quotes -> {str_in_quotes}')
                     print(driver)
-                    if act == 'send_keys()':
+                    if action_item.lower().startswith("type"):
                         exec(f'WebDriverWait(driver, '
                              f'{wait}).until(ec.element_to_be_clickable('
                              f'(By.{page_obj_locator}, '
                              f'\"{page_object_src}\"))).clear()')
-                        # TODO add test verifying the content of send_keys()
-                        # TODO add asserts, like "is_displayed"
+                        # TODO add is_selected and is_enabled asserts
                         # TODO add "page_title" assert
 
                         time.sleep(1)
@@ -611,12 +613,23 @@ def list_all_mark_values(func, feature_type):
 
 # Selenium action functions:
 
+def assert_negative(act, obj_source, locator, wait):
+    return f'with pytest.raises(TimeoutException):\n\t' \
+        f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
+           f'element_located((By.{locator},\"{obj_source}\"))).{act}'
+
+
 def action_func_visible(act, obj_source, locator, wait):
     """Function to construct a string with expected condition:
     visibility_of_element_located"""
-
-    return f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
-           f'element_located((By.{locator},\"{obj_source}\"))).{act}'
+    actb = backward_action_dict.get(act)
+    if act.lower().startswith('not'):
+        return f'with pytest.raises(TimeoutException):\n\t' \
+               f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
+               f'element_located((By.{locator},\"{obj_source}\"))).{act}'
+    else:
+        return f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
+           f'element_located((By.{locator},\"{obj_source}\"))).{actb}'
 
 
 def send_keys_func(str_list):
@@ -652,8 +665,9 @@ def which_action(act, obj_source, locator, str_list, wait):
     selenium action"""
 
     print(f'str_list  in which action {act} ++ {str_list}')
-    if act == "click()" or act == "send_keys()":
-        func, str_list = action_func_clickable(act, obj_source, locator,
+    if act.lower().startswith('click') or act.lower().startswith('type'):
+        actf = forward_action_dict.get(act)
+        func, str_list = action_func_clickable(actf, obj_source, locator,
                                                str_list, wait)
     else:
         func = action_func_visible(act, obj_source, locator, wait)

@@ -66,6 +66,11 @@ class TestPomidor:
     def test_pomidor_run_is_displayed_negative(self):
         with pytest.raises(TimeoutException):
             to.run_features(assert_actions, "Is_Displayed")
+
+    def test_pomidor_run_not_displayed(self):
+        scenario_num = to.run_features(assert_actions, "Not_Displayed")
+        assert scenario_num == 1
+
         # scenario_num = to.run_features(assert_actions, "Is_Displayed")
         # assert scenario_num == 1
 
