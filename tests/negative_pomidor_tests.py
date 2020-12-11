@@ -36,9 +36,10 @@ run_three_3344_stories = "negative_pomidory/run_story.pomidor"
 pro_pomidor = 'negative_pomidory/pro.pomidor'
 smoke_test_dir = 'negative_pomidory/SmokeTest'
 assert_actions = 'negative_pomidory/assert_actions.pomidor'
+data_file = 'negative_pomidory/data_file.pomidor'
 
 
-to.run_features(run_three_3344_stories, 'Report')
+# to.run_features(run_three_3344_stories, 'Report')
 # to.run_scripts_parallelly(smoke_test_dir, wait=3)
 
 
@@ -71,11 +72,11 @@ class TestPomidor:
         scenario_num = to.run_features(assert_actions, "Not_Displayed")
         assert scenario_num == 1
 
-        # scenario_num = to.run_features(assert_actions, "Is_Displayed")
-        # assert scenario_num == 1
 
-        #
-        #
+    def test_pomidor_csv_data(self):
+        scenario_num = to.run_features(data_file, "csv_data")
+        assert scenario_num == 1
+
     #
     #
     # def test_pomidor_run_exact_feature_name(self):  # Repo1 not Repo 1 !

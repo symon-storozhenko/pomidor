@@ -1,0 +1,13 @@
+App Name:
+Version:
+Release date:
+
+Sprint:
+
+@feature csv_data
+@data csv_data_source.csv
+First, click on login_field #practice_menu_button page title
+and type <<FirstName>> in #name_field. Then, type [[some free text]] in #name_field,
+ and types <<City of Birth>> in #name_field
+and again
+

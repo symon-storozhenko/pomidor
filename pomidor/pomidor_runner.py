@@ -78,6 +78,7 @@ bact = BackwardAction()
 backward_action_dict = bact.backward_actions_dictionary
 forward_action_dict = act.forward_action_dictionary
 
+
 def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                            scenario_title_line_num, line_num,
                            obj_dict, driver, url, wait) -> str:
@@ -87,19 +88,29 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
     obj_counter = 0
     tied_obj = False
     scenario_with_action = False
-    str_in_quotes = re.findall(r"\[(.+?)\]", scenarioSteps)
-    str_in_brackets = re.findall(r" \[(.+?)\]", scenarioSteps)
-    print(f'str_in_brackets --> {str_in_brackets}')
-    print(f"str_in_quotes --> {str_in_quotes} ")
+    type_list = ['type', 'types', 'typed']
+    send_key_str = []
+    str_in_brackets = re.findall(r" \[\[(.+?)\]\]", scenarioSteps)
+    str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
     strList = re.split(r'[;,.!?\s]', scenarioSteps)
+    for i in strList:
+        print(i)
+        if i.startswith('<<'):
+            send_key_str.append(str_in_angle_brackets.pop(0))
+        if i.startswith('[['):
+            send_key_str.append(str_in_brackets.pop(0))
+    print(f'send_key_str => {send_key_str}')
+    print(f'str_in_angle_brackets -> {str_in_angle_brackets}')
+    print(f'str_in_brackets --> {str_in_brackets}')
+    print(f'strList ==> {strList}')
     # tom = Pomidor(browser, obj_dict, url)
     browser_initialized = False
     try:
         for position, strList_item in enumerate(strList[latest_index:]):
             object_found = False
             action_found = False
-            if strList_item.lower() in backward_action_dict or\
-                strList_item.lower() in forward_action_dict:
+            if strList_item.lower() in backward_action_dict or \
+                    strList_item.lower() in forward_action_dict:
                 scenario_with_action = True
                 # print(f'\n-Printing from latest index in paragraph -->'
                 #       f'\n {strList[latest_index:]}')  # whole TC in one string
@@ -187,6 +198,7 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                                         f'\nFile name --> {filepath}'
                                         f'\nParagraph starts on line --> '
                                         f'{scenario_title_line_num}')
+
                             for obj_position, page_object in enumerate(
                                     strList[action_index:]):  # frwd obj
                                 if page_object.startswith("#"):
@@ -194,10 +206,35 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                                     object_found = True
                                     page_obj_index = position + obj_position
                                     latest_index = page_obj_index + 1
+
+                                    # Implement send_keys() string retrieval
+                                    if action_item in type_list:
+                                        print('Str_to_send')
+                                        for obj_po, page_obj in \
+                                                enumerate(strList[
+                                                action_index:page_obj_index]):
+                                            # @data <> brackets
+                                            if page_obj.startswith('<<') :
+                                                send_key_string = str_in_angle_brackets
+                                                print(
+                                                    f"send_key_string => {send_key_string}")
+                                                break
+                                                # @data <> brackets
+                                            if page_obj.startswith('[['):
+                                                send_key_string = str_in_brackets
+                                                print(
+                                                    f"send_key_string => {send_key_string}")
+
+                                                break
+
+
+                                    # Check for any childless actions
                                     for str_slice_item in strList[action_index
-                                                                  + 1:page_obj_index]:
+                                                        + 1:page_obj_index]:
                                         if str_slice_item in \
-                                                forward_action_dict.keys():
+                                                forward_action_dict.keys() or \
+                                                str_slice_item in \
+                                                backward_action_dict.keys():
                                             # if actions left by mistake
                                             raise PomidorSyntaxError(
                                                 """ Negative tested with file 
@@ -289,10 +326,10 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                         # act = forward_action_dict.get(action_item)
                         act = action_item
                     print(f'\n\n\n\n999! - {act}\n\n\n')
-                    act_func, str_in_quotes = which_action(act,
+                    act_func, send_key_str = which_action(act,
                                                            page_object_src,
                                                            page_obj_locator,
-                                                           str_in_quotes,
+                                                           send_key_str,
                                                            wait)
                     # print(f'ZZZZ! -> act_func : {act_func}')
                     # print(f'str_in quotes -> {str_in_quotes}')
@@ -453,18 +490,17 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                             # or, f.lower().__contains__(story.lower()):
                             print(f'$@$$ FOUND {feature}! -> {f}\n')
                             feature_instances += 1
-                elif "@tcname" in line.lower(): # TODO: implement @tcname
+                elif "@tcname" in line.lower():  # TODO: implement @tcname
                     line_list = re.split(r'[;,.!?\s]', line)
                     tcname = line_list[1]
                     print(f'@TCName = {tcname}')
-                elif "@param" in line.lower(): # TODO: implement @param
+                elif "@param" in line.lower():  # TODO: implement @param
                     line_list = re.split(r'[;,.!?\s]', line)
                     param = line_list[1]
                     print(f'@param = {param}')
-                elif '@data' in line: # TODO: implement @data
+                elif '@data' in line:  # TODO: implement @data
                     line_list = re.split(r'[;,.!?\s]', line)
                     datafile = line_list[1]
-                    url = urls.get(ad_hoc_url)
                     print(f'@data is caught -> ! {url}')
                 elif '@url' in line:
                     line_list = re.split(r'[;,.!?\s]', line)
@@ -615,7 +651,7 @@ def list_all_mark_values(func, feature_type):
 
 def assert_negative(act, obj_source, locator, wait):
     return f'with pytest.raises(TimeoutException):\n\t' \
-        f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
+           f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
            f'element_located((By.{locator},\"{obj_source}\"))).{act}'
 
 
@@ -629,7 +665,7 @@ def action_func_visible(act, obj_source, locator, wait):
                f'element_located((By.{locator},\"{obj_source}\"))).{act}'
     else:
         return f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
-           f'element_located((By.{locator},\"{obj_source}\"))).{actb}'
+               f'element_located((By.{locator},\"{obj_source}\"))).{actb}'
 
 
 def send_keys_func(str_list):
