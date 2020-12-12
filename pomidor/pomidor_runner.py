@@ -94,7 +94,6 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
     strList = re.split(r'[;,.!?\s]', scenarioSteps)
     for i in strList:
-        print(i)
         if i.startswith('<<'):
             send_key_str.append(str_in_angle_brackets.pop(0))
         if i.startswith('[['):
@@ -212,9 +211,9 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                                         print('Str_to_send')
                                         for obj_po, page_obj in \
                                                 enumerate(strList[
-                                                action_index:page_obj_index]):
+                                                          action_index:page_obj_index]):
                                             # @data <> brackets
-                                            if page_obj.startswith('<<') :
+                                            if page_obj.startswith('<<'):
                                                 send_key_string = str_in_angle_brackets
                                                 print(
                                                     f"send_key_string => {send_key_string}")
@@ -227,10 +226,9 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
 
                                                 break
 
-
                                     # Check for any childless actions
                                     for str_slice_item in strList[action_index
-                                                        + 1:page_obj_index]:
+                                                                  + 1:page_obj_index]:
                                         if str_slice_item in \
                                                 forward_action_dict.keys() or \
                                                 str_slice_item in \
@@ -327,10 +325,10 @@ def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
                         act = action_item
                     print(f'\n\n\n\n999! - {act}\n\n\n')
                     act_func, send_key_str = which_action(act,
-                                                           page_object_src,
-                                                           page_obj_locator,
-                                                           send_key_str,
-                                                           wait)
+                                                          page_object_src,
+                                                          page_obj_locator,
+                                                          send_key_str,
+                                                          wait)
                     # print(f'ZZZZ! -> act_func : {act_func}')
                     # print(f'str_in quotes -> {str_in_quotes}')
                     print(driver)
@@ -466,6 +464,15 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
         with open(filepath) as file:
             for total_lines_count, row in enumerate(file):
                 continue
+            list_of_file = file.read().splitlines()
+            print(f'list_of_file --> {list_of_file}')
+
+            import itertools
+            spl = [list(y) for x, y in
+                   itertools.groupby(list_of_file, lambda z: z == '') if not x]
+            print(f'spl -> {spl}')
+            for i in spl:
+                print(i)
         with open(filepath) as tomato_file:
             print(f'\nOpening file --> {filepath}\n')
             scenarioSteps = ''
@@ -484,12 +491,8 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                 print(f'======= ===== General Line #{line_num}====== ======')
                 # choose type of marker to run
                 if "@feature" in line.lower():
-                    line_list = re.split(r'[;,.!?\s]', line)
-                    for f in line_list:
-                        if feature.lower() == f.lower():
-                            # or, f.lower().__contains__(story.lower()):
-                            print(f'$@$$ FOUND {feature}! -> {f}\n')
-                            feature_instances += 1
+                    feature_instances = feature_marker(feature,
+                                                       feature_instances, line)
                 elif "@tcname" in line.lower():  # TODO: implement @tcname
                     line_list = re.split(r'[;,.!?\s]', line)
                     tcname = line_list[1]
@@ -503,15 +506,7 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                     datafile = line_list[1]
                     print(f'@data is caught -> ! {url}')
                 elif '@url' in line:
-                    line_list = re.split(r'[;,.!?\s]', line)
-                    ad_hoc_url = line_list[1]
-                    print(f'ad_hoc_url is -> {ad_hoc_url}')
-                    if ad_hoc_url.startswith("http") and "://" in ad_hoc_url:
-                        print(f'@url is caught - {url}')
-                        url = ad_hoc_url
-                    else:
-                        print(f'Extra @url is caught -> {url}')
-                        url = urls.get(ad_hoc_url)
+                    url = url_marker(line, url, urls)
 
                 elif feature_instances > 0:
                     for line_num_in, line in enumerate(tomato_file,
@@ -583,24 +578,13 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                                         and line in ['\n', '\r\n']) or (
                                 scenarioSteps != '' and line_counter - 1 ==
                                 total_lines_count + 1):
-                            print(f'total_lines_count:{total_lines_count}')
-                            print(f'LINE IS -----> {line} at '
-                                  f'{line_num_in}')
-                            print(
-                                f"\nBegin test:\n ----"
-                                f"{first_paragraph_line.strip()}----\n"
-                                f"\nActions and Assertions performed:")
-                            latest_index = 0
-                            action_counter = 0
-                            test_paragraph = define_test_paragraphs(
-                                scenarioSteps, filepath,
-                                first_paragraph_line,
-                                scenario_title_line_num,
-                                line_num, obj_dict, driver, url, wait)
-                            if test_paragraph:
-                                scenario_number += 1
-                            scenarioSteps = ''
-                            feature_instances = 0
+                            feature_instances, scenarioSteps, scenario_number \
+                                = pass_pom_paragraph(
+                                driver, feature_instances, filepath,
+                                first_paragraph_line, line, line_num,
+                                line_num_in, obj_dict, scenarioSteps,
+                                scenario_number, scenario_title_line_num,
+                                total_lines_count, url, wait)
                             break
                     else:
                         line_counter += 1
@@ -609,6 +593,54 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                 else:
                     continue
     return file_number, scenario_number
+
+
+def pass_pom_paragraph(driver, feature_instances, filepath,
+                       first_paragraph_line, line, line_num, line_num_in,
+                       obj_dict, scenarioSteps, scenario_number,
+                       scenario_title_line_num, total_lines_count, url, wait):
+    print(f'total_lines_count:{total_lines_count}')
+    print(f'LINE IS -----> {line} at '
+          f'{line_num_in}')
+    print(
+        f"\nBegin test:\n ----"
+        f"{first_paragraph_line.strip()}----\n"
+        f"\nActions and Assertions performed:")
+    latest_index = 0
+    action_counter = 0
+    test_paragraph = define_test_paragraphs(
+        scenarioSteps, filepath,
+        first_paragraph_line,
+        scenario_title_line_num,
+        line_num, obj_dict, driver, url, wait)
+    if test_paragraph:
+        scenario_number += 1
+    scenarioSteps = ''
+    feature_instances = 0
+    return feature_instances, scenarioSteps, scenario_number
+
+
+def url_marker(line, url, urls):
+    line_list = re.split(r'[;,.!?\s]', line)
+    ad_hoc_url = line_list[1]
+    print(f'ad_hoc_url is -> {ad_hoc_url}')
+    if ad_hoc_url.startswith("http") and "://" in ad_hoc_url:
+        print(f'@url is caught - {url}')
+        url = ad_hoc_url
+    else:
+        print(f'Extra @url is caught -> {url}')
+        url = urls.get(ad_hoc_url)
+    return url
+
+
+def feature_marker(feature, feature_instances, line) -> object:
+    line_list = re.split(r'[;,.!?\s]', line)
+    for f in line_list:
+        if feature.lower() == f.lower():
+            # or, f.lower().__contains__(story.lower()):
+            print(f'$@$$ FOUND {feature}! -> {f}\n')
+            feature_instances += 1
+    return feature_instances
 
 
 # packaging_tutorial
