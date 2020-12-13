@@ -7,7 +7,23 @@ Sprint:
 @feature csv_data
 @data csv_data_source.csv
 First, click on login_field #practice_menu_button page title
-and type <<FirstName>> in #name_field. Then, type [[some free text]] in #name_field,
+and type <<FirstName>> in #name_field. Then, type [[some
+free text]] in #name_field,
  and types <<City of Birth>> in #name_field
 and again
 
+
+Sprint#2:
+
+@feature 2-csv_datum
+@url 2-csv_data_source.csv
+2-First, click on login_field #practice_menu_button page title
+2-and type <<FirstName>> in #name_field. Then, type 2- [[some
+!! This is a comment
+free
+text]] in #name_field, !! not valid comment
+""driver.wait(2)
+""driver.quit()
+2- and types <<City of
+Birth>> in #name_field
+2-and again

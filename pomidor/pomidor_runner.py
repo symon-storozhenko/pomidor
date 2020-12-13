@@ -3,6 +3,8 @@ import functools
 import pathlib
 import re
 from csv import DictReader
+import itertools
+
 import pytest
 
 from selenium.common.exceptions import TimeoutException
@@ -464,15 +466,83 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
         with open(filepath) as file:
             for total_lines_count, row in enumerate(file):
                 continue
+
+        # Refactoring
+        with open(filepath) as file:
             list_of_file = file.read().splitlines()
             print(f'list_of_file --> {list_of_file}')
 
-            import itertools
-            spl = [list(y) for x, y in
-                   itertools.groupby(list_of_file, lambda z: z == '') if not x]
+            # get all paragraphs of a file as a list of lists
+            spl = [list(y)
+                   for x, y in itertools.groupby(list_of_file,
+                                                 lambda z: z == '')
+                   if not x]
             print(f'spl -> {spl}')
-            for i in spl:
-                print(i)
+        counter = 1
+        for x in spl:
+            print(f'counter -> {len(x)+1}')
+
+            markers_list = [y for y in x if y.startswith("@")]
+            print(f'markers -> {markers_list}')
+
+            # process all markers with markers_list
+            feature_mark = ''.join([x.split()[1] for x in markers_list
+                                    if x.startswith("@feature")])
+            print(f'feature_mark -> {feature_mark}')
+
+            url = base_url
+            url_mark = ''.join([x.split()[1] for x in markers_list
+                                if x.startswith("@url")])
+            print(f'url_mark -> {url_mark}')
+            if url_mark:
+                if url_mark.startswith("http") and "://" in url_mark:
+                    print(f'@url is caught - {url}')
+                    url = url_mark
+                else:
+                    print(f'Extra @url is caught -> {url}')
+                    url = urls.get(url_mark)
+                    print(f'final url -> {url}')
+
+            test_case = [y for y in x if not y.startswith("@")
+                         and not y.startswith("!!")]
+            print(f'test_case -> {test_case}')
+            test_case_str = ' '.join([str(i) for i in test_case])
+            print(f'test_case_string -> {test_case_str}')
+
+            first_paragraph_line = ''.join(test_case[0])
+            scenario_title_line_num = counter + (len(x)+1)
+            print(f'scenario_title_line_num -> {scenario_title_line_num}')
+
+            if feature:
+                if feature_mark == feature:
+                    test_paragraph = define_test_paragraphs(
+                        test_case_str, filepath,
+                        first_paragraph_line,
+                        scenario_title_line_num,
+                        2, obj_dict, driver, url, wait)
+                    print(f'scenario_with_action - {test_paragraph}')
+                    scenario_number += 1
+                else:
+                    pass
+            else:
+                test_paragraph_without_feature = define_test_paragraphs(
+                    test_case_str, filepath,
+                    first_paragraph_line,
+                    scenario_title_line_num,
+                    2, obj_dict, driver, url, wait)
+                scenario_number += 1
+
+                print(f'scenario_with_action - {test_paragraph_without_feature}')
+
+    return file_number, scenario_number
+
+
+def go_thru_pomidor_file_with_feature_2(func, feature, obj_dict,
+                                              driver, base_url, urls, wait):
+    for file_number, filepath in enumerate(func):
+        with open(filepath) as file:
+            for total_lines_count, row in enumerate(file):
+                continue
         with open(filepath) as tomato_file:
             print(f'\nOpening file --> {filepath}\n')
             scenarioSteps = ''
@@ -578,6 +648,7 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
                                         and line in ['\n', '\r\n']) or (
                                 scenarioSteps != '' and line_counter - 1 ==
                                 total_lines_count + 1):
+                            print(f'scenarioSteps -> {scenarioSteps}')
                             feature_instances, scenarioSteps, scenario_number \
                                 = pass_pom_paragraph(
                                 driver, feature_instances, filepath,
@@ -851,13 +922,27 @@ class Pomidor:
             print(f'Number of scenarios --> {scenario_number}')
         return scenario_number
 
-    def run_features(self, dir_path, feature_value, exact_match=False,
+    def run_features(self, dir_path, feature='', exact_match=False,
                      verbose=True, before_test=None,
                      after_test=None, wait=10):
         # (func, feature, obj_dict,
         #  driver, base_url, urls, wait):
         file_number, scenario_number = go_thru_pomidor_file_with_feature(
-            generate_list_of_pomidor_files(dir_path), feature_value,
+            generate_list_of_pomidor_files(dir_path), feature,
+            self.obj_dict, self.driver, self.url, self.urls, wait)
+        if verbose:
+            print('\n\n-------\nEND -- All tests PASSED\n-------\n')
+            print(f'Number of files used --> {file_number + 1}')  #
+            print(f'Number of scenarios --> {scenario_number}')
+        return scenario_number
+
+    def run(self, dir_path, feature='', exact_match=False,
+                     verbose=True, before_test=None,
+                     after_test=None, wait=10):
+        # (func, feature, obj_dict,
+        #  driver, base_url, urls, wait):
+        file_number, scenario_number = go_thru_pomidor_file_with_feature(
+            generate_list_of_pomidor_files(dir_path), feature,
             self.obj_dict, self.driver, self.url, self.urls, wait)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')

@@ -45,7 +45,7 @@ data_file = 'negative_pomidory/data_file.pomidor'
 
 class TestPomidorPro:
     def test_pomidor_pro(self):
-        scenario_num = to.run_features(pro_pomidor, 'SmokeTest')
+        scenario_num = to.run_features(pro_pomidor, feature='SmokeTest')
         assert scenario_num == 2
 
 
@@ -57,24 +57,26 @@ class TestPomidor:
             print("Sucess")
 
     def test_pomidor_run_feature(self):
-        scenario_num = to.run_features(run_three_3344_stories, 'Report')
+        scenario_num = to.run_features(run_three_3344_stories,
+                                       feature='Report')
         assert scenario_num == 3
 
     def test_pomidor_run_is_displayed(self):
-        scenario_num = to.run_features(run_three_3344_stories, "Reporting")
+        scenario_num = to.run_features(run_three_3344_stories,
+                                       feature="Reporting")
         assert scenario_num == 1
 
     def test_pomidor_run_is_displayed_negative(self):
         with pytest.raises(TimeoutException):
-            to.run_features(assert_actions, "Is_Displayed")
+            to.run_features(assert_actions, feature="Is_Displayed")
 
     def test_pomidor_run_not_displayed(self):
-        scenario_num = to.run_features(assert_actions, "Not_Displayed")
+        scenario_num = to.run_features(assert_actions, feature="Not_Displayed")
         assert scenario_num == 1
 
 
     def test_pomidor_csv_data(self):
-        scenario_num = to.run_features(data_file, "csv_data")
+        scenario_num = to.run_features(data_file, feature="csv_data")
         assert scenario_num == 1
 
     #
