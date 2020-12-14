@@ -81,412 +81,78 @@ backward_action_dict = bact.backward_actions_dictionary
 forward_action_dict = act.forward_action_dictionary
 
 
-def define_test_paragraphs(scenarioSteps, filepath, frst_prgrph_line,
+def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                            scenario_title_line_num, line_num,
                            obj_dict, driver, url, wait) -> str:
-    """Goes over a particular test case paragraph and executes all actions"""
-    latest_index = 0
-    action_counter = 0
-    obj_counter = 0
-    tied_obj = False
-    scenario_with_action = False
     type_list = ['type', 'types', 'typed']
     send_key_str = []
     str_in_brackets = re.findall(r" \[\[(.+?)\]\]", scenarioSteps)
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
-    strList = re.split(r'[;,.!?\s]', scenarioSteps)
-    for i in strList:
-        if i.startswith('<<'):
-            send_key_str.append(str_in_angle_brackets.pop(0))
-        if i.startswith('[['):
-            send_key_str.append(str_in_brackets.pop(0))
-    print(f'send_key_str => {send_key_str}')
-    print(f'str_in_angle_brackets -> {str_in_angle_brackets}')
-    print(f'str_in_brackets --> {str_in_brackets}')
-    print(f'strList ==> {strList}')
-    # tom = Pomidor(browser, obj_dict, url)
-    browser_initialized = False
-    try:
-        for position, strList_item in enumerate(strList[latest_index:]):
-            object_found = False
-            action_found = False
-            if strList_item.lower() in backward_action_dict or \
-                    strList_item.lower() in forward_action_dict:
-                scenario_with_action = True
-                # print(f'\n-Printing from latest index in paragraph -->'
-                #       f'\n {strList[latest_index:]}')  # whole TC in one string
-                backward_action = False
+    str_list = re.split(r'[;,.!?\s]', scenarioSteps)
+    print(f'str_list -> {str_list}')
+    actions = [x.lower() for x in str_list
+               if x.lower() in backward_action_dict or \
+               x.lower() in forward_action_dict]
 
-                # print(f'FOWRD dICT --> {forward_action_dict}')
-                # Iterate over forward actions
-                for action_in_bckwrd_list in backward_action_dict:
-                    if action_in_bckwrd_list == 'page_title':
-                        pass
-                    # look for backward action first
-                    # print(
-                    #     f'SUCCESS -> for action_in_bckwrd_list in '
-                    #     f'backward_actions_dict.keys():')
-                    # if strList_item.lower().startswith(action_in_bckwrd_list):
-                    if strList_item.lower() in backward_action_dict:
-                        action_counter += 1
-                        action_found = True
-                        print(f'\n\n\n999@ - {strList_item}\n\n\n')
-                        backward_action = True
-                        action_index = position
-                        action_item = strList_item
-                        bk_obj_count = 0
-                        for page_objects in strList[latest_index:action_index]:
-                            if page_objects.startswith(
-                                    "#"):  # if back_obj is found
-                                page_object = page_objects  # to prevent obj in
-                                # front to reassign value
-                                # print(f'Object is found! --> {page_object}')
-                                object_found = True
-                                bk_obj_count += 1
-                            else:
-                                continue
-                        if bk_obj_count > 1:
-                            raise PomidorSyntaxError(
-                                """ Negative tested in file
-                                'more_than_1_obj_bckwrd_action_except.pomidor' 
-                                """
+    print(f'actions - > {actions}')
+    objects = [y.strip("#") for y in str_list
+               if y.startswith("#")]
+    print(f'objects -> {objects}')
+    obj_source = [obj_dict.get(i) for i in objects]
+    print(f'obj_source -> {obj_source}\n\n')
+    act_obj_list = [list(a) for a in zip(actions, obj_source)]
+    print(f'act_obj_list -> {act_obj_list}\n\n')
 
-                                f'\nMore than one object is found! Make sure '
-                                f'to put only one '
-                                f'pertinent item before "{action_item}"'
-                                f' (backward action) '
-                                f'\nPlease review:"{frst_prgrph_line.strip()}"'
-                                f'\nFile name --> {filepath}'
-                                f'\nParagraph starts on line -->'
-                                f' {scenario_title_line_num}.\n\n'
-                                f'Examples:'
-                                f'\nClick on #page and #cart is visible --> '
-                                f'allowed \n '
-                                f'Click on #page and #profile and #cart is '
-                                f'visible --> '
-                                f'NOT allowed')
-                        else:
-                            pass
-                        break
-                if action_found:
-                    latest_index = action_index + 1
-                    latest_artifact = strList_item
-                if not action_found:
-                    # Iterate over forward actions
-                    for action_in_frwrd_lst in forward_action_dict:
-                        # if forward action is found
-                        if strList_item.lower() in forward_action_dict:
-                            action_found = True
-                            print(f'\n\n\n999@FORWARD - {strList_item}\n\n')
-                            action_counter += 1
-                            action_index = position
-                            action_item = strList_item.lower()
-                            print(f'\n\n99@Action item {action_item}\n\n')
-                            # search for any orphan objects
-                            for orphan_obj in strList[latest_index:
-                            action_index]:
-                                if orphan_obj.startswith("#"):
-                                    raise PomidorSyntaxError(
-                                        """ Negative syntax to test located in
-                                        'orphan_obj_b4_frwd_action.pomidor' 
-                                        file"""
+    for i in act_obj_list:
+        print(f'i in act_obj_list -> {i}')
 
-                                        f'\n\n{"*" * 58}\nOrphan object found '
-                                        f'-> {orphan_obj}. Please associate an'
-                                        f' action with this object.\n '
-                                        f'\nPlease review: '
-                                        f'"{frst_prgrph_line.strip()}"'
-                                        f'\nFile name --> {filepath}'
-                                        f'\nParagraph starts on line --> '
-                                        f'{scenario_title_line_num}')
-
-                            for obj_position, page_object in enumerate(
-                                    strList[action_index:]):  # frwd obj
-                                if page_object.startswith("#"):
-                                    # if obj is found
-                                    object_found = True
-                                    page_obj_index = position + obj_position
-                                    latest_index = page_obj_index + 1
-
-                                    # Implement send_keys() string retrieval
-                                    if action_item in type_list:
-                                        print('Str_to_send')
-                                        for obj_po, page_obj in \
-                                                enumerate(strList[
-                                                          action_index:page_obj_index]):
-                                            # @data <> brackets
-                                            if page_obj.startswith('<<'):
-                                                send_key_string = str_in_angle_brackets
-                                                print(
-                                                    f"send_key_string => {send_key_string}")
-                                                break
-                                                # @data <> brackets
-                                            if page_obj.startswith('[['):
-                                                send_key_string = str_in_brackets
-                                                print(
-                                                    f"send_key_string => {send_key_string}")
-
-                                                break
-
-                                    # Check for any childless actions
-                                    for str_slice_item in strList[action_index
-                                                                  + 1:page_obj_index]:
-                                        if str_slice_item in \
-                                                forward_action_dict.keys() or \
-                                                str_slice_item in \
-                                                backward_action_dict.keys():
-                                            # if actions left by mistake
-                                            raise PomidorSyntaxError(
-                                                """ Negative tested with file 
-                                                'two_actions.pomidor' """
-
-                                                f'\n\n{"*" * 58}\nWhich action'
-                                                f' to use with {page_object}? '
-                                                f'{strList_item} (forward '
-                                                f'action) or {str_slice_item} '
-                                                f'(undefined vector action)? '
-                                                f'\nPlease review: '
-                                                f'"{frst_prgrph_line.strip()}'
-                                                f'"\nFile name --> {filepath}'
-                                                f'\nParagraph starts on line '
-                                                f'{scenario_title_line_num}')
-                                    break
-                                else:
-                                    object_found = False
-                                    continue
-                            break
-                # Perform action on the object
-                if not object_found:
-                    raise PomidorSyntaxError(
-                        """ Negative tested in file 'no_obj_found.pomidor' """
-
-                        f'\n\n\nno object found for action '
-                        f'"{strList_item}'
-                        f'\nPlease review: "{filepath}",--> line {line_num}')
-                else:
-                    obj_counter += 1
-                    tied_obj = True
-                    page_object = page_object.strip('#')
-                    # print('                check dict first+++++++++++++++')
-                    # print(f'Action izz - > {action_item}')
-                    if page_object not in obj_dict:
-                        raise PomidorObjectNotFound(
-                            """ Negative tested in file 
-                            'obj_not_found_in_page_factory.pomidor' """
-
-                            f'Page object is NOT Found! ---> '
-                            f'#{page_object}'
-                            f'\nPlease review: '
-                            f'"{frst_prgrph_line.strip()}"'
-                            f'\nFile name --> {filepath}'
-                            f'\nParagraph starts on line --> '
-                            f'{scenario_title_line_num + 1}.\n\n')
-                    # print(f'?????????????Object_source via Tomato class/PO -->'
-                    #       f'{Pomidor.get_dict_obj(page_object)}')
-                    page_object_src = obj_dict.get(page_object)[1]
-                    page_obj_locator = obj_dict.get(page_object)[0]
-                    # print(f'page_object_src --> {page_object_src}')
-                    # print(f'page_obj_locator  --> {page_obj_locator}')
-                    # if page_object_src not in
-                    # print(f'Latest index --> {latest_index}')
-                    # print(f"\nActions and Assertions performed:")
-                    print(f'URL -----> {url}')
-
-                    # if browser_initialized and not \
-                    #     Pomidor.before_tests_launch_url.has_been_called:
-                    #     browser_initialized = True
-                    #     driver.get(url)
-                    #     driver.title
-
-                    if not browser_initialized:
-                        # and Pomidor.before_tests_launch_url.has_been_called:
-                        pomidor = Pomidor(driver, obj_dict, url)
-                        driver = pomidor.define_browser()
-                        browser_initialized = True
-                        driver.get(url)
-
-                    # if not browser_initialized and \
-                    #         not Pomidor.define_browser.has_been_called:
-                    #     # driver = pomidor.define_browser()
-                    #     browser_initialized = True
-                    #     driver.get(url)
-                    #     # driver.
-                    if Pomidor.max_window.has_been_called:
-                        driver.maximize_window()
-                    if Pomidor.fullscreen.has_been_called:
-                        driver.fullscreen_window()
-                    if Pomidor.delete_all_cookies.has_been_called:
-                        driver.delete_all_cookies()
-
-                    # if forward or backward action
-                    if backward_action:
-                        # act = backward_action_dict.get(action_item)
-                        act = action_item
-                    else:
-                        # act = forward_action_dict.get(action_item)
-                        act = action_item
-                    print(f'\n\n\n\n999! - {act}\n\n\n')
-                    act_func, send_key_str = which_action(act,
-                                                          page_object_src,
-                                                          page_obj_locator,
-                                                          send_key_str,
-                                                          wait)
-                    # print(f'ZZZZ! -> act_func : {act_func}')
-                    # print(f'str_in quotes -> {str_in_quotes}')
-                    print(driver)
-                    if action_item.lower().startswith("type"):
-                        exec(f'WebDriverWait(driver, '
-                             f'{wait}).until(ec.element_to_be_clickable('
-                             f'(By.{page_obj_locator}, '
-                             f'\"{page_object_src}\"))).clear()')
-                        # TODO add is_selected and is_enabled asserts
-                        # TODO add "page_title" assert
-
-                        time.sleep(1)
-                    exec(act_func)
-            elif strList_item.startswith('#') and not tied_obj:
-                obj_counter += 1
-                object_found = True
-                object = strList_item
-        if action_counter < 1:
-            scenarioSteps = scenarioSteps.strip()
-            scenario_with_action = False
-            print(f'\nNo actions are found in test --> "'
-                  f'{frst_prgrph_line.strip()}"\nFile name --> {filepath}.'
-                  f'\nParagraph starts on line --> {scenario_title_line_num}.'
-                  f'\nPlease add actions and their objects (#), otherwise,'
-                  f'comment out the whole paragraph with double exclamation'
-                  f'marks: "!!" ')
-        for obj_last in strList[latest_index:]:
-            if obj_last.startswith('#'):
-                raise PomidorSyntaxError(
-                    """ Negative tested in file 'last_orphan_obj.pomidor' """
-
-                    f'\n{"*" * 58}\nOrphan object found -> {obj_last}. '
-                    f'Please '
-                    f'associate an action (*) with this object.\n '
-                    f'\nPlease review: "{frst_prgrph_line.strip()}"'
-                    f'\nFile name --> {filepath}'
-                    f'\nParagraph starts on line --> '
-                    f'{scenario_title_line_num}')
-        print('SCENARIO COMPLETED!!!!')
-    finally:
-        if browser_initialized and Pomidor.quit.has_been_called:
-            # time.sleep(1)
-            driver.quit()
-            print('\nDriver QUIT!!\n')
-        else:
-            pass
-    return scenario_with_action
-
-
-def pomidor_pro_func(code_string, driver, obj_dict, url):
-    """Not used..."""
+        print(f'\nact -> {i[0]}')
+        print(f'\npage_obj_locator -> {i[1][0]}')
+        print(f'\npage_object_src -> {i[1][1]}')
 
     try:
-        # and Pomidor.before_tests_launch_url.has_been_called:
         pomidor = Pomidor(driver, obj_dict, url)
         driver = pomidor.define_browser()
-        browser_initialized = True
         driver.get(url)
-        driver.title
-        # driver.
-        if Pomidor.max_window.has_been_called:
-            driver.maximize_window()
-        if Pomidor.fullscreen.has_been_called:
-            driver.fullscreen_window()
-        if Pomidor.delete_all_cookies.has_been_called:
-            driver.delete_all_cookies()
+
+        for i in act_obj_list:
+            acti = i[0]
+            page_obj_loc = i[1][0]
+            page_object_src = i[1][1]
+            act_func, str_in_quotes = which_action(
+                acti, page_object_src, page_obj_loc, str_in_brackets, wait)
+            if acti.startswith("type"):
+                exec(f'WebDriverWait(driver, '
+                     f'{wait}).until(ec.element_to_be_clickable('
+                     f'(By.{page_obj_loc},\"{page_object_src}\"))).clear()')
+                # TODO add is_selected and is_enabled asserts
+                # TODO add "page_title" assert
+
+                time.sleep(1)
+            exec(act_func)
+
     finally:
-        if browser_initialized:
-            # Pomidor.quit.has_been_called and :
-            # time.sleep(1)
-            driver.quit()
-            print('\nDriver QUIT!!\n')
-        pass
+        driver.quit()
 
 
-def go_thru_pomidor_file(func, obj_dict, driver, base_url, urls, wait):
-    """Opens one .pomidor file at a time and picks test case paragraphs, one by
-    one, top to bottom"""
-
-    scenario_number = 0
-    for file_number, filepath in enumerate(func):
-        with open(filepath) as file:
-            for total_lines_count, row in enumerate(file):
-                continue
-        with open(filepath) as tomato_file:
-            print(f'\nOpening file --> {filepath}\n')
-            scenarioSteps = ''
-            first_paragraph_line = ''
-            url = base_url
-            for line_num, line in enumerate(tomato_file):
-                if '@base_url' in line:
-                    line_list = re.split(r'[;,.!?\s]', line)
-                    ad_hoc_url = line_list[1]
-                    url = urls.get(ad_hoc_url)
-                    print(f'@base_url is caught -> {url}')
-                if scenarioSteps == '' and (
-                        line in ['\n', '\r\n'] or line.startswith('--')):
-                    url = base_url
-                else:
-                    if scenarioSteps == '':
-                        first_paragraph_line = line
-                        scenario_title_line_num = line_num
-                    if scenarioSteps != '' and line.startswith('--'):
-                        continue
-                    scenarioSteps += line
-                if (scenarioSteps != '' and line in ['\n', '\r\n']) or (
-                        scenarioSteps != '' and line_num == total_lines_count):
-                    print(f'LINE IS -----> {line} at {line_num}')
-                    print(
-                        f"\nBegin test:\n ----{first_paragraph_line.strip()}")
-                    print(f'scenarioSteps --> {scenarioSteps}')
-                    test_paragraph = \
-                        define_test_paragraphs(scenarioSteps, filepath,
-                                               first_paragraph_line,
-                                               scenario_title_line_num,
-                                               line_num, obj_dict, driver,
-                                               url, wait)
-                    if test_paragraph:
-                        scenario_number += 1
-                        url = base_url
-                    scenarioSteps = ''
-    return file_number, scenario_number
-
-
-def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
-                                      driver, base_url, urls, wait):
+def go_thru_pomidor_file(func, feature, obj_dict,
+                         driver, base_url, urls, wait):
     """Opens a .pomidor file, one at a time, and picks test case paragraphs
     marked with a passed @marker value (Ex."@story", "@feature" or your own
     custom marker, one by one, top to bottom"""
-
     scenario_number = 0
     for file_number, filepath in enumerate(func):
-        with open(filepath) as file:
-            for total_lines_count, row in enumerate(file):
-                continue
-
-        # Refactoring
-        with open(filepath) as file:
-            list_of_file = file.read().splitlines()
-            print(f'list_of_file --> {list_of_file}')
-
-            # get all paragraphs of a file as a list of lists
-            spl = [list(y)
-                   for x, y in itertools.groupby(list_of_file,
-                                                 lambda z: z == '')
-                   if not x]
-            print(f'spl -> {spl}')
+        spl = get_all_file_paragraphs_into_list(filepath)
         counter = 1
+        line_num = 1
         for x in spl:
-            print(f'counter -> {len(x)+1}')
+            print(f'counter -> {len(x) + 1}')
 
-            markers_list = [y for y in x if y.startswith("@")]
+            markers_list = [y.lower() for y in x if y.startswith("@")]
             print(f'markers -> {markers_list}')
 
             # process all markers with markers_list
-            feature_mark = ''.join([x.split()[1] for x in markers_list
+            feature_mark = ''.join([x.split()[1].strip(r'[;,]') for x in markers_list
                                     if x.startswith("@feature")])
             print(f'feature_mark -> {feature_mark}')
 
@@ -510,185 +176,59 @@ def go_thru_pomidor_file_with_feature(func, feature, obj_dict,
             print(f'test_case_string -> {test_case_str}')
 
             first_paragraph_line = ''.join(test_case[0])
-            scenario_title_line_num = counter + (len(x)+1)
+            print(f'first_paragraph_line -> {first_paragraph_line}')
+            scenario_title_line_num = counter + (len(x) + 1)
             print(f'scenario_title_line_num -> {scenario_title_line_num}')
 
-            if feature:
-                if feature_mark == feature:
-                    test_paragraph = define_test_paragraphs(
-                        test_case_str, filepath,
-                        first_paragraph_line,
-                        scenario_title_line_num,
-                        2, obj_dict, driver, url, wait)
-                    print(f'scenario_with_action - {test_paragraph}')
-                    scenario_number += 1
-                else:
-                    pass
-            else:
-                test_paragraph_without_feature = define_test_paragraphs(
-                    test_case_str, filepath,
-                    first_paragraph_line,
-                    scenario_title_line_num,
-                    2, obj_dict, driver, url, wait)
-                scenario_number += 1
-
-                print(f'scenario_with_action - {test_paragraph_without_feature}')
+            scenario_number = run_all_or_feature(
+                driver, feature, feature_mark,
+                filepath,
+                first_paragraph_line,
+                line_num, obj_dict,
+                scenario_number,
+                scenario_title_line_num,
+                test_case_str, url, wait)
 
     return file_number, scenario_number
 
 
-def go_thru_pomidor_file_with_feature_2(func, feature, obj_dict,
-                                              driver, base_url, urls, wait):
-    for file_number, filepath in enumerate(func):
-        with open(filepath) as file:
-            for total_lines_count, row in enumerate(file):
-                continue
-        with open(filepath) as tomato_file:
-            print(f'\nOpening file --> {filepath}\n')
-            scenarioSteps = ''
-            first_paragraph_line = ''
-            feature_instances = 0
-            line_counter = 0
-            url = base_url
-            pro = False
-            first_pro_line = False
-            browser_initialized = False
-            for line_num, line in enumerate(tomato_file):
-                if line == 0:
-                    continue
-                else:
-                    line_counter += 1
-                print(f'======= ===== General Line #{line_num}====== ======')
-                # choose type of marker to run
-                if "@feature" in line.lower():
-                    feature_instances = feature_marker(feature,
-                                                       feature_instances, line)
-                elif "@tcname" in line.lower():  # TODO: implement @tcname
-                    line_list = re.split(r'[;,.!?\s]', line)
-                    tcname = line_list[1]
-                    print(f'@TCName = {tcname}')
-                elif "@param" in line.lower():  # TODO: implement @param
-                    line_list = re.split(r'[;,.!?\s]', line)
-                    param = line_list[1]
-                    print(f'@param = {param}')
-                elif '@data' in line:  # TODO: implement @data
-                    line_list = re.split(r'[;,.!?\s]', line)
-                    datafile = line_list[1]
-                    print(f'@data is caught -> ! {url}')
-                elif '@url' in line:
-                    url = url_marker(line, url, urls)
-
-                elif feature_instances > 0:
-                    for line_num_in, line in enumerate(tomato_file,
-                                                       line_counter):
-                        line_counter += 1
-                        print(f'Text "{line}" is on line num --> '
-                              f'{line_num_in + 1}')
-
-                        # if feature_bool:
-                        if scenarioSteps == '' and (line in ['\n', '\r\n']
-                                                    or line.startswith(
-                                    '--')):  # .pomidor comment
-                            continue
-                        else:
-                            if not pro and line.startswith('"""'):
-                                print("@pro is found!")
-                                pro = True
-                                first_pro_line = True
-                            if scenarioSteps == '':
-                                print("after @pro is found!")
-                                first_paragraph_line = line
-                                scenario_title_line_num = line_num
-                            if scenarioSteps != '' and line.startswith(
-                                    '--'):
-                                continue
-                            if pro:
-                                if first_pro_line:
-                                    first_pro_line = False
-                                else:
-                                    print("@not""")
-                                    scenarioSteps = scenarioSteps + line + '\n'
-                                    print(f'!!scenarioSteps-> {scenarioSteps}')
-                            else:
-                                scenarioSteps += line
-                                print("Captured wrong scenarioSteps!!")
-                        if pro and (scenarioSteps != ''
-                                    and line.startswith('"""')):
-                            scenarioSteps = scenarioSteps.strip('\n"""')
-                            print(f'PROscenarioSteps --> {scenarioSteps}')
-                            try:
-                                if not browser_initialized \
-                                        and Pomidor.before_tests_launch_url.has_been_called:
-                                    pomidor = Pomidor(driver, obj_dict, url)
-                                    driver = pomidor.define_browser()
-                                    browser_initialized = True
-                                    if Pomidor.max_window.has_been_called:
-                                        driver.maximize_window()
-                                    if Pomidor.fullscreen.has_been_called:
-                                        driver.fullscreen_window()
-                                    if Pomidor.delete_all_cookies.has_been_called:
-                                        driver.delete_all_cookies()
-                                    exec(scenarioSteps)
-                                    time.sleep(1)
-                            finally:
-                                if browser_initialized and \
-                                        Pomidor.quit.has_been_called:
-                                    # browser_initialized = False
-                                    # Pomidor.quit.has_been_called and :
-                                    # time.sleep(1)
-                                    driver.quit()
-                                    print('\nDriver QUIT!!\n')
-                                pass
-                            pro = False
-                            scenario_number += 1
-                            scenarioSteps = ''
-                            feature_instances = 0
-                            break
-                        if not pro and (scenarioSteps != ''
-                                        and line in ['\n', '\r\n']) or (
-                                scenarioSteps != '' and line_counter - 1 ==
-                                total_lines_count + 1):
-                            print(f'scenarioSteps -> {scenarioSteps}')
-                            feature_instances, scenarioSteps, scenario_number \
-                                = pass_pom_paragraph(
-                                driver, feature_instances, filepath,
-                                first_paragraph_line, line, line_num,
-                                line_num_in, obj_dict, scenarioSteps,
-                                scenario_number, scenario_title_line_num,
-                                total_lines_count, url, wait)
-                            break
-                    else:
-                        line_counter += 1
-                        # url = base_url
-                        continue
-                else:
-                    continue
-    return file_number, scenario_number
-
-
-def pass_pom_paragraph(driver, feature_instances, filepath,
-                       first_paragraph_line, line, line_num, line_num_in,
-                       obj_dict, scenarioSteps, scenario_number,
-                       scenario_title_line_num, total_lines_count, url, wait):
-    print(f'total_lines_count:{total_lines_count}')
-    print(f'LINE IS -----> {line} at '
-          f'{line_num_in}')
-    print(
-        f"\nBegin test:\n ----"
-        f"{first_paragraph_line.strip()}----\n"
-        f"\nActions and Assertions performed:")
-    latest_index = 0
-    action_counter = 0
-    test_paragraph = define_test_paragraphs(
-        scenarioSteps, filepath,
-        first_paragraph_line,
-        scenario_title_line_num,
-        line_num, obj_dict, driver, url, wait)
-    if test_paragraph:
+def run_all_or_feature(driver, feature, feature_mark, filepath,
+                       first_paragraph_line, line_num, obj_dict,
+                       scenario_number, scenario_title_line_num,
+                       test_case_str,
+                       url, wait):
+    if feature:
+        if feature_mark == feature.lower():
+            test_p = execute_test_paragraph(
+                test_case_str, filepath, first_paragraph_line,
+                scenario_title_line_num, line_num, obj_dict, driver,
+                url, wait)
+            print(f'scenario_with_action - {test_p}')
+            scenario_number += 1
+        else:
+            pass
+    else:
+        test_p = execute_test_paragraph(
+            test_case_str, filepath, first_paragraph_line,
+            scenario_title_line_num, line_num, obj_dict, driver,
+            url, wait)
         scenario_number += 1
-    scenarioSteps = ''
-    feature_instances = 0
-    return feature_instances, scenarioSteps, scenario_number
+        print(f'scenario_with_action - {test_p}')
+    return scenario_number
+
+
+def get_all_file_paragraphs_into_list(filepath):
+    with open(filepath) as file:
+        list_of_file = file.read().splitlines()
+        print(f'list_of_file --> {list_of_file}')
+
+        # get all paragraphs of a file as a list of lists
+        spl = [list(y)
+               for x, y
+               in itertools.groupby(list_of_file, lambda z: z == '')
+               if not x]
+        print(f'spl -> {spl}')
+    return spl
 
 
 def url_marker(line, url, urls):
@@ -902,76 +442,13 @@ class Pomidor:
     def delete_all_cookies(self):
         pass
 
-    def run_scripts(self, dir_path, verbose=True, wait=10):
-        file_num, scenario_number = go_thru_pomidor_file(
-            generate_list_of_pomidor_files(dir_path), self.obj_dict,
-            self.driver, self.url, self.urls, wait)
-        if verbose:
-            print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_num + 1}')  #
-            print(f'Number of scenarios --> {scenario_number}')
-        return scenario_number
-
-    def run_scripts_parallelly(self, dir_path, verbose=True, wait=10):
-        file_num, scenario_number = go_thru_pomidor_file(
-            generate_list_of_pomidor_files(dir_path), self.obj_dict,
-            self.driver, self.url, self.urls, wait)
-        if verbose:
-            print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_num + 1}')  #
-            print(f'Number of scenarios --> {scenario_number}')
-        return scenario_number
-
-    def run_features(self, dir_path, feature='', exact_match=False,
-                     verbose=True, before_test=None,
-                     after_test=None, wait=10):
-        # (func, feature, obj_dict,
-        #  driver, base_url, urls, wait):
-        file_number, scenario_number = go_thru_pomidor_file_with_feature(
+    def run(self, dir_path, feature=False, verbose=True, wait=10):
+        file_number, scenario_number = go_thru_pomidor_file(
             generate_list_of_pomidor_files(dir_path), feature,
             self.obj_dict, self.driver, self.url, self.urls, wait)
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_number + 1}')  #
-            print(f'Number of scenarios --> {scenario_number}')
-        return scenario_number
-
-    def run(self, dir_path, feature='', exact_match=False,
-                     verbose=True, before_test=None,
-                     after_test=None, wait=10):
-        # (func, feature, obj_dict,
-        #  driver, base_url, urls, wait):
-        file_number, scenario_number = go_thru_pomidor_file_with_feature(
-            generate_list_of_pomidor_files(dir_path), feature,
-            self.obj_dict, self.driver, self.url, self.urls, wait)
-        if verbose:
-            print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_number + 1}')  #
-            print(f'Number of scenarios --> {scenario_number}')
-        return scenario_number
-
-    # def run_story(self, dir_path, feature_value, exact_match=False,
-    #               verbose=True, before_test=None,
-    #               after_test=None, wait=10):
-    #     file_num, scenario_number = go_thru_pomidor_file_with_feature(
-    #         generate_list_of_pomidor_files(dir_path), "@story",
-    #         feature_value, self.obj_dict, self.driver, self.url, self.urls,
-    #         exact_match, wait)
-    #     if verbose:
-    #         print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-    #         print(f'Number of files used --> {file_num + 1}')  #
-    #         print(f'Number of scenarios --> {scenario_number}')
-    #     return scenario_number
-
-    def run_custom_identifier(self, dir_path, feature_type, feature_value,
-                              exact_match=False, verbose=True, wait=2):
-        file_num, scenario_number = go_thru_pomidor_file_with_feature(
-            generate_list_of_pomidor_files(dir_path), feature_type,
-            feature_value, self.obj_dict, self.driver, self.url, self.urls,
-            exact_match, wait)
-        if verbose:
-            print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_num + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
         return scenario_number
 
@@ -989,7 +466,7 @@ class Pomidor:
     def run_standalone_custom_identifier(dir_path, feature_value,
                                          exact_story_name=False,
                                          verbose=True):
-        file_num, scenario_number = go_thru_pomidor_file_with_feature(
+        file_num, scenario_number = go_thru_pomidor_file(
             generate_list_of_pomidor_files(dir_path),
             feature_value, exact_story_name)
         if verbose:
