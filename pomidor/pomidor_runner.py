@@ -36,6 +36,12 @@ class PomidorObjectNotFound(Exception):
     def __init__(self, *args, **kwargs):
         pass
 
+class PomidorObjectDoesNotExistOnPage(Exception):
+    """ Pomidor syntax error class. """
+
+    def __init__(self, *args, **kwargs):
+        print("Page object does not exist on the page. Please check page "
+              "object selector and value")
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     """Goes through a given directory and creates a list of filenames with
@@ -110,6 +116,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
 
     obj_source = [obj_dict.get(i) for i in objects]
     print(f'obj_source -> {obj_source}\n\n')
+    if None in obj_source:
+        raise PomidorObjectDoesNotExistOnPage
     act_obj_list = [list(a) for a in zip(actions, obj_source)]
     print(f'act_obj_list -> {act_obj_list}\n\n')
 
@@ -139,6 +147,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                 # TODO add "page_title" assert
 
                 time.sleep(1)
+            print(f'act_func -> {act_func}')
             exec(act_func)
 
     finally:

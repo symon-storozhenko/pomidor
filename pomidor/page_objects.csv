@@ -2,6 +2,6 @@ name,selector,value
 practice_page  ,  CSS_SELECTOR, button#menu
 practice_menu_button, LINK_TEXT," ""Prac""tice dffbgf , hgh"
 Reporting page objects,,
-non_existent_obj,LINK_TEXT, Yo
+obj_does_not_exist_on_page,CSS_SELECTOR, button#menu
 name_field, CSS_SELECTOR, input#name
 back_home_button, CSS_SELECTOR," a.wp-block-button__link , jhbhbjh "

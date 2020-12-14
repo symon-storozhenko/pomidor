@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from tests.pageObjects.page_factory import PageObject, BaseURL
-from pomidor.pomidor_runner import Pomidor
+from pomidor.pomidor_runner import Pomidor, PomidorObjectDoesNotExistOnPage
 from pomidor.pomidor_runner import PomidorSyntaxErrorTooManyObjects,\
     PomidorSyntaxErrorTooManyActions, PomidorObjectNotFound
 import pytest
@@ -38,7 +38,8 @@ pro_pomidor = 'negative_pomidory/pro.pomidor'
 smoke_test_dir = 'negative_pomidory/SmokeTest'
 assert_actions = 'negative_pomidory/assert_actions.pomidor'
 data_file = 'negative_pomidory/data_file.pomidor'
-
+obj_in_page_factory_but_not_on_webpage = \
+    'negative_pomidory/obj_in_page_factory_but_not_on_webpage.pomidor'
 
 # to.run(run_story, 'Report')
 # to.run_scripts_parallelly(smoke_test_dir, wait=3)
@@ -75,10 +76,14 @@ class TestPomidor:
         scenario_num = to.run(assert_actions, feature="Not_Displayed")
         assert scenario_num == 1
 
-
     def test_pomidor_csv_data(self):
         scenario_num = to.run(data_file, feature="csv_data")
         assert scenario_num == 1
+
+    def test_pomidor_orphan_obj_b4_frwd_action(self):
+        scenario_num = to.run(orph_obj_b4_frwd_act)
+        assert scenario_num == 1
+
 
     #
     #
@@ -123,10 +128,6 @@ class TestPomidorSyntaxNegative:
                            ):
             to.run(more_than_1_back)
 
-    def test_pomidor_orphan_obj_b4_frwd_action(self):
-        with pytest.raises(PomidorSyntaxErrorTooManyActions):
-            to.run(orph_obj_b4_frwd_act)
-
     def test_pomidor_two_actions(self):
         with pytest.raises(PomidorSyntaxErrorTooManyActions):
             to.run(two_actions)
@@ -136,11 +137,15 @@ class TestPomidorSyntaxNegative:
             to.run(no_obj_found)
 
     def test_pomidor_no_obj_in_page_fctry(self):
-        with pytest.raises(PomidorObjectNotFound):
+        with pytest.raises(PomidorObjectDoesNotExistOnPage):
             to.run(no_obj_in_page_fctry)
 
     def test_pomidor_last_orphan_obj(self):
         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
             to.run(last_orphan_obj)
+
+    def test_pomidor_obj_in_page_factory_but_not_on_webpage(self):
+        with pytest.raises(PomidorObjectDoesNotExistOnPage):
+            to.run(obj_in_page_factory_but_not_on_webpage)
 
 # driver.quit()
