@@ -18,12 +18,17 @@ from selenium.webdriver.common.by import By
 import time
 
 
-class PomidorSyntaxError(Exception):
+class PomidorSyntaxErrorTooManyActions(Exception):
     """ Pomidor syntax error class. """
 
     def __init__(self, *args, **kwargs):
-        pass
+        print("You have more actions than objects")
 
+class PomidorSyntaxErrorTooManyObjects(Exception):
+    """ Pomidor syntax error class. """
+
+    def __init__(self, *args, **kwargs):
+        print("You have more objects than actions")
 
 class PomidorObjectNotFound(Exception):
     """ Page object error class. """
@@ -98,6 +103,11 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
     objects = [y.strip("#") for y in str_list
                if y.startswith("#")]
     print(f'objects -> {objects}')
+    if len(actions) > len(objects):
+        raise PomidorSyntaxErrorTooManyActions
+    elif len(objects) > len(actions):
+        raise PomidorSyntaxErrorTooManyObjects
+
     obj_source = [obj_dict.get(i) for i in objects]
     print(f'obj_source -> {obj_source}\n\n')
     act_obj_list = [list(a) for a in zip(actions, obj_source)]

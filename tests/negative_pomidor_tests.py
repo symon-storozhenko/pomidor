@@ -3,7 +3,8 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from tests.pageObjects.page_factory import PageObject, BaseURL
 from pomidor.pomidor_runner import Pomidor
-from pomidor.pomidor_runner import PomidorSyntaxError, PomidorObjectNotFound
+from pomidor.pomidor_runner import PomidorSyntaxErrorTooManyObjects,\
+    PomidorSyntaxErrorTooManyActions, PomidorObjectNotFound
 import pytest
 import concurrent.futures
 
@@ -118,19 +119,20 @@ class TestPomidorSyntaxPositive:
 
 class TestPomidorSyntaxNegative:
     def test_pomidor_more_than_1_obj_bckwrd_action_except(self):
-        with pytest.raises(PomidorSyntaxError):
+        with pytest.raises(PomidorSyntaxErrorTooManyObjects
+                           ):
             to.run(more_than_1_back)
 
     def test_pomidor_orphan_obj_b4_frwd_action(self):
-        with pytest.raises(PomidorSyntaxError):
+        with pytest.raises(PomidorSyntaxErrorTooManyActions):
             to.run(orph_obj_b4_frwd_act)
 
     def test_pomidor_two_actions(self):
-        with pytest.raises(PomidorSyntaxError):
+        with pytest.raises(PomidorSyntaxErrorTooManyActions):
             to.run(two_actions)
 
     def test_pomidor_no_obj_found(self):
-        with pytest.raises(PomidorSyntaxError):
+        with pytest.raises(PomidorSyntaxErrorTooManyActions):
             to.run(no_obj_found)
 
     def test_pomidor_no_obj_in_page_fctry(self):
@@ -138,7 +140,7 @@ class TestPomidorSyntaxNegative:
             to.run(no_obj_in_page_fctry)
 
     def test_pomidor_last_orphan_obj(self):
-        with pytest.raises(PomidorSyntaxError):
+        with pytest.raises(PomidorSyntaxErrorTooManyObjects):
             to.run(last_orphan_obj)
 
 # driver.quit()
