@@ -4,7 +4,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from tests.pageObjects.page_factory import PageObject, BaseURL
 from pomidor.pomidor_runner import Pomidor, PomidorObjectDoesNotExistOnPage
 from pomidor.pomidor_runner import PomidorSyntaxErrorTooManyObjects,\
-    PomidorSyntaxErrorTooManyActions, PomidorObjectNotFound
+    PomidorSyntaxErrorTooManyActions
 import pytest
 import concurrent.futures
 
@@ -70,7 +70,7 @@ class TestPomidor:
 
     def test_pomidor_run_is_displayed_negative(self):
         with pytest.raises(TimeoutException):
-            to.run(assert_actions, feature="Is_Displayed")
+            to.run(assert_actions, feature="Is_displayed")
 
     def test_pomidor_run_not_displayed(self):
         scenario_num = to.run(assert_actions, feature="Not_Displayed")

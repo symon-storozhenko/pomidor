@@ -19,29 +19,39 @@ import time
 
 
 class PomidorSyntaxErrorTooManyActions(Exception):
-    """ Pomidor syntax error class. """
+    """ Pomidor syntax error class: more actions than objects """
 
-    def __init__(self, *args, **kwargs):
-        print("You have more actions than objects")
+    def __init__(self, path, line_num, *args, **kwargs):
+        self.path = path
+        self.line_num = line_num
+        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
+              f'{path}\nParagraph on line: {line_num}\n'
+              f'ERROR: You have more actions than objects{Colors.ENDC}')
+
 
 class PomidorSyntaxErrorTooManyObjects(Exception):
-    """ Pomidor syntax error class. """
+    """ Pomidor syntax error class: more objects than actions """
 
-    def __init__(self, *args, **kwargs):
-        print("You have more objects than actions")
+    def __init__(self, path, line_num, *args, **kwargs):
+        self.path = path
+        self.line_num = line_num
+        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
+              f'{path}\nParagraph on line: {line_num}\n'
+              f'ERROR: You have more objects than actions{Colors.ENDC}')
 
-class PomidorObjectNotFound(Exception):
-    """ Page object error class. """
-
-    def __init__(self, *args, **kwargs):
-        pass
 
 class PomidorObjectDoesNotExistOnPage(Exception):
-    """ Pomidor syntax error class. """
+    """ Pomidor syntax error class: Page object does not exist on the page """
 
-    def __init__(self, *args, **kwargs):
-        print("Page object does not exist on the page. Please check page "
-              "object selector and value")
+    def __init__(self, path, line_num, obj, *args, **kwargs):
+        self.path = path
+        self.line_num = line_num
+        self.obj = obj
+        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
+              f'Paragraph on line: {line_num}\nERROR:  {Colors.WARNING}'
+              f'#{obj}{Colors.FAIL} does not exist on the page or in csv file.'
+              f' Please check page object selector and value{Colors.ENDC}')
+
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     """Goes through a given directory and creates a list of filenames with
@@ -110,14 +120,19 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                if y.startswith("#")]
     print(f'objects -> {objects}')
     if len(actions) > len(objects):
-        raise PomidorSyntaxErrorTooManyActions
+        raise PomidorSyntaxErrorTooManyActions(path=filepath,
+                                               line_num=line_num)
     elif len(objects) > len(actions):
-        raise PomidorSyntaxErrorTooManyObjects
+        raise PomidorSyntaxErrorTooManyObjects(path=filepath,
+                                               line_num=line_num)
 
     obj_source = [obj_dict.get(i) for i in objects]
     print(f'obj_source -> {obj_source}\n\n')
-    if None in obj_source:
-        raise PomidorObjectDoesNotExistOnPage
+    for enum, i in enumerate(obj_source):
+        if i is None:
+            raise PomidorObjectDoesNotExistOnPage(path=filepath,
+                                                  line_num=line_num,
+                                                  obj=objects[enum])
     act_obj_list = [list(a) for a in zip(actions, obj_source)]
     print(f'act_obj_list -> {act_obj_list}\n\n')
 
@@ -149,6 +164,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                 time.sleep(1)
             print(f'act_func -> {act_func}')
             exec(act_func)
+        print(f'{Colors.OKBLUE} [PASSED] - {frst_prgrph_line} {Colors.ENDC}')
 
     finally:
         driver.quit()
@@ -165,13 +181,24 @@ def go_thru_pomidor_file(func, feature, obj_dict,
         counter = 1
         line_num = 1
         for x in spl:
-            print(f'counter -> {len(x) + 1}')
+            print(f'number of paragraphs per file -> {len(spl)}')
+            print(f'lines per paragraph -> {len(x)}')
+            line_num = x[0][0]
+            print(f'paragraph starts on line -> {line_num}')
 
-            markers_list = [y.lower() for y in x if y.startswith("@")]
+            list_of_lists_wo_enum = [list(y[1:]) for y in x]
+            print(f'list_of_lists_wo_enum -> {list_of_lists_wo_enum}')
+
+            prgrph_list = [item for t in list_of_lists_wo_enum
+                           for item in t]
+            print(f'paragraph_list - > {prgrph_list}')
+            markers_list = [y.lower() for y in prgrph_list
+                            if y.startswith("@")]
             print(f'markers -> {markers_list}')
 
             # process all markers with markers_list
-            feature_mark = ''.join([x.split()[1].strip(r'[;,]') for x in markers_list
+            feature_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
+                                    markers_list
                                     if x.startswith("@feature")])
             print(f'feature_mark -> {feature_mark}')
 
@@ -188,25 +215,37 @@ def go_thru_pomidor_file(func, feature, obj_dict,
                     url = urls.get(url_mark)
                     print(f'final url -> {url}')
 
-            test_case = [y for y in x if not y.startswith("@")
+            test_case = [y for y in prgrph_list if not y.startswith("@")
                          and not y.startswith("!!")]
             print(f'test_case -> {test_case}')
             test_case_str = ' '.join([str(i) for i in test_case])
             print(f'test_case_string -> {test_case_str}')
 
-            first_paragraph_line = ''.join(test_case[0])
-            print(f'first_paragraph_line -> {first_paragraph_line}')
-            scenario_title_line_num = counter + (len(x) + 1)
-            print(f'scenario_title_line_num -> {scenario_title_line_num}')
+            str_list = re.split(r'[;,.!?\s]', test_case_str)
 
-            scenario_number = run_all_or_feature(
-                driver, feature, feature_mark,
-                filepath,
-                first_paragraph_line,
-                line_num, obj_dict,
-                scenario_number,
-                scenario_title_line_num,
-                test_case_str, url, wait)
+            actions = [x.lower() for x in str_list
+                       if x.lower() in backward_action_dict or \
+                       x.lower() in forward_action_dict]
+
+            print(f'actions - > {actions}')
+            objects = [y.strip("#") for y in str_list
+                       if y.startswith("#")]
+
+            if actions or objects:
+                # if test_case:
+                first_paragraph_line = ''.join(test_case[0])
+                print(f'first_paragraph_line -> {first_paragraph_line}')
+                scenario_title_line_num = counter + (len(x) + 1)
+                print(f'scenario_title_line_num -> {scenario_title_line_num}')
+
+                scenario_number = run_all_or_feature(
+                    driver, feature, feature_mark,
+                    filepath,
+                    first_paragraph_line,
+                    line_num, obj_dict,
+                    scenario_number,
+                    scenario_title_line_num,
+                    test_case_str, url, wait)
 
     return file_number, scenario_number
 
@@ -240,11 +279,14 @@ def get_all_file_paragraphs_into_list(filepath):
     with open(filepath) as file:
         list_of_file = file.read().splitlines()
         print(f'list_of_file --> {list_of_file}')
+        enumerated_list = list(enumerate(list_of_file, 1))
+
+        print(f'enumerated_list -> {enumerated_list}')
 
         # get all paragraphs of a file as a list of lists
         spl = [list(y)
                for x, y
-               in itertools.groupby(list_of_file, lambda z: z == '')
+               in itertools.groupby(enumerated_list, lambda z: z[1] == '')
                if not x]
         print(f'spl -> {spl}')
     return spl
@@ -466,7 +508,8 @@ class Pomidor:
             generate_list_of_pomidor_files(dir_path), feature,
             self.obj_dict, self.driver, self.url, self.urls, wait)
         if verbose:
-            print('\n\n-------\nEND -- All tests PASSED\n-------\n')
+            print(f'{Colors.OKGREEN}\n\n-------\n'
+                  f'END -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_number + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
         return scenario_number
@@ -500,3 +543,15 @@ class Pomidor:
     @staticmethod
     def get_dict_obj(obj_key):  # Needed to print only
         pass
+
+
+class Colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
