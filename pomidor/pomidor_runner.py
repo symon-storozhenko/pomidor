@@ -107,29 +107,30 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                            obj_dict, driver, url, wait) -> str:
     type_list = ['type', 'types', 'typed']
 
-    send_key_str = ["Symon", "Nikopol", "Tati","Sao Paulo", "Zoey", "Charlotte"]
+    send_key_str = ["Symon", "Nikopol", "Tati", "Sao Paulo", "Zoey",
+                    "Charlotte"]
     angle_n_square = re.findall(r" <<(.+?)>>|\[\[(.+?)]]", scenarioSteps)
     new_list = []
     print(f'angle_n_square -> {angle_n_square}')
     try:
-        for i in send_key_str*2:
+        for k in send_key_str * len(angle_n_square):
             for i in angle_n_square:
                 if i[0] == '':
                     print(f"{i} is square!")
                     new_list.append(i[1])
-
                 else:
                     print(f"{i} is angle!")
                     print(f'{i[0]} is angled KEy')
                     new_list.append(send_key_str[0])
                     del send_key_str[0]
+            print(f' k -> {send_key_str}')
     except:
         IndexError
+
     print(f'new_list -> {new_list}')
     # TODO: implementing angle and square strings typing
     # with file open:
     #
-
 
     str_in_brackets = re.findall(r" \[\[(.+?)]]", scenarioSteps)
     print(f'str_in_brackets -> {str_in_brackets}')
@@ -137,7 +138,6 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
     print(f'str_in_angle_brackets -> {str_in_angle_brackets}')
     str_list = re.split(r'[;,.!?\s]', scenarioSteps)
     print(f'str_list -> {str_list}')
-
 
     actions = [x.lower() for x in str_list
                if x.lower() in backward_action_dict or \
@@ -177,22 +177,24 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
         driver.get(url)
         driver.delete_all_cookies()
         # driver.maximize_window()
-        if str_in_angle_brackets:
-            print('yay')
+        run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets, wait)
 
-        #   add an exception if data ia not present
-        # add exception if angled brackets are not present
-        #   create a dictionary or list
-        # for first column length:
+        # if str_in_angle_brackets:
+        #     print('yay')
+        #
+        # #   add an exception if data ia not present
+        # # add exception if angled brackets are not present
+        # #   create a dictionary or list
+        # # for first column length:
+        # #     run_once(act_obj_list, frst_prgrph_line, str_in_brackets, wait)
+        # else:
         #     run_once(act_obj_list, frst_prgrph_line, str_in_brackets, wait)
-        else:
-            run_once(act_obj_list, frst_prgrph_line, str_in_brackets, wait)
 
     finally:
         driver.quit()
 
 
-def run_once(act_obj_list, frst_prgrph_line, str_in_brackets, wait):
+def run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets, wait):
     for i in act_obj_list:
         acti = i[0]
         page_obj_loc = i[1][0]
@@ -525,8 +527,8 @@ class Pomidor:
             chrome_options = Options()
             # chrome_options.add_argument("start-maximized")
             # chrome_options.add_argument("--headless")
-            driver = webdriver.Chrome(options=chrome_options)
-            # driver = webdriver.Chrome()
+            # driver = webdriver.Chrome(options=chrome_options)
+            driver = webdriver.Chrome()
         if self.driver == 'Firefox':
             driver = webdriver.Firefox()
         return driver
