@@ -1,3 +1,6 @@
+from collections import defaultdict
+from csv import DictReader
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 import pytest
@@ -30,36 +33,79 @@ if "click()" in forward_action_dict.keys():
 
 url = 'https://pomidor-automation.com/'
 
-driver = webdriver.Chrome()
-driver.get(url)
+import numpy as np
 
-try:
+def get_csv_data_first_row(file: str) -> dict:
+    with open(file) as f:
+        csv_reader = DictReader(f, delimiter=',', quotechar='"')
+        titles = [list(x.keys()) for x in csv_reader]
+        title = titles[0]
+        values = [list(y.values()) for y in csv_reader]
+        csv_dict = [{k: v for k, v in row.items()}
+                    for row in csv_reader]
 
-    practice_btn = driver.find_element_by_link_text("Practice")
-    assert practice_btn.is_displayed()
-
-    practice_btn.click()
-
-    name_field = driver.find_element_by_css_selector("input#name")
-    assert name_field.is_displayed()
-    print("name_field is displayed")
-
-    # fake_obj = driver.find_element_by_link_text("Fake")
-    # back_home_button, CSS_SELECTOR, a.wp - block - button__link
-
-    exec(f'with pytest.raises(TimeoutException):\n\t'
-        f'WebDriverWait(driver, 5).until(ec.element_to_be_clickable'
-         f'((By.CSS_SELECTOR,"va.wp-block-button__link"))).is_displayed()')
+        print(f'titles -> {title}')
+        print(f'values -> {values}')
+        print(f'csv_dict -> {csv_dict}')
+    return title
 
 
-    back_home_button = driver.find_element_by_css_selector("a.wp-block-button__link")
-    # back_home_button.is_displayed()
-    # WebDriverWait(driver, 5).until(ec.element_to_be_clickable((By.CSS_SELECTOR,
-    #                                             "va.wp-block-button__link")))
-    print("back_home_button is displayed")
+print(get_csv_data_first_row("urls.csv"))
 
-    name_field = driver.find_element_by_css_selector("input#name")
-    assert name_field.is_displayed()
 
-finally:
-    driver.quit()
+def additional_urls(urls_file: str) -> dict:
+    with open(urls_file) as csv_url_file:
+        csv_reader = DictReader(csv_url_file, delimiter=',', quotechar='"')
+        url_dict = {rows['name'].strip(): rows['url'].strip() for rows in
+                    csv_reader}
+    return url_dict
+
+print(additional_urls("urls.csv"))
+
+f = 'urls.csv'
+dr = DictReader(open(f))
+dict_of_lists = {}
+for k in dict_of_lists.keys():
+    dict_of_lists[k] = [dict_of_lists[k]]
+for line in dr:
+    for k in dict_of_lists.keys():
+        dict_of_lists[k].append(line[k])
+
+print(f'dict_of_lists-> {dict_of_lists}')
+
+
+def get_csv_data_values(file: str, key: str) -> dict:
+    with open(file) as csv_file:
+        titles = get_csv_data_first_row(file)
+        csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
+        print(f'titles -> {titles}')
+        url_dict = {}
+        values_list = [rows[key] for rows in csv_reader]
+        url_dict[key] = values_list
+        print(f'url_dic -> {url_dict}')
+        print(f'url_dict.values() -> {url_dict.values()}')
+        print(f'url_dict.values() list -> {list(url_dict.values())[0]}')
+
+        for enum, i in enumerate(list(url_dict.values())[0]):
+            print(f'i -> {i}')
+            # print(f'url_dict -> {url_dict}')
+            del url_dict.values()[0][0]
+            print(f'url_dict.values() after delete -> {list(url_dict.values())[0]}')
+
+        #
+        # url_dict = {rows['name'].strip(): rows['url'].strip() for rows in
+        #             csv_reader}
+    return url_dict
+
+
+print(f'url_dict -> {get_csv_data_values("urls.csv", "url")}')
+
+
+
+
+
+# import pandas as pd
+# df = pd.read_csv("urls.csv")
+# saved_column = df.keys() ["name"] #you can also use df['column_name']
+
+# print(f'saved_column -> {saved_column}')
