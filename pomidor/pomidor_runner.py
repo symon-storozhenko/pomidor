@@ -18,6 +18,25 @@ from selenium.webdriver.common.by import By
 import time
 
 
+class PomidorFileNotFoundError(FileNotFoundError):
+    """ Pomidor syntax error class: more actions than objects """
+
+    def __init__(self, path, *args, **kwargs):
+        self.path = path
+        print(f'{Colors.FAIL}PomidorFileNotFoundError:\nFile Path: '
+              f'{path}{Colors.ENDC}')
+
+
+class PomidorDataFeedError(Exception):
+    """ Pomidor syntax error class: more actions than objects """
+
+    def __init__(self, path, line_num, *args, **kwargs):
+        self.path = path
+        self.line_num = line_num
+        print(f'{Colors.FAIL}PomidorDataFeed ERROR:\nFile Path: '
+              f'{path}\nParagraph on line: {line_num}\n{Colors.ENDC}')
+
+
 class PomidorSyntaxErrorTooManyActions(Exception):
     """ Pomidor syntax error class: more actions than objects """
 
@@ -26,7 +45,9 @@ class PomidorSyntaxErrorTooManyActions(Exception):
         self.line_num = line_num
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
               f'{path}\nParagraph on line: {line_num}\n'
-              f'ERROR: You have more actions than objects{Colors.ENDC}')
+              f'ERROR: You have more actions than objects. Number of actions '
+              f'(click, type, wait, etc.) should match number of your objects '
+              f'(Ex. #home_button){Colors.ENDC}')
 
 
 class PomidorSyntaxErrorTooManyObjects(Exception):
@@ -37,7 +58,9 @@ class PomidorSyntaxErrorTooManyObjects(Exception):
         self.line_num = line_num
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
               f'{path}\nParagraph on line: {line_num}\n'
-              f'ERROR: You have more objects than actions{Colors.ENDC}')
+              f'ERROR: You have more objects than actions. Number of actions '
+              f'(click, type, wait, etc.) should match number of your objects '
+              f'(Ex. #home_button){Colors.ENDC}')
 
 
 class PomidorObjectDoesNotExistOnPage(Exception):
@@ -102,39 +125,59 @@ backward_action_dict = bact.backward_actions_dictionary
 forward_action_dict = act.forward_action_dictionary
 
 
-def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
-                           data_mark, scenario_title_line_num, line_num,
-                           obj_dict, driver, url, wait) -> str:
-    type_list = ['type', 'types', 'typed']
-
-    send_key_str = ["Symon", "Nikopol", "Tati", "Sao Paulo", "Zoey",
-                    "Charlotte"]
-    angle_n_square = re.findall(r" <<(.+?)>>|\[\[(.+?)]]", scenarioSteps)
-    new_list = []
-    print(f'angle_n_square -> {angle_n_square}')
+def get_list_of_dicts_from_csv(file):
     try:
-        for k in send_key_str * len(angle_n_square):
-            for i in angle_n_square:
-                if i[0] == '':
-                    print(f"{i} is square!")
-                    new_list.append(i[1])
-                else:
-                    print(f"{i} is angle!")
-                    print(f'{i[0]} is angled KEy')
-                    new_list.append(send_key_str[0])
-                    del send_key_str[0]
-            print(f' k -> {send_key_str}')
+        with open(file) as read_obj:
+            dict_reader = DictReader(read_obj)
+            list_of_dict = list(dict_reader)
+            print(list_of_dict)
+            print(f'list_of_dict_count -> {len(list_of_dict)}')
+            return list_of_dict
     except:
-        IndexError
+        PomidorFileNotFoundError(file)
 
-    print(f'new_list -> {new_list}')
+
+def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
+                            scenario_title_line_num, line_num,
+                           obj_dict, driver, url, wait, data_mark) -> str:
+    print(f'scenarioSteps -> {scenarioSteps}')
+
+    csv_list_of_dicts = []
+    csv_list_of_dicts_range = 0
+    str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
+    # if data_mark and not str_in_angle_brackets:
+    #     print(f'{Colors.FAIL}Please include csv column names in double angle '
+    #           f'quotes: Example: type <<FirstName>>\n{Colors.ENDC}')
+    #     raise PomidorDataFeedError(filepath, line_num)
+
+    if not data_mark and str_in_angle_brackets:
+        print(f'{Colors.FAIL}Please add @data with a csv file in the '
+              f'beginning of your paragraph. Example: @data file_name.csv\n'
+              f'{Colors.ENDC}')
+        raise PomidorDataFeedError(filepath, line_num)
+
+    if data_mark and str_in_angle_brackets:
+        csv_list_of_dicts = get_list_of_dicts_from_csv(data_mark)
+        csv_list_of_dicts_range = len(csv_list_of_dicts)
+        print(f'csv_list_of_dicts -> {csv_list_of_dicts}')
+
+    angle_n_square = re.findall(r" <<(.+?)>>|\[\[(.+?)]]", scenarioSteps)
+    angle_square_list = []
+    print(f'angle_n_square -> {angle_n_square}')
+    angle_n_square_print = [('FirstName', ''), ('', 'some free text'),
+                            ('City of Birth', '')]
+    combine_angle_n_square_into_list(angle_n_square, angle_square_list,
+                                     csv_list_of_dicts)
+
+    print(f'angle_square_list -> {angle_square_list}')
     # TODO: implementing angle and square strings typing
     # with file open:
     #
 
     str_in_brackets = re.findall(r" \[\[(.+?)]]", scenarioSteps)
     print(f'str_in_brackets -> {str_in_brackets}')
-    str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
+    if str_in_angle_brackets:
+        print("str_in_angle_brackets is True")
     print(f'str_in_angle_brackets -> {str_in_angle_brackets}')
     str_list = re.split(r'[;,.!?\s]', scenarioSteps)
     print(f'str_list -> {str_list}')
@@ -177,40 +220,70 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
         driver.get(url)
         driver.delete_all_cookies()
         # driver.maximize_window()
-        run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets, wait)
 
-        # if str_in_angle_brackets:
-        #     print('yay')
-        #
-        # #   add an exception if data ia not present
-        # # add exception if angled brackets are not present
-        # #   create a dictionary or list
-        # # for first column length:
-        # #     run_once(act_obj_list, frst_prgrph_line, str_in_brackets, wait)
-        # else:
+        if str_in_angle_brackets:
+            print(f'Crazy Loop -> {csv_list_of_dicts_range}')
+            for i in range(csv_list_of_dicts_range):
+                run_once(driver, act_obj_list, frst_prgrph_line,
+                         angle_square_list, wait)
+
+        #   add an exception if data ia not present
+        # add exception if angled brackets are not present
+        #   create a dictionary or list
+        # for first column length:
         #     run_once(act_obj_list, frst_prgrph_line, str_in_brackets, wait)
+        else:
+            run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets,
+                     wait)
 
     finally:
         driver.quit()
 
 
+def combine_angle_n_square_into_list(angle_n_square, angle_square_list,
+                                     csv_list_of_dicts):
+    try:
+        for k in csv_list_of_dicts * len(angle_n_square):
+            print(f'k in csv_list_of_dicts * len(angle_n_square) -> {k}')
+            for i in angle_n_square:
+                if i[0] == '':
+                    print(f"{i} is square!")
+                    angle_square_list.append(i[1])
+                else:
+                    print(f"{i} is angle!")
+                    print(f'{i[0]} is angled KEy')
+                    key = i[0]
+                    print(f'key -> {key}')
+                    value = csv_list_of_dicts[0].get(key)
+                    print(f'value -> {value}')
+                    angle_square_list.append(value)
+            del csv_list_of_dicts[0]
+            print(f' k -> {csv_list_of_dicts}')
+    except:
+        IndexError
+
+
 def run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets, wait):
+    type_list = ['type', 'types', 'typed']
     for i in act_obj_list:
         acti = i[0]
         page_obj_loc = i[1][0]
         page_object_src = i[1][1]
-        act_func, str_in_quotes = which_action(
+        act_func, str_for_send_keys = which_action(
             acti, page_object_src, page_obj_loc, str_in_brackets, wait)
         if acti.startswith("type"):
+            print("Clear function worked")
             exec(f'WebDriverWait(driver, '
                  f'{wait}).until(ec.element_to_be_clickable('
                  f'(By.{page_obj_loc},\"{page_object_src}\"))).clear()')
             # TODO add is_selected and is_enabled asserts
             # TODO add "page_title" assert
 
-            time.sleep(1)
         print(f'act_func -> {act_func}')
         exec(act_func)
+        # time.sleep(1)
+        if acti in type_list:
+            str_in_brackets.pop(0)
     print(f'{Colors.OKBLUE} [PASSED] - {frst_prgrph_line} {Colors.ENDC}')
 
 
@@ -288,37 +361,37 @@ def go_thru_pomidor_file(func, feature, obj_dict,
                 print(f'scenario_title_line_num -> {scenario_title_line_num}')
 
                 scenario_number = run_all_or_feature(
-                    driver, feature, feature_mark, data_mark,
+                    driver, feature, feature_mark,
                     filepath,
                     first_paragraph_line,
                     line_num, obj_dict,
                     scenario_number,
                     scenario_title_line_num,
-                    test_case_str, url, wait)
+                    test_case_str, url, wait, data_mark)
 
     return file_number, scenario_number
 
 
-def run_all_or_feature(driver, feature, feature_mark, data_mark, filepath,
+def run_all_or_feature(driver, feature, feature_mark, filepath,
                        first_paragraph_line, line_num, obj_dict,
                        scenario_number, scenario_title_line_num,
                        test_case_str,
-                       url, wait):
+                       url, wait, data_mark):
     if feature:
         if feature_mark == feature.lower():
             test_p = execute_test_paragraph(
-                test_case_str, filepath, first_paragraph_line, data_mark,
+                test_case_str, filepath, first_paragraph_line,
                 scenario_title_line_num, line_num, obj_dict, driver,
-                url, wait)
+                url, wait, data_mark)
             print(f'scenario_with_action - {test_p}')
             scenario_number += 1
         else:
             pass
     else:
         test_p = execute_test_paragraph(
-            test_case_str, filepath, first_paragraph_line, data_mark,
+            test_case_str, filepath, first_paragraph_line,
             scenario_title_line_num, line_num, obj_dict, driver,
-            url, wait)
+            url, wait, data_mark)
         scenario_number += 1
         print(f'scenario_with_action - {test_p}')
     return scenario_number
@@ -428,8 +501,7 @@ def send_keys_func(str_list):
     # print(f'str_list  before ++ {str_list}')
     str_list = list(str_list)
     keys_to_send = str_list[0]
-    str_list.pop(0)
-    # print(f'str_list ++ {str_list}')
+    print(f'str_list in send_keys_func -> {str_list}')
     return f"send_keys(\"{keys_to_send}\")", str_list
 
 

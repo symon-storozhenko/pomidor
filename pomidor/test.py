@@ -89,7 +89,6 @@ def get_csv_data_values(file: str, key: str) -> dict:
         for enum, i in enumerate(list(url_dict.values())[0]):
             print(f'i -> {i}')
             # print(f'url_dict -> {url_dict}')
-            del url_dict.values()[0][0]
             print(f'url_dict.values() after delete -> {list(url_dict.values())[0]}')
 
         #
@@ -101,6 +100,18 @@ def get_csv_data_values(file: str, key: str) -> dict:
 print(f'url_dict -> {get_csv_data_values("urls.csv", "url")}')
 
 
+def get_list_of_dicts_from_csv(file):
+    with open(file) as read_obj:
+        # pass the file object to DictReader() to get the DictReader object
+        dict_reader = DictReader(read_obj)
+        # get a list of dictionaries from dct_reader
+        list_of_dict = list(dict_reader)
+        # print list of dict i.e. rows
+        print(list_of_dict)
+    return list_of_dict
+
+
+get_list_of_dicts_from_csv('../tests/pageObjects/csv_data_source.csv')
 
 
 
