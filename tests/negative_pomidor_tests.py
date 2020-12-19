@@ -2,7 +2,9 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from tests.pageObjects.page_factory import PageObject, BaseURL
-from pomidor.pomidor_runner import Pomidor, PomidorObjectDoesNotExistOnPage
+from pomidor.pomidor_runner import Pomidor, PomidorObjectDoesNotExistOnPage, \
+    PomidorDataFeedNoKeyError, PomidorDataFeedNoAngleKeysProvided, \
+    PomidorDataFeedNoCSVFileProvided
 from pomidor.pomidor_runner import PomidorSyntaxErrorTooManyObjects,\
     PomidorSyntaxErrorTooManyActions
 import pytest
@@ -85,37 +87,6 @@ class TestPomidor:
         assert scenario_num == 1
 
 
-    #
-    #
-    # def test_pomidor_run_exact_feature_name(self):  # Repo1 not Repo 1 !
-    #     scenario_num = to.run(run_story, "Reporting")
-    #     assert scenario_num == 1
-    #
-    # def test_pomidor_list_all_feature_values(self):
-    #     marker_list_length, unique_num = \
-    #         to.list_all_marker_values(run_story,
-    #                                   "@featurE")
-    #     assert marker_list_length == 5
-    #
-    # def test_pomidor_list_unique_feature_values(self):
-    #     marker_list_length, unique_num = to.list_all_marker_values(
-    #         run_story,
-    #         "@featurE")
-    #     assert unique_num == 4
-    #
-    # def test_pomidor_list_unique_url_marker_values(self):
-    #     marker_list_length, unique_num = \
-    #         to.list_all_marker_values(run_story,
-    #                                   "@url")
-    #     assert unique_num == 0
-    #
-    # def test_pomidor_list_all_url_marker_values(self):
-    #     marker_list_length, unique_num = \
-    #         to.list_all_marker_values(run_story,
-    #                                   "@url")
-    #     assert marker_list_length == 2
-
-
 class TestPomidorSyntaxPositive:
     def test_pomidor_last_line_is_read(self):
         scenario_num = to.run(last_line_3_scenarios)
@@ -148,4 +119,15 @@ class TestPomidorSyntaxNegative:
         with pytest.raises(PomidorObjectDoesNotExistOnPage):
             to.run(obj_in_page_factory_but_not_on_webpage)
 
+    def test_pomidor_csv_data_none_key_error(self):
+        with pytest.raises(PomidorDataFeedNoKeyError):
+            to.run(data_file, feature="csv_data7")
+
+    def test_pomidor_PomidorDataFeedNoAngleKeysProvided(self):
+        with pytest.raises(PomidorDataFeedNoAngleKeysProvided):
+            to.run(data_file, feature="csv_data3")
+
+    def test_pomidor_PomidorDataFeedNoCSVFileProvided(self):
+        with pytest.raises(PomidorDataFeedNoCSVFileProvided):
+            to.run(data_file, feature="csv_data4")
 # driver.quit()

@@ -2,6 +2,7 @@ import concurrent.futures
 import functools
 import pathlib
 import re
+import sys
 from csv import DictReader
 import itertools
 
@@ -18,6 +19,48 @@ from selenium.webdriver.common.by import By
 import time
 
 
+class PomidorDataFeedError(KeyError):
+    """ Pomidor syntax error class: more actions than objects """
+
+    def __init__(self, file_path, line_num, data_file, *args, **kwargs):
+        self.file_path = file_path
+        self.line_num = line_num
+        self.data_file = data_file
+
+    def print_error_header(self, line_num, data_file):
+        print(f'{Colors.FAIL}PomidorDataFeed ERROR:\nPomidor File Path:'
+              f' {self}\nParagraph starts on line: {line_num}\n'
+              f'csv file: {data_file}{Colors.ENDC}')
+
+
+class PomidorDataFeedNoKeyError(PomidorDataFeedError):
+    """ Pomidor syntax error class: more actions than objects """
+
+    def __init__(self, path, line_num, key, data_file, *args, **kwargs):
+        self.key = key
+        PomidorDataFeedError.print_error_header(path, line_num, data_file)
+        print(f'{Colors.FAIL}"{data_file}" file doesn\'t have <<{key}>> '
+              f'column{Colors.ENDC}')
+
+
+class PomidorDataFeedNoAngleKeysProvided(PomidorDataFeedError):
+    """ PomidorDataFeedNoAngleKeysProvided"""
+    def __init__(self, path, line_num, data_file, *args, **kwargs):
+        PomidorDataFeedError.print_error_header(path, line_num, data_file)
+        print(f'{Colors.FAIL}Please include csv column names in double angle '
+              f'quotes: Example: type <<FirstName>>\n{Colors.ENDC}')
+
+
+class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
+    """ PomidorDataFeedNoAngleKeysProvided"""
+    def __init__(self, path, line_num, data_file, *args, **kwargs):
+        PomidorDataFeedError.print_error_header(path, line_num, data_file)
+        print(f'{Colors.FAIL}Please add @data with a csv file in the '
+              f'beginning of your paragraph.\nExample: '
+              f'\n"@data csv_file_name.csv'
+              f'\nSome paragraph text..."{Colors.ENDC}')
+
+
 class PomidorFileNotFoundError(FileNotFoundError):
     """ Pomidor syntax error class: more actions than objects """
 
@@ -27,16 +70,6 @@ class PomidorFileNotFoundError(FileNotFoundError):
               f'{path}{Colors.ENDC}')
 
 
-class PomidorDataFeedError(Exception):
-    """ Pomidor syntax error class: more actions than objects """
-
-    def __init__(self, path, line_num, *args, **kwargs):
-        self.path = path
-        self.line_num = line_num
-        print(f'{Colors.FAIL}PomidorDataFeed ERROR:\nFile Path: '
-              f'{path}\nParagraph on line: {line_num}\n{Colors.ENDC}')
-
-
 class PomidorSyntaxErrorTooManyActions(Exception):
     """ Pomidor syntax error class: more actions than objects """
 
@@ -44,7 +77,7 @@ class PomidorSyntaxErrorTooManyActions(Exception):
         self.path = path
         self.line_num = line_num
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
-              f'{path}\nParagraph on line: {line_num}\n'
+              f'{path}\nParagraph starts on line: {line_num}\n'
               f'ERROR: You have more actions than objects. Number of actions '
               f'(click, type, wait, etc.) should match number of your objects '
               f'(Ex. #home_button){Colors.ENDC}')
@@ -57,7 +90,7 @@ class PomidorSyntaxErrorTooManyObjects(Exception):
         self.path = path
         self.line_num = line_num
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
-              f'{path}\nParagraph on line: {line_num}\n'
+              f'{path}\nParagraph starts on line: {line_num}\n'
               f'ERROR: You have more objects than actions. Number of actions '
               f'(click, type, wait, etc.) should match number of your objects '
               f'(Ex. #home_button){Colors.ENDC}')
@@ -71,7 +104,7 @@ class PomidorObjectDoesNotExistOnPage(Exception):
         self.line_num = line_num
         self.obj = obj
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
-              f'Paragraph on line: {line_num}\nERROR:  {Colors.WARNING}'
+              f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
               f'#{obj}{Colors.FAIL} does not exist on the page or in csv file.'
               f' Please check page object selector and value{Colors.ENDC}')
 
@@ -138,23 +171,18 @@ def get_list_of_dicts_from_csv(file):
 
 
 def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
-                            scenario_title_line_num, line_num,
+                           scenario_title_line_num, line_num,
                            obj_dict, driver, url, wait, data_mark) -> str:
     print(f'scenarioSteps -> {scenarioSteps}')
 
     csv_list_of_dicts = []
     csv_list_of_dicts_range = 0
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
-    # if data_mark and not str_in_angle_brackets:
-    #     print(f'{Colors.FAIL}Please include csv column names in double angle '
-    #           f'quotes: Example: type <<FirstName>>\n{Colors.ENDC}')
-    #     raise PomidorDataFeedError(filepath, line_num)
+    if data_mark and not str_in_angle_brackets:
+        raise PomidorDataFeedNoAngleKeysProvided(filepath, line_num, data_mark)
 
     if not data_mark and str_in_angle_brackets:
-        print(f'{Colors.FAIL}Please add @data with a csv file in the '
-              f'beginning of your paragraph. Example: @data file_name.csv\n'
-              f'{Colors.ENDC}')
-        raise PomidorDataFeedError(filepath, line_num)
+        raise PomidorDataFeedNoCSVFileProvided(filepath, line_num, data_mark)
 
     if data_mark and str_in_angle_brackets:
         csv_list_of_dicts = get_list_of_dicts_from_csv(data_mark)
@@ -166,8 +194,9 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
     print(f'angle_n_square -> {angle_n_square}')
     angle_n_square_print = [('FirstName', ''), ('', 'some free text'),
                             ('City of Birth', '')]
-    combine_angle_n_square_into_list(angle_n_square, angle_square_list,
-                                     csv_list_of_dicts)
+    combine_angle_n_square_into_list(filepath, angle_n_square,
+                                     angle_square_list,
+                                     csv_list_of_dicts, line_num, data_mark)
 
     print(f'angle_square_list -> {angle_square_list}')
     # TODO: implementing angle and square strings typing
@@ -240,8 +269,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
         driver.quit()
 
 
-def combine_angle_n_square_into_list(angle_n_square, angle_square_list,
-                                     csv_list_of_dicts):
+def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
+                                     csv_list_of_dicts, line_num, data_mark):
     try:
         for k in csv_list_of_dicts * len(angle_n_square):
             print(f'k in csv_list_of_dicts * len(angle_n_square) -> {k}')
@@ -255,12 +284,16 @@ def combine_angle_n_square_into_list(angle_n_square, angle_square_list,
                     key = i[0]
                     print(f'key -> {key}')
                     value = csv_list_of_dicts[0].get(key)
-                    print(f'value -> {value}')
+                    print(f'csv value -> {value}')
+                    if value is None:
+                        raise PomidorDataFeedNoKeyError(path, line_num,
+                                                        key, data_mark)
                     angle_square_list.append(value)
             del csv_list_of_dicts[0]
             print(f' k -> {csv_list_of_dicts}')
-    except:
-        IndexError
+    except IndexError as ie:
+        print("Index error", repr(ie))
+        pass
 
 
 def run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets, wait):
@@ -678,3 +711,4 @@ class Colors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+    ORANGE = '\033[91m'

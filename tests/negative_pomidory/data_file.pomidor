@@ -4,31 +4,40 @@ Release date:
 
 Sprint:
 
-
+!!test_pomidor_PomidorDataFeedNoAngleKeysProvided!!
 @feature csv_data3
-!!@data pageObjects/csv_data_source.csv
+@data pageObjects/csv_data_source.csv
 First, click on login_field #practice_menu_button page title
 and type [[text-1]]in #name_field. Then, type [[some
 free text]] in #name_field
 
 
+!!test_pomidor_PomidorDataFeedNoCSVFileProvided!!
 @feature csv_data4
+First, click on login_field #practice_menu_button page title
+and type <<FirstName>> in #name_field. Then, type [[some
+free text]] in #name_field
+
+
+!!Used for test_pomidor_csv_data!!
+@feature csv_data
 @data pageObjects/csv_data_source.csv
 First, click on login_field #practice_menu_button page title
 and type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field,
  and types <<City of
- Birth>> in #name_field
+Birth>> in #name_field
 and again and then type <<LastName>> in #name_field
 and type [[Yo!]] in #name_field
 
 
 Sprint#2:
 
-@feature csv_data
+!!Used for test_pomidor_csv_data_none_key_error!!
+@feature csv_data7
 @data pageObjects/csv_data_source.csv
 2-First, Click on login_field #practice_menu_button page title
-2-and TyPE <<FirstName>> in #name_field. Then, type 2- [[2-second
+2-and TyPE <<FirstNam9e>> in #name_field. Then, type 2- [[2-second
 !! This is a comment
 free
 text]] in #name_field, !! not valid comment
