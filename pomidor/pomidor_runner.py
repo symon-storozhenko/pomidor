@@ -228,10 +228,12 @@ def go_thru_pomidor_file(func, feature, obj_dict,
             print(f'markers -> {markers_list}')
 
             # process all markers with markers_list
-            feature_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
+            feature_mark_l = ''.join([x for x in
                                     markers_list
                                     if x.startswith("@feature")])
-            print(f'feature_mark -> {feature_mark}')
+            feature_mark_list = [x.strip(r'[;,]') for x in
+                                 feature_mark_l.split()]
+            print(f'feature_mark -> {feature_mark_list}')
 
             data_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
                                  markers_list
@@ -275,7 +277,7 @@ def go_thru_pomidor_file(func, feature, obj_dict,
                 print(f'scenario_title_line_num -> {scenario_title_line_num}')
 
                 scenario_number = run_all_or_feature(
-                    driver, feature, feature_mark,
+                    driver, feature, feature_mark_list,
                     filepath,
                     first_paragraph_line,
                     line_num, obj_dict,
@@ -286,13 +288,13 @@ def go_thru_pomidor_file(func, feature, obj_dict,
     return file_number, scenario_number
 
 
-def run_all_or_feature(driver, feature, feature_mark, filepath,
+def run_all_or_feature(driver, feature, feature_marker_list, filepath,
                        first_paragraph_line, line_num, obj_dict,
                        scenario_number, scenario_title_line_num,
                        test_case_str,
                        url, wait, data_mark):
     if feature:
-        if feature_mark == feature.lower():
+        if feature.lower() in feature_marker_list:
             test_p = execute_test_paragraph(
                 test_case_str, filepath, first_paragraph_line,
                 scenario_title_line_num, line_num, obj_dict, driver,

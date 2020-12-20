@@ -82,6 +82,14 @@ class TestPomidor:
         scenario_num = to.run(data_file, feature="csv_data")
         assert scenario_num == 1
 
+    def test_pomidor_csv_data1(self):
+        scenario_num = to.run(data_file, feature="csv_data1")
+        assert scenario_num == 1
+
+    def test_pomidor_csv_data2(self):
+        scenario_num = to.run(data_file, feature="csv_data2")
+        assert scenario_num == 1
+
     def test_pomidor_orphan_obj_b4_frwd_action(self):
         scenario_num = to.run(orph_obj_b4_frwd_act)
         assert scenario_num == 1
