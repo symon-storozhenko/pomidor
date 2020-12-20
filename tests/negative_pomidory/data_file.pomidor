@@ -20,7 +20,7 @@ free text]] in #name_field
 
 
 !!Used for test_pomidor_csv_data!!
-@feature csv_data
+@feature CSV_data
 @data pageObjects/csv_data_source.csv
 First, click on login_field #practice_menu_button page title
 and type <<FirstName>> in #name_field. Then, type [[some
@@ -30,6 +30,16 @@ Birth>> in #name_field
 and again and then type <<LastName>> in #name_field
 and type [[Yo!]] in #name_field
 
+
+@feature CSV_data1, csv_data2
+@data pageObjects/csv_data_source.csv
+First, click on login_field #practice_menu_button page title
+and type <<FirstName>> in #name_field. Then, type [[some
+free text]] in #name_field,
+ and types <<City of
+Birth>> in #name_field
+and again and then type <<LastName>> in #name_field
+and type [[Yo!]] in #name_field
 
 Sprint#2:
 

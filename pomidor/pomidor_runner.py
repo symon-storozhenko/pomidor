@@ -1,112 +1,22 @@
 import concurrent.futures
 import functools
+import pytest
 import pathlib
 import re
-import sys
 from csv import DictReader
 import itertools
-
-import pytest
-
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
-
 from pomidor.actions import ForwardAction, BackwardAction
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 import time
-
-
-class PomidorDataFeedError(KeyError):
-    """ Pomidor syntax error class: more actions than objects """
-
-    def __init__(self, file_path, line_num, data_file, *args, **kwargs):
-        self.file_path = file_path
-        self.line_num = line_num
-        self.data_file = data_file
-
-    def print_error_header(self, line_num, data_file):
-        print(f'{Colors.FAIL}PomidorDataFeed ERROR:\nPomidor File Path:'
-              f' {self}\nParagraph starts on line: {line_num}\n'
-              f'csv file: {data_file}{Colors.ENDC}')
-
-
-class PomidorDataFeedNoKeyError(PomidorDataFeedError):
-    """ Pomidor syntax error class: more actions than objects """
-
-    def __init__(self, path, line_num, key, data_file, *args, **kwargs):
-        self.key = key
-        PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}"{data_file}" file doesn\'t have <<{key}>> '
-              f'column{Colors.ENDC}')
-
-
-class PomidorDataFeedNoAngleKeysProvided(PomidorDataFeedError):
-    """ PomidorDataFeedNoAngleKeysProvided"""
-    def __init__(self, path, line_num, data_file, *args, **kwargs):
-        PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}Please include csv column names in double angle '
-              f'quotes: Example: type <<FirstName>>\n{Colors.ENDC}')
-
-
-class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
-    """ PomidorDataFeedNoAngleKeysProvided"""
-    def __init__(self, path, line_num, data_file, *args, **kwargs):
-        PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}Please add @data with a csv file in the '
-              f'beginning of your paragraph.\nExample: '
-              f'\n"@data csv_file_name.csv'
-              f'\nSome paragraph text..."{Colors.ENDC}')
-
-
-class PomidorFileNotFoundError(FileNotFoundError):
-    """ Pomidor syntax error class: more actions than objects """
-
-    def __init__(self, path, *args, **kwargs):
-        self.path = path
-        print(f'{Colors.FAIL}PomidorFileNotFoundError:\nFile Path: '
-              f'{path}{Colors.ENDC}')
-
-
-class PomidorSyntaxErrorTooManyActions(Exception):
-    """ Pomidor syntax error class: more actions than objects """
-
-    def __init__(self, path, line_num, *args, **kwargs):
-        self.path = path
-        self.line_num = line_num
-        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
-              f'{path}\nParagraph starts on line: {line_num}\n'
-              f'ERROR: You have more actions than objects. Number of actions '
-              f'(click, type, wait, etc.) should match number of your objects '
-              f'(Ex. #home_button){Colors.ENDC}')
-
-
-class PomidorSyntaxErrorTooManyObjects(Exception):
-    """ Pomidor syntax error class: more objects than actions """
-
-    def __init__(self, path, line_num, *args, **kwargs):
-        self.path = path
-        self.line_num = line_num
-        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
-              f'{path}\nParagraph starts on line: {line_num}\n'
-              f'ERROR: You have more objects than actions. Number of actions '
-              f'(click, type, wait, etc.) should match number of your objects '
-              f'(Ex. #home_button){Colors.ENDC}')
-
-
-class PomidorObjectDoesNotExistOnPage(Exception):
-    """ Pomidor syntax error class: Page object does not exist on the page """
-
-    def __init__(self, path, line_num, obj, *args, **kwargs):
-        self.path = path
-        self.line_num = line_num
-        self.obj = obj
-        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
-              f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
-              f'#{obj}{Colors.FAIL} does not exist on the page or in csv file.'
-              f' Please check page object selector and value{Colors.ENDC}')
+from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
+    PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
+    PomidorFileNotFoundError, PomidorSyntaxErrorTooManyActions, \
+    PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistOnPage, Colors
 
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
@@ -126,30 +36,6 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     if not tomato_files_list:
         raise FileNotFoundError(f'No pomidor files found in the directory')
     return tomato_files_list
-
-
-class PomidorInit:
-    """Creates an object of with the WebDriver based on Browser passed
-     (Ex. "Chrome", "Firefox", etc.)
-    """
-
-    extension = '.pomidor'
-
-    def __init__(self, browser, url):
-        self.browser = browser
-        self.url = url
-
-    def __repr__(self):
-        return f'Pomidor object with {self.browser} browser'
-
-    def define_browser(self):
-        if self.browser == 'Chrome':
-            with webdriver.Chrome() as driver:
-                driver.get(self.url)
-        if self.browser == 'Firefox':
-            with webdriver.Firefox() as driver:
-                driver.get(self.url)
-        return driver
 
 
 act = ForwardAction()
@@ -197,12 +83,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
     combine_angle_n_square_into_list(filepath, angle_n_square,
                                      angle_square_list,
                                      csv_list_of_dicts, line_num, data_mark)
-
     print(f'angle_square_list -> {angle_square_list}')
-    # TODO: implementing angle and square strings typing
-    # with file open:
-    #
-
     str_in_brackets = re.findall(r" \[\[(.+?)]]", scenarioSteps)
     print(f'str_in_brackets -> {str_in_brackets}')
     if str_in_angle_brackets:
@@ -701,14 +582,3 @@ class Pomidor:
         pass
 
 
-class Colors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    ORANGE = '\033[91m'

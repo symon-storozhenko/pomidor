@@ -2,11 +2,11 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from tests.pageObjects.page_factory import PageObject, BaseURL
-from pomidor.pomidor_runner import Pomidor, PomidorObjectDoesNotExistOnPage, \
-    PomidorDataFeedNoKeyError, PomidorDataFeedNoAngleKeysProvided, \
-    PomidorDataFeedNoCSVFileProvided
-from pomidor.pomidor_runner import PomidorSyntaxErrorTooManyObjects,\
-    PomidorSyntaxErrorTooManyActions
+from pomidor.pomidor_runner import Pomidor
+from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
+    PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
+    PomidorSyntaxErrorTooManyActions, PomidorSyntaxErrorTooManyObjects, \
+    PomidorObjectDoesNotExistOnPage
 import pytest
 import concurrent.futures
 
