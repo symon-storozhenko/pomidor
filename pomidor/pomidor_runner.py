@@ -4,6 +4,7 @@ import pytest
 import pathlib
 import re
 from csv import DictReader
+from concurrent.futures import ThreadPoolExecutor
 import itertools
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
@@ -36,6 +37,99 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     if not tomato_files_list:
         raise FileNotFoundError(f'No pomidor files found in the directory')
     return tomato_files_list
+
+
+def multi_threaded_run(tom_dir, go_thru_file_func):
+    pom_list = generate_list_of_pomidor_files(tom_dir)
+    futures_list = []
+    results = []
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        for pom_file in pom_list:
+            futures = executor.submit(go_thru_file_func, pom_file)
+            futures_list.append(futures)
+
+        for future in futures_list:
+            try:
+                result = future.result(timeout=60)
+                results.append(result)
+            except Exception:
+                results.append(None)
+    return results
+
+
+def go_thru_pomidor_file(func, feature, obj_dict,
+                         driver, base_url, urls, wait):
+    """Opens a .pomidor file, one at a time, and picks test case paragraphs
+    marked with a passed @marker value (Ex."@story", "@feature" or your own
+    custom marker, one by one, top to bottom"""
+    scenario_number = 0
+    for file_number, filepath in enumerate(func):
+        scenario_num = go_thru_one_file(base_url, driver, feature, filepath,
+                                           obj_dict, urls,
+                                           wait)
+        scenario_number += scenario_num
+
+    return file_number, scenario_number
+
+
+def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
+                     urls, wait):
+    scenario_number = 0
+    spl = get_all_file_paragraphs_into_list(filepath)
+    counter = 1
+    line_num = 1
+    for x in spl:
+        print(f'number of paragraphs per file -> {len(spl)}')
+        print(f'lines per paragraph -> {len(x)}')
+        line_num = x[0][0]
+        print(f'paragraph starts on line -> {line_num}')
+
+        list_of_lists_wo_enum = [list(y[1:]) for y in x]
+        print(f'list_of_lists_wo_enum -> {list_of_lists_wo_enum}')
+
+        prgrph_list = [item for t in list_of_lists_wo_enum
+                       for item in t]
+        print(f'paragraph_list - > {prgrph_list}')
+        markers_list = [y.lower() for y in prgrph_list
+                        if y.startswith("@")]
+        print(f'markers -> {markers_list}')
+
+        data_mark, feature_mark_list, tc_name_value, url = all_markers(
+            base_url, markers_list, urls)
+
+        test_case = [y for y in prgrph_list if not y.startswith("@")
+                     and not y.startswith("!!")]
+        print(f'test_case -> {test_case}')
+
+        test_case_str = ' '.join([str(i) for i in test_case])
+        print(f'test_case_string -> {test_case_str}')
+
+        str_list = re.split(r'[;,.!?\s]', test_case_str)
+
+        actions = [x.lower() for x in str_list
+                   if x.lower() in backward_action_dict or \
+                   x.lower() in forward_action_dict]
+
+        print(f'actions - > {actions}')
+        objects = [y.strip("#") for y in str_list
+                   if y.startswith("#")]
+
+        if actions or objects:
+            if tc_name_value:
+                tc_name = tc_name_value
+            else:
+                tc_name = ''.join(test_case[0])
+            print(f'first_paragraph_line -> {tc_name}')
+            scenario_title_line_num = counter + (len(x) + 1)
+            print(f'scenario_title_line_num -> {scenario_title_line_num}')
+
+            run_all_or_feature(
+                driver, feature, feature_mark_list,
+                filepath, tc_name, line_num, obj_dict, scenario_title_line_num,
+                test_case_str, url, wait, data_mark)
+            scenario_number += 1
+    return scenario_number
 
 
 act = ForwardAction()
@@ -201,73 +295,6 @@ def run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets, wait):
     print(f'{Colors.OKBLUE} [PASSED] - {frst_prgrph_line} {Colors.ENDC}')
 
 
-def go_thru_pomidor_file(func, feature, obj_dict,
-                         driver, base_url, urls, wait):
-    """Opens a .pomidor file, one at a time, and picks test case paragraphs
-    marked with a passed @marker value (Ex."@story", "@feature" or your own
-    custom marker, one by one, top to bottom"""
-    scenario_number = 0
-    for file_number, filepath in enumerate(func):
-        spl = get_all_file_paragraphs_into_list(filepath)
-        counter = 1
-        line_num = 1
-        for x in spl:
-            print(f'number of paragraphs per file -> {len(spl)}')
-            print(f'lines per paragraph -> {len(x)}')
-            line_num = x[0][0]
-            print(f'paragraph starts on line -> {line_num}')
-
-            list_of_lists_wo_enum = [list(y[1:]) for y in x]
-            print(f'list_of_lists_wo_enum -> {list_of_lists_wo_enum}')
-
-            prgrph_list = [item for t in list_of_lists_wo_enum
-                           for item in t]
-            print(f'paragraph_list - > {prgrph_list}')
-            markers_list = [y.lower() for y in prgrph_list
-                            if y.startswith("@")]
-            print(f'markers -> {markers_list}')
-
-            data_mark, feature_mark_list, tc_name_value, url = all_markers(
-                base_url, markers_list, urls)
-
-            test_case = [y for y in prgrph_list if not y.startswith("@")
-                         and not y.startswith("!!")]
-            print(f'test_case -> {test_case}')
-
-            test_case_str = ' '.join([str(i) for i in test_case])
-            print(f'test_case_string -> {test_case_str}')
-
-            str_list = re.split(r'[;,.!?\s]', test_case_str)
-
-            actions = [x.lower() for x in str_list
-                       if x.lower() in backward_action_dict or \
-                       x.lower() in forward_action_dict]
-
-            print(f'actions - > {actions}')
-            objects = [y.strip("#") for y in str_list
-                       if y.startswith("#")]
-
-            if actions or objects:
-                if tc_name_value:
-                    tc_name = tc_name_value
-                else:
-                    tc_name = ''.join(test_case[0])
-                print(f'first_paragraph_line -> {tc_name}')
-                scenario_title_line_num = counter + (len(x) + 1)
-                print(f'scenario_title_line_num -> {scenario_title_line_num}')
-
-                scenario_number = run_all_or_feature(
-                    driver, feature, feature_mark_list,
-                    filepath,
-                    tc_name,
-                    line_num, obj_dict,
-                    scenario_number,
-                    scenario_title_line_num,
-                    test_case_str, url, wait, data_mark)
-
-    return file_number, scenario_number
-
-
 def all_markers(base_url, markers_list, urls):
     #   TODO: implement @precond
     #   TODO: implement @param
@@ -305,7 +332,7 @@ def all_markers(base_url, markers_list, urls):
 
 def run_all_or_feature(driver, feature, feature_marker_list, filepath,
                        first_paragraph_line, line_num, obj_dict,
-                       scenario_number, scenario_title_line_num,
+                       scenario_title_line_num,
                        test_case_str,
                        url, wait, data_mark):
     if feature:
@@ -316,7 +343,6 @@ def run_all_or_feature(driver, feature, feature_marker_list, filepath,
                 scenario_title_line_num, line_num, obj_dict, driver,
                 url, wait, data_mark)
             print(f'scenario_with_action - {test_p}')
-            scenario_number += 1
         else:
             pass
     else:
@@ -324,9 +350,7 @@ def run_all_or_feature(driver, feature, feature_marker_list, filepath,
             test_case_str, filepath, first_paragraph_line,
             scenario_title_line_num, line_num, obj_dict, driver,
             url, wait, data_mark)
-        scenario_number += 1
         print(f'scenario_with_action - {test_p}')
-    return scenario_number
 
 
 def get_all_file_paragraphs_into_list(filepath):
@@ -558,10 +582,35 @@ class Pomidor:
     # def delete_all_cookies(self):
     #     pass
 
-    def run(self, dir_path, feature=False, verbose=True, wait=10):
-        file_number, scenario_number = go_thru_pomidor_file(
-            generate_list_of_pomidor_files(dir_path), feature,
-            self.obj_dict, self.driver, self.url, self.urls, wait)
+    def run(self, dir_path, feature=False, verbose=True, wait=10,
+            parallel=None):
+        if parallel:
+            pom_list = generate_list_of_pomidor_files(dir_path)
+            futures_list = []
+            results = []
+            print(f'pom_list -> {pom_list}')
+            scenario_number = 0
+            file_number = 0
+            with ThreadPoolExecutor(parallel) as executor:
+                for file_number, pom_file in enumerate(pom_list):
+                    futures = executor.submit(
+                        go_thru_one_file, self.url, self.driver,
+                        feature, pom_file, self.obj_dict, self.urls, wait)
+                    futures_list.append(futures)
+                    print(f'futures -> {futures}')
+
+                for future in futures_list:
+                    try:
+                        result = future.result(timeout=60)
+                        results.append(result)
+                        scenario_number += 1
+                    except Exception:
+                        results.append(None)
+
+        else:
+            file_number, scenario_number = go_thru_pomidor_file(
+                generate_list_of_pomidor_files(dir_path), feature,
+                self.obj_dict, self.driver, self.url, self.urls, wait)
         if verbose:
             print(f'{Colors.OKGREEN}\n\n-------\n'
                   f'END -- All tests PASSED\n-------\n')
