@@ -67,7 +67,7 @@ class TestPomidor:
 
     def test_pomidor_parallel(self):
         scenario_num = po.run(nested_dir, parallel=4)
-        assert scenario_num == 4   # 8.3 sec
+        assert scenario_num == 4   # 8.3 sec # TODO fix this
 
     def test_pomidor_run_feature(self):
         scenario_num = po.run(run_story,

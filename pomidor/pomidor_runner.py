@@ -39,25 +39,6 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     return tomato_files_list
 
 
-def multi_threaded_run(tom_dir, go_thru_file_func):
-    pom_list = generate_list_of_pomidor_files(tom_dir)
-    futures_list = []
-    results = []
-
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        for pom_file in pom_list:
-            futures = executor.submit(go_thru_file_func, pom_file)
-            futures_list.append(futures)
-
-        for future in futures_list:
-            try:
-                result = future.result(timeout=60)
-                results.append(result)
-            except Exception:
-                results.append(None)
-    return results
-
-
 def go_thru_pomidor_file(func, feature, obj_dict,
                          driver, base_url, urls, wait):
     """Opens a .pomidor file, one at a time, and picks test case paragraphs
@@ -65,10 +46,10 @@ def go_thru_pomidor_file(func, feature, obj_dict,
     custom marker, one by one, top to bottom"""
     scenario_number = 0
     for file_number, filepath in enumerate(func):
-        scenario_num = go_thru_one_file(base_url, driver, feature, filepath,
-                                           obj_dict, urls,
-                                           wait)
+        scenario_num, tc_name = go_thru_one_file(
+            base_url, driver, feature, filepath, obj_dict, urls, wait)
         scenario_number += scenario_num
+        print(f'filepath has {scenario_num} scenarios')
 
     return file_number, scenario_number
 
@@ -78,7 +59,7 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
     scenario_number = 0
     spl = get_all_file_paragraphs_into_list(filepath)
     counter = 1
-    line_num = 1
+    tc_name = ''
     for x in spl:
         print(f'number of paragraphs per file -> {len(spl)}')
         print(f'lines per paragraph -> {len(x)}')
@@ -124,12 +105,12 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
             scenario_title_line_num = counter + (len(x) + 1)
             print(f'scenario_title_line_num -> {scenario_title_line_num}')
 
-            run_all_or_feature(
+            sce_num = run_all_or_feature(
                 driver, feature, feature_mark_list,
                 filepath, tc_name, line_num, obj_dict, scenario_title_line_num,
                 test_case_str, url, wait, data_mark)
-            scenario_number += 1
-    return scenario_number
+            scenario_number += sce_num
+    return scenario_number, tc_name
 
 
 act = ForwardAction()
@@ -330,11 +311,11 @@ def all_markers(base_url, markers_list, urls):
     return data_mark, feature_mark_list, tc_name_value, url
 
 
-def run_all_or_feature(driver, feature, feature_marker_list, filepath,
+def run_all_or_feature(driver, feature, feature_marker_list,  filepath,
                        first_paragraph_line, line_num, obj_dict,
-                       scenario_title_line_num,
-                       test_case_str,
+                       scenario_title_line_num, test_case_str,
                        url, wait, data_mark):
+    sce_num = 0
     if feature:
         if feature.lower() in feature_marker_list:
             print(f'Feature matched -> {feature}')
@@ -343,6 +324,7 @@ def run_all_or_feature(driver, feature, feature_marker_list, filepath,
                 scenario_title_line_num, line_num, obj_dict, driver,
                 url, wait, data_mark)
             print(f'scenario_with_action - {test_p}')
+            sce_num += 1
         else:
             pass
     else:
@@ -351,7 +333,8 @@ def run_all_or_feature(driver, feature, feature_marker_list, filepath,
             scenario_title_line_num, line_num, obj_dict, driver,
             url, wait, data_mark)
         print(f'scenario_with_action - {test_p}')
-
+        sce_num += 1
+    return sce_num
 
 def get_all_file_paragraphs_into_list(filepath):
     with open(filepath) as file:
@@ -591,20 +574,25 @@ class Pomidor:
             print(f'pom_list -> {pom_list}')
             scenario_number = 0
             file_number = 0
-            with ThreadPoolExecutor(parallel) as executor:
+            with ThreadPoolExecutor(parallel, 'pre') as executor:
                 for file_number, pom_file in enumerate(pom_list):
                     futures = executor.submit(
                         go_thru_one_file, self.url, self.driver,
                         feature, pom_file, self.obj_dict, self.urls, wait)
                     futures_list.append(futures)
-                    print(f'futures -> {futures}')
+                    print(f'futures -> {str(futures_list)}')
 
                 for future in futures_list:
                     try:
-                        result = future.result(timeout=60)
+                        result, tc_name = future.result(timeout=60)
+                        print(f'result -> {result}')
+                        print(f'{Colors.OKGREEN}PASSED: TC: '
+                              f'{tc_name}{Colors.ENDC}')
                         results.append(result)
-                        scenario_number += 1
+                        scenario_number += result
                     except Exception:
+                        print(f'{Colors.FAIL}FAILED: TC: '
+                              f'{tc_name}{Colors.ENDC}')
                         results.append(None)
 
         else:
@@ -615,7 +603,7 @@ class Pomidor:
             print(f'{Colors.OKGREEN}\n\n-------\n'
                   f'END -- All tests PASSED\n-------\n')
             print(f'Number of files used --> {file_number + 1}')  #
-            print(f'Number of scenarios --> {scenario_number}')
+            print(f'Number of scenarios --> {scenario_number}{Colors.ENDC}')
         return scenario_number
 
     @staticmethod

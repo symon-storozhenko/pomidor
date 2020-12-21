@@ -1,8 +1,3 @@
-App Name:
-Version:
-Release date:
-
-Sprint:
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
 @Feature CSV_data
@@ -10,13 +5,11 @@ Sprint:
 @param delete_cookies, full_screen
 @DATA pageObjects/csv_data_source.csv
 @url practice_page
-@story CSV_Test_case!
+@name CSV_Test_case#2
 !!Comment first line - First, click on login_field #practice_menu_button page title
-and type <<FirstName>> in #name_field. Then, type [[some
-free text]] in #name_field,
- and types <<City of
-Birth>> in #name_field
-and again and then type <<LastName>> in #name_field
+First paragraph: type <<FirstName>> in #name_field. Then, type [[some
+free text]] in #name_field, and types <<City of
+Birth>> in #name_field and again and then type <<LastName>> in #name_field
 and type [[Yo!]] in #name_field
 
 !!Used for test_pomidor_run_all_and_nested_dir #2!!
@@ -25,11 +18,9 @@ and type [[Yo!]] in #name_field
 @param delete_cookies, full_screen
 @DATA pageObjects/csv_data_source.csv
 @url practice_page
-@story CSV_Test_case!
+@name CSV_Test_case#2
 !!Comment first line - First, click on login_field #practice_menu_button page title
-and type <<FirstName>> in #name_field. Then, type [[some
-free text]] in #name_field,
- and types <<City of
-Birth>> in #name_field
-and again and then type <<LastName>> in #name_field
+Second paragraph: type <<FirstName>> in #name_field. Then, type [[some
+free text]] in #name_field, and types <<City of
+Birth>> in #name_field and then type <<LastName>> in #name_field
 and type [[Yo!]] in #name_field
