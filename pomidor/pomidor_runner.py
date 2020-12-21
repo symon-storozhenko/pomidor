@@ -57,7 +57,7 @@ def get_list_of_dicts_from_csv(file):
 
 
 def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
-                           scenario_title_line_num, line_num,
+                           tc_name, line_num,
                            obj_dict, driver, url, wait, data_mark) -> str:
     print(f'scenarioSteps -> {scenarioSteps}')
 
@@ -72,8 +72,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
 
     if data_mark and str_in_angle_brackets:
         csv_list_of_dicts = get_list_of_dicts_from_csv(data_mark)
-        csv_list_of_dicts_range = len(csv_list_of_dicts)
         print(f'csv_list_of_dicts -> {csv_list_of_dicts}')
+        csv_list_of_dicts_range = len(csv_list_of_dicts)
 
     angle_n_square = re.findall(r" <<(.+?)>>|\[\[(.+?)]]", scenarioSteps)
     angle_square_list = []
@@ -227,35 +227,13 @@ def go_thru_pomidor_file(func, feature, obj_dict,
                             if y.startswith("@")]
             print(f'markers -> {markers_list}')
 
-            # process all markers with markers_list
-            feature_mark_l = ''.join([x for x in
-                                    markers_list
-                                    if x.startswith("@feature")])
-            feature_mark_list = [x.strip(r'[;,]') for x in
-                                 feature_mark_l.split()]
-            print(f'feature_mark -> {feature_mark_list}')
-
-            data_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
-                                 markers_list
-                                 if x.startswith("@data")])
-            print(f'data_mark -> {data_mark}')
-
-            url = base_url
-            url_mark = ''.join([x.split()[1] for x in markers_list
-                                if x.startswith("@url")])
-            print(f'url_mark -> {url_mark}')
-            if url_mark:
-                if url_mark.startswith("http") and "://" in url_mark:
-                    print(f'@url is caught - {url}')
-                    url = url_mark
-                else:
-                    print(f'Extra @url is caught -> {url}')
-                    url = urls.get(url_mark)
-                    print(f'final url -> {url}')
+            data_mark, feature_mark_list, tc_name_value, url = all_markers(
+                base_url, markers_list, urls)
 
             test_case = [y for y in prgrph_list if not y.startswith("@")
                          and not y.startswith("!!")]
             print(f'test_case -> {test_case}')
+
             test_case_str = ' '.join([str(i) for i in test_case])
             print(f'test_case_string -> {test_case_str}')
 
@@ -270,22 +248,59 @@ def go_thru_pomidor_file(func, feature, obj_dict,
                        if y.startswith("#")]
 
             if actions or objects:
-                # if test_case:
-                first_paragraph_line = ''.join(test_case[0])
-                print(f'first_paragraph_line -> {first_paragraph_line}')
+                if tc_name_value:
+                    tc_name = tc_name_value
+                else:
+                    tc_name = ''.join(test_case[0])
+                print(f'first_paragraph_line -> {tc_name}')
                 scenario_title_line_num = counter + (len(x) + 1)
                 print(f'scenario_title_line_num -> {scenario_title_line_num}')
 
                 scenario_number = run_all_or_feature(
                     driver, feature, feature_mark_list,
                     filepath,
-                    first_paragraph_line,
+                    tc_name,
                     line_num, obj_dict,
                     scenario_number,
                     scenario_title_line_num,
                     test_case_str, url, wait, data_mark)
 
     return file_number, scenario_number
+
+
+def all_markers(base_url, markers_list, urls):
+    #   TODO: implement @precond
+    #   TODO: implement @param
+    # process all markers with markers_list
+    feature_mark_string = ''.join([x for x in
+                                   markers_list
+                                   if x.startswith("@feature")])
+    feature_mark_list = [x.strip(r'[;,]') for x in
+                         feature_mark_string.split()]
+    print(f'feature_mark -> {feature_mark_list}')
+    tc_name_line = ''.join([x[1:] for x in
+                            markers_list
+                            if x.startswith("@name")])
+    tc_name_value = tc_name_line.strip("@name").strip()
+    print(f'tc_name_line -> {tc_name_line}')
+    print(f'tc_name_value -> {tc_name_value}')
+    data_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
+                         markers_list
+                         if x.startswith("@data")])
+    print(f'data_mark -> {data_mark}')
+    url = base_url
+    url_mark = ''.join([x.split()[1] for x in markers_list
+                        if x.startswith("@url")])
+    print(f'url_mark -> {url_mark}')
+    if url_mark:
+        if url_mark.startswith("http") and "://" in url_mark:
+            print(f'@url is caught - {url}')
+            url = url_mark
+        else:
+            print(f'Extra @url is caught -> {url}')
+            url = urls.get(url_mark)
+            print(f'final url -> {url}')
+    return data_mark, feature_mark_list, tc_name_value, url
 
 
 def run_all_or_feature(driver, feature, feature_marker_list, filepath,
@@ -295,6 +310,7 @@ def run_all_or_feature(driver, feature, feature_marker_list, filepath,
                        url, wait, data_mark):
     if feature:
         if feature.lower() in feature_marker_list:
+            print(f'Feature matched -> {feature}')
             test_p = execute_test_paragraph(
                 test_case_str, filepath, first_paragraph_line,
                 scenario_title_line_num, line_num, obj_dict, driver,
@@ -582,5 +598,3 @@ class Pomidor:
     @staticmethod
     def get_dict_obj(obj_key):  # Needed to print only
         pass
-
-

@@ -5,8 +5,8 @@ Release date:
 Sprint:
 
 !!test_pomidor_PomidorDataFeedNoAngleKeysProvided!!
-@feature csv_data3
 @data pageObjects/csv_data_source.csv
+@feature csv_data3
 First, click on login_field #practice_menu_button page title
 and type [[text-1]]in #name_field. Then, type [[some
 free text]] in #name_field
@@ -21,8 +21,12 @@ free text]] in #name_field
 
 !!Used for test_pomidor_csv_data!!
 @Feature CSV_data
-@data pageObjects/csv_data_source.csv
-First, click on login_field #practice_menu_button page title
+@precond Login
+@param   delete_cookies, full_screen
+@DATA    pageObjects/csv_data_source.csv
+@url     practice_page
+@story   CSV_Test_case!
+!!Comment first line - First, click on login_field #practice_menu_button page title
 and type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field,
  and types <<City of
@@ -31,6 +35,7 @@ and again and then type <<LastName>> in #name_field
 and type [[Yo!]] in #name_field
 
 
+!!Used by test_pomidor_feature_list_csv_data1!!
 @feature CSV_data1, csv_data2
 @data pageObjects/csv_data_source.csv
 First, click on login_field #practice_menu_button page title

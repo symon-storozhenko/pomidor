@@ -10,12 +10,12 @@ from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
 import pytest
 import concurrent.futures
 
+
 url = 'https://pomidor-automation.com/'
 page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
 addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
 
 to = Pomidor("Chrome", page_obj, url, urls=addtl_urls)
-
 
 # to.delete_all_cookies()
 # to.max_window()
@@ -25,6 +25,7 @@ to = Pomidor("Chrome", page_obj, url, urls=addtl_urls)
 # to.quit()
 
 empty_str = 'negative_pomidory/empty_dir'
+nested_dir = 'negative_pomidory/SmokeTest'
 all_tomato_scripts = 'tomato3/tests/negative_pomidory'
 one_file = 'negative_pomidory/two_actions.pomidor'
 more_than_1_back = 'negative_pomidory/' \
@@ -43,8 +44,8 @@ data_file = 'negative_pomidory/data_file.pomidor'
 obj_in_page_factory_but_not_on_webpage = \
     'negative_pomidory/obj_in_page_factory_but_not_on_webpage.pomidor'
 
+
 # to.run(run_story, 'Report')
-# to.run_scripts_parallelly(smoke_test_dir, wait=3)
 
 
 class TestPomidorPro:
@@ -59,6 +60,15 @@ class TestPomidor:
         with pytest.raises(FileNotFoundError):
             to.run(empty_str)
             print("Sucess")
+
+    # count = 3
+    #
+    # # runs the function 3 times
+    # @pytest.mark.parametrize("counting", range(count))
+    # def test_pomidor_run_all_and_nested_dir(self, counting):
+    def test_pomidor_run_all_and_nested_dir(self):
+        scenario_num = to.run(nested_dir)
+        assert scenario_num == 3
 
     def test_pomidor_run_feature(self):
         scenario_num = to.run(run_story,
@@ -82,11 +92,11 @@ class TestPomidor:
         scenario_num = to.run(data_file, feature="csv_data")
         assert scenario_num == 1
 
-    def test_pomidor_csv_data1(self):
+    def test_pomidor_feature_list_csv_data1(self):
         scenario_num = to.run(data_file, feature="csv_data1")
         assert scenario_num == 1
 
-    def test_pomidor_csv_data2(self):
+    def test_pomidor_feature_list_csv_data2(self):
         scenario_num = to.run(data_file, feature="csv_data2")
         assert scenario_num == 1
 

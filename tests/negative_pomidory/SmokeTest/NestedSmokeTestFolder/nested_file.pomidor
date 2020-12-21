@@ -1,3 +1,8 @@
+App Name:
+Version:
+Release date:
+
+Sprint:
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
 @Feature CSV_data
@@ -13,6 +18,3 @@ free text]] in #name_field,
 Birth>> in #name_field
 and again and then type <<LastName>> in #name_field
 and type [[Yo!]] in #name_field
-
-
-
