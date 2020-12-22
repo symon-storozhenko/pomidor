@@ -39,21 +39,6 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     return tomato_files_list
 
 
-def go_thru_pomidor_file(func, feature, obj_dict,
-                         driver, base_url, urls, wait):
-    """Opens a .pomidor file, one at a time, and picks test case paragraphs
-    marked with a passed @marker value (Ex."@story", "@feature" or your own
-    custom marker, one by one, top to bottom"""
-    scenario_number = 0
-    for file_number, filepath in enumerate(func):
-        scenario_num, tc_name = go_thru_one_file(
-            base_url, driver, feature, filepath, obj_dict, urls, wait)
-        scenario_number += scenario_num
-        print(f'filepath has {scenario_num} scenarios')
-
-    return file_number, scenario_number
-
-
 def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
                      urls, wait):
     scenario_number = 0
@@ -567,13 +552,13 @@ class Pomidor:
 
     def run(self, dir_path, feature=False, verbose=True, wait=10,
             parallel=None):
+        scenario_number = 0
+        file_number = 0
         if parallel:
             pom_list = generate_list_of_pomidor_files(dir_path)
             futures_list = []
             results = []
             print(f'pom_list -> {pom_list}')
-            scenario_number = 0
-            file_number = 0
             with ThreadPoolExecutor(parallel, 'pre') as executor:
                 for file_number, pom_file in enumerate(pom_list):
                     futures = executor.submit(
@@ -596,9 +581,15 @@ class Pomidor:
                         results.append(None)
 
         else:
-            file_number, scenario_number = go_thru_pomidor_file(
-                generate_list_of_pomidor_files(dir_path), feature,
-                self.obj_dict, self.driver, self.url, self.urls, wait)
+
+            for file_number, pom_file in enumerate(
+                    generate_list_of_pomidor_files(dir_path)):
+                sce_num, tc_name = go_thru_one_file(
+                    self.url, self.driver, feature, pom_file, self.obj_dict,
+                    self.urls, wait)
+                if tc_name:
+                    scenario_number += sce_num
+
         if verbose:
             print(f'{Colors.OKGREEN}\n\n-------\n'
                   f'END -- All tests PASSED\n-------\n')
@@ -617,15 +608,20 @@ class Pomidor:
         return markers_num, len(set(marker_list))
 
     @staticmethod
-    def run_standalone_custom_identifier(dir_path, feature_value,
-                                         exact_story_name=False,
-                                         verbose=True):
-        file_num, scenario_number = go_thru_pomidor_file(
-            generate_list_of_pomidor_files(dir_path),
-            feature_value, exact_story_name)
+    def run_standalone_custom_identifier(self, dir_path, feature=False, verbose=True, wait=10,
+            parallel=None):
+        scenario_number = 0
+        file_number = 0
+        for file_number, pom_file in enumerate(
+                generate_list_of_pomidor_files(dir_path)):
+            sce_num, tc_name = go_thru_one_file(
+                self.url, self.driver, feature, pom_file, self.obj_dict,
+                self.urls, wait)
+            scenario_number += sce_num
+
         if verbose:
             print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_num + 1}')  #
+            print(f'Number of files used --> {file_number + 1}')  #
             print(f'Number of scenarios --> {scenario_number}')
 
     @staticmethod

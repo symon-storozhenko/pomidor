@@ -5,7 +5,7 @@
 @param delete_cookies, full_screen
 @DATA pageObjects/csv_data_source.csv
 @url practice_page
-@name CSV_Test_case#2
+@name CSV_Test_case#1
 !!Comment first line - First, click on login_field #practice_menu_button page title
 First paragraph: type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field, and types <<City of

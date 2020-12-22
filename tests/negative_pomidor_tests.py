@@ -67,7 +67,7 @@ class TestPomidor:
 
     def test_pomidor_parallel(self):
         scenario_num = po.run(nested_dir, parallel=4)
-        assert scenario_num == 4   # 8.3 sec # TODO fix this
+        assert scenario_num == 4   # 8.3 sec
 
     def test_pomidor_run_feature(self):
         scenario_num = po.run(run_story,
@@ -89,7 +89,7 @@ class TestPomidor:
 
     def test_pomidor_csv_data(self):
         scenario_num = po.run(data_file, feature="csv_data")
-        assert scenario_num == 1
+        assert scenario_num == 2
 
     def test_pomidor_feature_list_csv_data1(self):
         scenario_num = po.run(data_file, feature="csv_data1")
