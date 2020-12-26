@@ -6,4 +6,4 @@ dfgdf
 
 crazytomato -1
 I click on #practice_menu_button
-and I click on #obj_does_not_exist_on_page
+and I click on #non_existent_obj

@@ -6,7 +6,7 @@ from pomidor.pomidor_runner import Pomidor
 from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
     PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
     PomidorSyntaxErrorTooManyActions, PomidorSyntaxErrorTooManyObjects, \
-    PomidorObjectDoesNotExistOnPage
+    PomidorObjectDoesNotExistInCSVFile, PomidorObjectDoesNotExistOnPage
 import pytest
 import concurrent.futures
 
@@ -45,6 +45,8 @@ assert_actions = 'negative_pomidory/assert_actions.pomidor'
 data_file = 'negative_pomidory/data_file.pomidor'
 obj_in_page_factory_but_not_on_webpage = \
     'negative_pomidory/obj_in_page_factory_but_not_on_webpage.pomidor'
+obj_in_page_factory_but_not_on_webpage2 = \
+    'negative_pomidory/obj_in_page_factory_but_not_on_webpage2.pomidor'
 
 
 # po.run(nested_dir, parallel=4)
@@ -60,7 +62,7 @@ class TestPomidor:
     def test_pomidor_empty_dir(self):
         with pytest.raises(FileNotFoundError):
             po.run(empty_str)
-            print("Sucess")
+            print("Sucess")  # Exception printed
 
     def test_pomidor_run_all_and_nested_dir(self):
         scenario_num = po.run(nested_dir)
@@ -74,11 +76,11 @@ class TestPomidor:
     # 4 scenarios ran total, but 1 fails in the beginning and script continues
     def test_pomidor_parallel_one_fails_but_continue(self):
         scenario_num = po.run(nested_dir3, parallel=4)
-        assert scenario_num == 4  # 8.3 sec
+        assert scenario_num == 4  # 8.3 sec # Exception printed
 
     def test_pomidor_parallel_with_feature(self):
         scenario_num = po.run(nested_dir, feature='CSV_data1', parallel=4)
-        assert scenario_num == 2  # 8.3 sec
+        assert scenario_num == 2  # 8.3 sec # Exception printed
 
     def test_pomidor_run_feature(self):
         scenario_num = po.run(run_story,
@@ -90,13 +92,15 @@ class TestPomidor:
                               feature="Reporting")
         assert scenario_num == 1
 
+    # Final Test Summary NOT printed: crazytomato -1 found
+    # prints Exception
     def test_pomidor_run_is_displayed_negative(self): #
-        with pytest.raises(TimeoutException):
-            po.run(assert_actions, feature="Is_displayed")
+        with pytest.raises(PomidorObjectDoesNotExistOnPage):
+            po.run(assert_actions, feature="Is_displayed", wait=3)
 
     def test_pomidor_run_not_displayed(self):
         scenario_num = po.run(assert_actions, feature="Not_Displayed", wait=2)
-        assert scenario_num == 1
+        assert scenario_num == 1    # test summary printed
 
     def test_pomidor_csv_data(self):
         scenario_num = po.run(data_file, feature="csv_data")
@@ -127,50 +131,55 @@ class TestPomidorSyntaxNegative:
     # 4 scenarios total but one fails, 2 ran in total
     def test_pomidor_parallel_raise_exception_and_continue_and_exception(self):
         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(nested_dir2, parallel=4)
+            po.run(nested_dir2, parallel=4)    # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_more_than_1_obj_bckwrd_action_except(self):
         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(more_than_1_back)
+            po.run(more_than_1_back)    # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_two_actions(self):
         with pytest.raises(PomidorSyntaxErrorTooManyActions):
-            po.run(two_actions)
+            po.run(two_actions) # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_no_obj_found(self):
         with pytest.raises(PomidorSyntaxErrorTooManyActions):
-            po.run(no_obj_found)
+            po.run(no_obj_found) # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_no_obj_in_page_fctry(self):
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
-            po.run(no_obj_in_page_fctry)
+        with pytest.raises(PomidorObjectDoesNotExistInCSVFile):
+            po.run(no_obj_in_page_fctry) # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_last_orphan_obj(self):
         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(last_orphan_obj)
+            po.run(last_orphan_obj) # prints Exception
 
     # has 'crazytomato -1' in front
+    # prints Exception
     def test_pomidor_obj_in_page_factory_but_not_on_webpage(self):
         with pytest.raises(PomidorObjectDoesNotExistOnPage):
-            po.run(obj_in_page_factory_but_not_on_webpage)
+            po.run(obj_in_page_factory_but_not_on_webpage, wait=2)
+
+    def test_pomidor_obj_in_page_factory_but_not_on_webpage_and_continue(self):
+        scenario_num = po.run(obj_in_page_factory_but_not_on_webpage2,
+                              wait=2)
+        assert scenario_num == 2    # prints Exception and Test Summary
 
     # has 'crazytomato -1' in front
     def test_pomidor_csv_data_none_key_error(self):
         with pytest.raises(PomidorDataFeedNoKeyError):
-            po.run(data_file, feature="csv_data7")
+            po.run(data_file, feature="csv_data7")  # prints Exception
 
     # has 'PomidorError -1' in front
     def test_pomidor_PomidorDataFeedNoAngleKeysProvided(self):
         with pytest.raises(PomidorDataFeedNoAngleKeysProvided):
-            po.run(data_file, feature="csv_data3")
+            po.run(data_file, feature="csv_data3")  # prints Exception
 
     # has 'PomidorError -1' in front
     def test_pomidor_PomidorDataFeedNoCSVFileProvided(self):
         with pytest.raises(PomidorDataFeedNoCSVFileProvided):
-            po.run(data_file, feature="csv_data4")
-# driver.quit()
+            po.run(data_file, feature="csv_data4")  # prints Exception

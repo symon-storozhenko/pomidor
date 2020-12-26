@@ -9,7 +9,7 @@ class PomidorDataFeedError(KeyError):
         self.data_file = data_file
 
     def print_error_header(self, line_num, data_file):
-        print(f'{Colors.FAIL}{pomidor}ERROR\nPomidorDataFeed ERROR:\nPomidor '
+        print(f'{Colors.FAIL}\n{pomidor}ERROR\nPomidorDataFeed ERROR:\nPomidor'
               f'File Path: {self}\nParagraph starts on line: {line_num}\n'
               f'csv file: {data_file}{Colors.ENDC}')
 
@@ -47,8 +47,8 @@ class PomidorFileNotFoundError(FileNotFoundError):
 
     def __init__(self, path, *args, **kwargs):
         self.path = path
-        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}PomidorFileNotFoundError:\nFile Path: '
+        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
+        print(f'{Colors.FAIL}No pomidor files found.\nFile Path: '
               f'{path}{Colors.ENDC}')
 
 
@@ -58,7 +58,7 @@ class PomidorSyntaxErrorTooManyActions(Exception):
     def __init__(self, path, line_num, *args, **kwargs):
         self.path = path
         self.line_num = line_num
-        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
+        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
               f'{path}\nParagraph starts on line: {line_num}\n'
               f'ERROR: You have more actions than objects. Number of actions '
@@ -72,12 +72,26 @@ class PomidorSyntaxErrorTooManyObjects(Exception):
     def __init__(self, path, line_num, *args, **kwargs):
         self.path = path
         self.line_num = line_num
-        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
+        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
               f'{path}\nParagraph starts on line: {line_num}\n'
               f'ERROR: You have more objects than actions. Number of actions '
               f'(click, type, wait, etc.) should match number of your objects '
               f'(Ex. #home_button){Colors.ENDC}')
+
+
+class PomidorObjectDoesNotExistInCSVFile(Exception):
+    """ Pomidor syntax error class: Page object does not exist on the page """
+
+    def __init__(self, path, line_num, obj, *args, **kwargs):
+        self.path = path
+        self.line_num = line_num
+        self.obj = obj
+        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
+        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
+              f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
+              f'#{obj}{Colors.FAIL} does not exist in csv file.'
+              f' Please check page object selector and value{Colors.ENDC}')
 
 
 class PomidorObjectDoesNotExistOnPage(Exception):
@@ -87,10 +101,10 @@ class PomidorObjectDoesNotExistOnPage(Exception):
         self.path = path
         self.line_num = line_num
         self.obj = obj
-        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
+        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
+        print(f'{Colors.FAIL}\nFilePath: {path}\n'
               f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
-              f'#{obj}{Colors.FAIL} does not exist on the page or in csv file.'
+              f'#{obj}{Colors.FAIL} does not exist on page.'
               f' Please check page object selector and value{Colors.ENDC}')
 
 

@@ -20,7 +20,8 @@ import time
 from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
     PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
     PomidorFileNotFoundError, PomidorSyntaxErrorTooManyActions, \
-    PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistOnPage, Colors
+    PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistInCSVFile, \
+    Colors, PomidorObjectDoesNotExistOnPage
 
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
@@ -28,17 +29,14 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     .pomidor extension"""
     tomato_files_list = []
     tom_dir = pathlib.Path(tomato_directory)
-    print(f'List of files: {tom_dir}')
-    # one-file scenario
+    # single-file scenario
     if tomato_directory.endswith(Pomidor.extension):
         tomato_files_list.append(tomato_directory)
     for enum, path in enumerate(
-            tom_dir.rglob(f'*{Pomidor.extension}')):  # or .glob('**/*.oat')
+            tom_dir.rglob(f'*{Pomidor.extension}')):
         tomato_files_list.append(path)
-        print(f'{enum + 1}: {path}')
-    # print(f'tomato_files_list -> {tomato_files_list}')
     if not tomato_files_list:
-        raise FileNotFoundError(f'No pomidor files found in the directory')
+        raise PomidorFileNotFoundError(tom_dir)
     return tomato_files_list
 
 
@@ -47,42 +45,26 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
     scenario_number = 0
     spl = get_all_file_paragraphs_into_list(filepath)
     counter = 1
-    sce_num = 0
     tc_name = ''
     tcs_list = []
     for x in spl:
-        print(f'number of paragraphs per file -> {len(spl)}')
-        print(f'lines per paragraph -> {len(x)}')
         line_num = x[0][0]
-        print(f'paragraph starts on line -> {line_num}')
-
         list_of_lists_wo_enum = [list(y[1:]) for y in x]
-        print(f'list_of_lists_wo_enum -> {list_of_lists_wo_enum}')
-
         prgrph_list = [item for t in list_of_lists_wo_enum
                        for item in t]
-        print(f'paragraph_list - > {prgrph_list}')
         markers_list = [y.lower() for y in prgrph_list
                         if y.startswith("@")]
-        print(f'markers -> {markers_list}')
-
         data_mark, feature_mark_list, tc_name_value, url = all_markers(
             base_url, markers_list, urls)
-
         test_case = [y for y in prgrph_list if not y.startswith("@")
                      and not y.startswith("!!")]
-        print(f'test_case -> {test_case}')
-
         test_case_str = ' '.join([str(i) for i in test_case])
-        print(f'test_case_string -> {test_case_str}')
-
         str_list = re.split(r'[;,.!?\s]', test_case_str)
 
         actions = [x.lower() for x in str_list
                    if x.lower() in backward_action_dict or \
                    x.lower() in forward_action_dict]
 
-        print(f'actions - > {actions}')
         objects = [y.strip("#") for y in str_list
                    if y.startswith("#")]
 
@@ -92,23 +74,17 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
             else:
                 tc_name = ''.join(test_case[0])
             tc_id = f'{filepath}::{tc_name}::line {line_num}'
-            print(f'first_paragraph_line -> {tc_name}')
             scenario_title_line_num = counter + (len(x) + 1)
-            print(f'scenario_title_line_num -> {scenario_title_line_num}')
             try:
-                sce_num = 0
                 if feature:
                     if feature.lower() in feature_mark_list:
                         scenario_number += 1
-                        print(f'Feature matched -> {feature}')
                         test_p = execute_test_paragraph(
                             test_case_str, filepath, tc_name,
                             scenario_title_line_num, line_num, obj_dict,
                             driver,
                             url, wait, data_mark)
-                        print(f'scenario_with_action - {test_p}')
                         tcs_list.append(f"PASSED {tc_id}")
-
                     else:
                         pass
                 else:
@@ -117,20 +93,16 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
                         test_case_str, filepath, tc_name,
                         scenario_title_line_num, line_num, obj_dict, driver,
                         url, wait, data_mark)
-                    print(f'scenario_with_action - {test_p}')
                     tcs_list.append(f"PASSED {tc_id}")
-            except Exception as e:  # TODO: find out how to raise and except
+            except Exception as e:
                 tcs_list.append(f"FAILED {tc_id}")
                 print(e)
                 raise e
-                # traceback.print_exc(limit=10)   # TODO: needs some finessing
             finally:
                 if test_case_str.startswith('crazytomato -1'):
-                    print(f'crazytomato -1 in prgrph_list! {prgrph_list}')
-                    # raise Exception
+                    print(f'crazytomato -1 found')
                 else:
                     continue
-
     return scenario_number, tc_name, tcs_list
 
 
@@ -145,8 +117,6 @@ def get_list_of_dicts_from_csv(file):
         with open(file) as read_obj:
             dict_reader = DictReader(read_obj)
             list_of_dict = list(dict_reader)
-            print(list_of_dict)
-            print(f'list_of_dict_count -> {len(list_of_dict)}')
             return list_of_dict
     except:
         PomidorFileNotFoundError(file)
@@ -155,8 +125,6 @@ def get_list_of_dicts_from_csv(file):
 def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                            tc_name, line_num,
                            obj_dict, driver, url, wait, data_mark) -> str:
-    print(f'scenarioSteps -> {scenarioSteps}')
-
     csv_list_of_dicts = []
     csv_list_of_dicts_range = 0
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
@@ -168,34 +136,24 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
 
     if data_mark and str_in_angle_brackets:
         csv_list_of_dicts = get_list_of_dicts_from_csv(data_mark)
-        print(f'csv_list_of_dicts -> {csv_list_of_dicts}')
         csv_list_of_dicts_range = len(csv_list_of_dicts)
 
     angle_n_square = re.findall(r" <<(.+?)>>|\[\[(.+?)]]", scenarioSteps)
     angle_square_list = []
-    print(f'angle_n_square -> {angle_n_square}')
     angle_n_square_print = [('FirstName', ''), ('', 'some free text'),
                             ('City of Birth', '')]
     combine_angle_n_square_into_list(filepath, angle_n_square,
                                      angle_square_list,
                                      csv_list_of_dicts, line_num, data_mark)
-    print(f'angle_square_list -> {angle_square_list}')
     str_in_brackets = re.findall(r" \[\[(.+?)]]", scenarioSteps)
-    print(f'str_in_brackets -> {str_in_brackets}')
-    if str_in_angle_brackets:
-        print("str_in_angle_brackets is True")
-    print(f'str_in_angle_brackets -> {str_in_angle_brackets}')
     str_list = re.split(r'[;,.!?\s]', scenarioSteps)
-    print(f'str_list -> {str_list}')
 
     actions = [x.lower() for x in str_list
                if x.lower() in backward_action_dict or \
                x.lower() in forward_action_dict]
 
-    print(f'actions - > {actions}')
     objects = [y.strip("#") for y in str_list
                if y.startswith("#")]
-    print(f'objects -> {objects}')
     if len(actions) > len(objects):
         raise PomidorSyntaxErrorTooManyActions(path=filepath,
                                                line_num=line_num)
@@ -204,21 +162,12 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                                                line_num=line_num)
 
     obj_source = [obj_dict.get(i) for i in objects]
-    print(f'obj_source -> {obj_source}\n\n')
     for enum, i in enumerate(obj_source):
         if i is None:
-            raise PomidorObjectDoesNotExistOnPage(path=filepath,
-                                                  line_num=line_num,
-                                                  obj=objects[enum])
+            raise PomidorObjectDoesNotExistInCSVFile(path=filepath,
+                                                     line_num=line_num,
+                                                     obj=objects[enum])
     act_obj_list = [list(a) for a in zip(actions, obj_source)]
-    print(f'act_obj_list -> {act_obj_list}\n\n')
-
-    for i in act_obj_list:
-        print(f'i in act_obj_list -> {i}')
-
-        print(f'\nact -> {i[0]}')
-        print(f'\npage_obj_locator -> {i[1][0]}')
-        print(f'\npage_object_src -> {i[1][1]}')
 
     try:
         pomidor = Pomidor(driver, obj_dict, url)
@@ -228,19 +177,12 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
         # driver.maximize_window()
 
         if str_in_angle_brackets:
-            print(f'Crazy Loop -> {csv_list_of_dicts_range}')
             for i in range(csv_list_of_dicts_range):
-                run_once(driver, act_obj_list, frst_prgrph_line,
-                         angle_square_list, wait)
-
-        #   add an exception if data ia not present
-        # add exception if angled brackets are not present
-        #   create a dictionary or list
-        # for first column length:
-        #     run_once(act_obj_list, frst_prgrph_line, str_in_brackets, wait)
+                run_once(driver, objects, act_obj_list,
+                         angle_square_list, filepath, line_num, wait)
         else:
-            run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets,
-                     wait)
+            run_once(driver, objects, act_obj_list,
+                     str_in_brackets, filepath, line_num, wait)
 
     finally:
         driver.quit()
@@ -250,51 +192,49 @@ def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
                                      csv_list_of_dicts, line_num, data_mark):
     try:
         for k in csv_list_of_dicts * len(angle_n_square):
-            print(f'k in csv_list_of_dicts * len(angle_n_square) -> {k}')
             for i in angle_n_square:
                 if i[0] == '':
-                    print(f"{i} is square!")
                     angle_square_list.append(i[1])
                 else:
-                    print(f"{i} is angle!")
-                    print(f'{i[0]} is angled KEy')
                     key = i[0]
-                    print(f'key -> {key}')
                     value = csv_list_of_dicts[0].get(key)
-                    print(f'csv value -> {value}')
                     if value is None:
                         raise PomidorDataFeedNoKeyError(path, line_num,
                                                         key, data_mark)
                     angle_square_list.append(value)
             del csv_list_of_dicts[0]
-            print(f' k -> {csv_list_of_dicts}')
     except IndexError as ie:
-        print("Index error", repr(ie))
+        # print("Index error", repr(ie))
         pass
 
 
-def run_once(driver, act_obj_list, frst_prgrph_line, str_in_brackets, wait):
+def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
+             path, line_num, wait):
     type_list = ['type', 'types', 'typed']
-    for i in act_obj_list:
+    for enum, i in enumerate(act_obj_list):
         acti = i[0]
         page_obj_loc = i[1][0]
         page_object_src = i[1][1]
+        obj_name = obj_dict[enum]
         act_func, str_for_send_keys = which_action(
             acti, page_object_src, page_obj_loc, str_in_brackets, wait)
+
         if acti.startswith("type"):
-            print("Clear function worked")
             exec(f'WebDriverWait(driver, '
                  f'{wait}).until(ec.element_to_be_clickable('
                  f'(By.{page_obj_loc},\"{page_object_src}\"))).clear()')
             # TODO add is_selected and is_enabled asserts
             # TODO add "page_title" assert
 
-        print(f'act_func -> {act_func}')
-        exec(act_func)
+        try:
+            exec(act_func)
+        except TimeoutException as e:
+            print(e)
+            raise PomidorObjectDoesNotExistOnPage(path, line_num, obj_name)
+
         # time.sleep(1)
         if acti in type_list:
             str_in_brackets.pop(0)
-    print(f'{Colors.OKBLUE} [PASSED] - {frst_prgrph_line} {Colors.ENDC}')
 
 
 def all_markers(base_url, markers_list, urls):
@@ -306,70 +246,35 @@ def all_markers(base_url, markers_list, urls):
                                    if x.startswith("@feature")])
     feature_mark_list = [x.strip(r'[;,]') for x in
                          feature_mark_string.split()]
-    print(f'feature_mark -> {feature_mark_list}')
     tc_name_line = ''.join([x[1:] for x in
                             markers_list
                             if x.startswith("@name")])
     tc_name_value = tc_name_line.strip("@name").strip()
-    print(f'tc_name_line -> {tc_name_line}')
-    print(f'tc_name_value -> {tc_name_value}')
     data_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
                          markers_list
                          if x.startswith("@data")])
-    print(f'data_mark -> {data_mark}')
     url = base_url
     url_mark = ''.join([x.split()[1] for x in markers_list
                         if x.startswith("@url")])
-    print(f'url_mark -> {url_mark}')
     if url_mark:
         if url_mark.startswith("http") and "://" in url_mark:
-            print(f'@url is caught - {url}')
             url = url_mark
         else:
-            print(f'Extra @url is caught -> {url}')
             url = urls.get(url_mark)
-            print(f'final url -> {url}')
     return data_mark, feature_mark_list, tc_name_value, url
 
 
 def get_all_file_paragraphs_into_list(filepath):
     with open(filepath) as file:
         list_of_file = file.read().splitlines()
-        print(f'list_of_file --> {list_of_file}')
         enumerated_list = list(enumerate(list_of_file, 1))
-
-        print(f'enumerated_list -> {enumerated_list}')
 
         # get all paragraphs of a file as a list of lists
         spl = [list(y)
                for x, y
                in itertools.groupby(enumerated_list, lambda z: z[1] == '')
                if not x]
-        print(f'spl -> {spl}')
     return spl
-
-
-def url_marker(line, url, urls):
-    line_list = re.split(r'[;,.!?\s]', line)
-    ad_hoc_url = line_list[1]
-    print(f'ad_hoc_url is -> {ad_hoc_url}')
-    if ad_hoc_url.startswith("http") and "://" in ad_hoc_url:
-        print(f'@url is caught - {url}')
-        url = ad_hoc_url
-    else:
-        print(f'Extra @url is caught -> {url}')
-        url = urls.get(ad_hoc_url)
-    return url
-
-
-def feature_marker(feature, feature_instances, line) -> object:
-    line_list = re.split(r'[;,.!?\s]', line)
-    for f in line_list:
-        if feature.lower() == f.lower():
-            # or, f.lower().__contains__(story.lower()):
-            print(f'$@$$ FOUND {feature}! -> {f}\n')
-            feature_instances += 1
-    return feature_instances
 
 
 # packaging_tutorial
@@ -384,7 +289,6 @@ def list_all_mark_values(func, feature_type):
     """Function to list all needed test case paragraphs. No browser execution
     is performed"""
 
-    scenario_number = 0
     marker_values = []
     for file_number, filepath in enumerate(func):
         with open(filepath) as file:
@@ -433,10 +337,8 @@ def send_keys_func(str_list):
     """Function to construct a string:
         send_keys(str_list[0]"""
 
-    # print(f'str_list  before ++ {str_list}')
     str_list = list(str_list)
     keys_to_send = str_list[0]
-    print(f'str_list in send_keys_func -> {str_list}')
     return f"send_keys(\"{keys_to_send}\")", str_list
 
 
@@ -460,7 +362,6 @@ def which_action(act, obj_source, locator, str_list, wait):
     """Function to determine which action type need to be used, based on the
     selenium action"""
 
-    print(f'str_list  in which action {act} ++ {str_list}')
     if act.lower().startswith('click') or act.lower().startswith('type'):
         actf = forward_action_dict.get(act)
         func, str_list = action_func_clickable(actf, obj_source, locator,
@@ -570,31 +471,17 @@ class Pomidor:
         if parallel:
             pom_list = generate_list_of_pomidor_files(dir_path)
             futures_list = []
-            print(f'pom_list -> {pom_list}')
             with ThreadPoolExecutor(parallel, 'pre') as executor:
                 for file_number, pom_file in enumerate(pom_list):
                     futures = executor.submit(
                         go_thru_one_file, self.url, self.driver,
                         feature, pom_file, self.obj_dict, self.urls, wait)
                     futures_list.append(futures)
-                    print(f'futures -> {str(futures_list)}')
 
                 for future in futures_list:
                     result, tc_name, tcs_list = future.result(timeout=60)
                     scenario_number += result
                     results.append(tcs_list)
-                    print(f'resultos -> {results}')
-
-                    # try:
-                    #     result, tc_name, tcs_list = future.result(timeout=60)
-                    #     scenario_number += result
-                    #     print(f'List of all TCs ran: {tcs_list}')
-                    # except Exception:
-                    #     print(f'{Colors.FAIL}FAILED: TC: '
-                    #           f'{tc_name}{Colors.ENDC}')
-                    #     results.append(None)
-                    # finally:
-                    #     results.append(tcs_list)
 
         else:
 
@@ -605,16 +492,14 @@ class Pomidor:
                     self.urls, wait)
                 if tc_name:
                     scenario_number += sce_num
-                    print(f'List of all TCs ran: {tcs_list}')
                 results.append(tcs_list)
 
         finish = time.perf_counter()
-        t_time = f'{finish-start:0.2f}s'
+        t_time = f'{finish - start:0.2f}s'
         if verbose:
             # Use list comprehension to convert a list of lists to a flat list
             results_flat_list = [item for elem in results for item in elem]
-            print(f'results_flat_list -> {results_flat_list}')
-            print('\n\n===========tests ran============= ')
+            print('\n\n===========pomidor tests ran============= ')
             # TODO: os.get_terminal_size()
             passed = 0
             failed = 0
@@ -630,8 +515,8 @@ class Pomidor:
             print('\n===========pomidor files and scenarios involved=========')
             # TODO: os.get_terminal_size()
             print(f'{Colors.OKBLUE}Files used --> {file_number + 1}')  #
-            print(f'Number of scenarios --> {scenario_number}{Colors.ENDC}')
-            print('\n===========short test summary info============= ')
+            print(f'Number of tests --> {scenario_number}{Colors.ENDC}')
+            print('\n===========test summary info============= ')
             # TODO: os.get_terminal_size()
             if failed > 0 and passed > 0:
                 print(f'{Colors.FAIL}{failed} failed,{Colors.OKGREEN} {passed}'
