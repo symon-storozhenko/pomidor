@@ -1,3 +1,5 @@
+pomidor = 'Pomidor'
+
 class PomidorDataFeedError(KeyError):
     """ Pomidor syntax error class: more actions than objects """
 
@@ -7,8 +9,8 @@ class PomidorDataFeedError(KeyError):
         self.data_file = data_file
 
     def print_error_header(self, line_num, data_file):
-        print(f'{Colors.FAIL}PomidorDataFeed ERROR:\nPomidor File Path:'
-              f' {self}\nParagraph starts on line: {line_num}\n'
+        print(f'{Colors.FAIL}{pomidor}ERROR\nPomidorDataFeed ERROR:\nPomidor '
+              f'File Path: {self}\nParagraph starts on line: {line_num}\n'
               f'csv file: {data_file}{Colors.ENDC}')
 
 
@@ -34,7 +36,7 @@ class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
     """ PomidorDataFeedNoAngleKeysProvided"""
     def __init__(self, path, line_num, data_file, *args, **kwargs):
         PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}Please add @data with a csv file in the '
+        print(f'{Colors.FAIL}Please add @data marker with a csv file in the '
               f'beginning of your paragraph.\nExample: '
               f'\n"@data csv_file_name.csv'
               f'\nSome paragraph text..."{Colors.ENDC}')
@@ -45,6 +47,7 @@ class PomidorFileNotFoundError(FileNotFoundError):
 
     def __init__(self, path, *args, **kwargs):
         self.path = path
+        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
         print(f'{Colors.FAIL}PomidorFileNotFoundError:\nFile Path: '
               f'{path}{Colors.ENDC}')
 
@@ -55,6 +58,7 @@ class PomidorSyntaxErrorTooManyActions(Exception):
     def __init__(self, path, line_num, *args, **kwargs):
         self.path = path
         self.line_num = line_num
+        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
               f'{path}\nParagraph starts on line: {line_num}\n'
               f'ERROR: You have more actions than objects. Number of actions '
@@ -68,6 +72,7 @@ class PomidorSyntaxErrorTooManyObjects(Exception):
     def __init__(self, path, line_num, *args, **kwargs):
         self.path = path
         self.line_num = line_num
+        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
               f'{path}\nParagraph starts on line: {line_num}\n'
               f'ERROR: You have more objects than actions. Number of actions '
@@ -82,6 +87,7 @@ class PomidorObjectDoesNotExistOnPage(Exception):
         self.path = path
         self.line_num = line_num
         self.obj = obj
+        print(f'{Colors.FAIL}{pomidor}ERROR{Colors.ENDC}')
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
               f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
               f'#{obj}{Colors.FAIL} does not exist on the page or in csv file.'

@@ -114,9 +114,10 @@ def get_list_of_dicts_from_csv(file):
 get_list_of_dicts_from_csv('../tests/pageObjects/csv_data_source.csv')
 
 
+import sys
+import io
 
-# import pandas as pd
-# df = pd.read_csv("urls.csv")
-# saved_column = df.keys() ["name"] #you can also use df['column_name']
+old_stdout = sys.stdout # Memorize the default stdout stream
+buffer = io.StringIO()
 
-# print(f'saved_column -> {saved_column}')
+print(f'sys.stdout -> {buffer.getvalue()}')

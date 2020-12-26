@@ -1,5 +1,7 @@
 import concurrent.futures
 import functools
+import traceback
+
 import pytest
 import pathlib
 import re
@@ -44,7 +46,9 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
     scenario_number = 0
     spl = get_all_file_paragraphs_into_list(filepath)
     counter = 1
+    sce_num = 0
     tc_name = ''
+    tcs_list = []
     for x in spl:
         print(f'number of paragraphs per file -> {len(spl)}')
         print(f'lines per paragraph -> {len(x)}')
@@ -86,16 +90,47 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
                 tc_name = tc_name_value
             else:
                 tc_name = ''.join(test_case[0])
+            tc_id = f'{filepath}::{tc_name}::line {line_num}'
             print(f'first_paragraph_line -> {tc_name}')
             scenario_title_line_num = counter + (len(x) + 1)
             print(f'scenario_title_line_num -> {scenario_title_line_num}')
+            try:
+                sce_num = 0
+                if feature:
+                    if feature.lower() in feature_mark_list:
+                        scenario_number += 1
+                        print(f'Feature matched -> {feature}')
+                        test_p = execute_test_paragraph(
+                            test_case_str, filepath, tc_name,
+                            scenario_title_line_num, line_num, obj_dict,
+                            driver,
+                            url, wait, data_mark)
+                        print(f'scenario_with_action - {test_p}')
+                        tcs_list.append(f"PASSED {tc_id}")
 
-            sce_num = run_all_or_feature(
-                driver, feature, feature_mark_list,
-                filepath, tc_name, line_num, obj_dict, scenario_title_line_num,
-                test_case_str, url, wait, data_mark)
-            scenario_number += sce_num
-    return scenario_number, tc_name
+                    else:
+                        pass
+                else:
+                    scenario_number += 1
+                    test_p = execute_test_paragraph(
+                        test_case_str, filepath, tc_name,
+                        scenario_title_line_num, line_num, obj_dict, driver,
+                        url, wait, data_mark)
+                    print(f'scenario_with_action - {test_p}')
+                    tcs_list.append(f"PASSED {tc_id}")
+            except Exception as e:  # TODO: find out how to raise and except
+                tcs_list.append(f"FAILED {tc_id}")
+                print(e)
+                raise e
+                # traceback.print_exc(limit=10)   # TODO: needs some finessing
+            finally:
+                if test_case_str.startswith('crazytomato -1'):
+                    print(f'crazytomato -1 in prgrph_list! {prgrph_list}')
+                    # raise Exception
+                else:
+                    continue
+
+    return scenario_number, tc_name, tcs_list
 
 
 act = ForwardAction()
@@ -295,31 +330,6 @@ def all_markers(base_url, markers_list, urls):
             print(f'final url -> {url}')
     return data_mark, feature_mark_list, tc_name_value, url
 
-
-def run_all_or_feature(driver, feature, feature_marker_list,  filepath,
-                       first_paragraph_line, line_num, obj_dict,
-                       scenario_title_line_num, test_case_str,
-                       url, wait, data_mark):
-    sce_num = 0
-    if feature:
-        if feature.lower() in feature_marker_list:
-            print(f'Feature matched -> {feature}')
-            test_p = execute_test_paragraph(
-                test_case_str, filepath, first_paragraph_line,
-                scenario_title_line_num, line_num, obj_dict, driver,
-                url, wait, data_mark)
-            print(f'scenario_with_action - {test_p}')
-            sce_num += 1
-        else:
-            pass
-    else:
-        test_p = execute_test_paragraph(
-            test_case_str, filepath, first_paragraph_line,
-            scenario_title_line_num, line_num, obj_dict, driver,
-            url, wait, data_mark)
-        print(f'scenario_with_action - {test_p}')
-        sce_num += 1
-    return sce_num
 
 def get_all_file_paragraphs_into_list(filepath):
     with open(filepath) as file:
@@ -554,10 +564,10 @@ class Pomidor:
             parallel=None):
         scenario_number = 0
         file_number = 0
+        results = []
         if parallel:
             pom_list = generate_list_of_pomidor_files(dir_path)
             futures_list = []
-            results = []
             print(f'pom_list -> {pom_list}')
             with ThreadPoolExecutor(parallel, 'pre') as executor:
                 for file_number, pom_file in enumerate(pom_list):
@@ -568,33 +578,49 @@ class Pomidor:
                     print(f'futures -> {str(futures_list)}')
 
                 for future in futures_list:
-                    try:
-                        result, tc_name = future.result(timeout=60)
-                        print(f'result -> {result}')
-                        print(f'{Colors.OKGREEN}PASSED: TC: '
-                              f'{tc_name}{Colors.ENDC}')
-                        results.append(result)
-                        scenario_number += result
-                    except Exception:
-                        print(f'{Colors.FAIL}FAILED: TC: '
-                              f'{tc_name}{Colors.ENDC}')
-                        results.append(None)
+                    result, tc_name, tcs_list = future.result(timeout=60)
+                    scenario_number += result
+                    results.append(tcs_list)
+                    print(f'resultos -> {results}')
+
+                    # try:
+                    #     result, tc_name, tcs_list = future.result(timeout=60)
+                    #     scenario_number += result
+                    #     print(f'List of all TCs ran: {tcs_list}')
+                    # except Exception:
+                    #     print(f'{Colors.FAIL}FAILED: TC: '
+                    #           f'{tc_name}{Colors.ENDC}')
+                    #     results.append(None)
+                    # finally:
+                    #     results.append(tcs_list)
 
         else:
 
             for file_number, pom_file in enumerate(
                     generate_list_of_pomidor_files(dir_path)):
-                sce_num, tc_name = go_thru_one_file(
+                sce_num, tc_name, tcs_list = go_thru_one_file(
                     self.url, self.driver, feature, pom_file, self.obj_dict,
                     self.urls, wait)
                 if tc_name:
                     scenario_number += sce_num
+                    print(f'List of all TCs ran: {tcs_list}')
+                results.append(tcs_list)
 
         if verbose:
-            print(f'{Colors.OKGREEN}\n\n-------\n'
-                  f'END -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_number + 1}')  #
+            # Use list comprehension to convert a list of lists to a flat list
+            results_flat_list = [item for elem in results for item in elem]
+            print(f'results_flat_list -> {results_flat_list}')
+            for i in results_flat_list:
+                if i.startswith("PASS"):
+                    print(f'{Colors.OKGREEN}{i}{Colors.ENDC}')
+                elif i.startswith("FAIL"):
+                    print(f'{Colors.FAIL}{i}{Colors.ENDC}')
+                else:
+                    continue
+            print('========================')    # TODO: os.get_terminal_size()
+            print(f'\nNumber of files used --> {file_number + 1}')  #
             print(f'Number of scenarios --> {scenario_number}{Colors.ENDC}')
+
         return scenario_number
 
     @staticmethod
@@ -608,8 +634,9 @@ class Pomidor:
         return markers_num, len(set(marker_list))
 
     @staticmethod
-    def run_standalone_custom_identifier(self, dir_path, feature=False, verbose=True, wait=10,
-            parallel=None):
+    def run_standalone_custom_identifier(self, dir_path, feature=False,
+                                         verbose=True, wait=10,
+                                         parallel=None):
         scenario_number = 0
         file_number = 0
         for file_number, pom_file in enumerate(

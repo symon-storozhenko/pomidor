@@ -7,7 +7,6 @@ Sprint:
 !!test_pomidor_PomidorDataFeedNoAngleKeysProvided!!
 @data pageObjects/csv_data_source.csv
 @feature csv_data3
-crazytomato -1
 First, click on login_field #practice_menu_button page title
 and type [[text-1]]in #name_field. Then, type [[some
 free text]] in #name_field
@@ -15,7 +14,6 @@ free text]] in #name_field
 
 !!test_pomidor_PomidorDataFeedNoCSVFileProvided!!
 @feature csv_data4
-crazytomato -1
 First, click on login_field #practice_menu_button page title
 and type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field
@@ -68,7 +66,6 @@ Sprint#2:
 !!Used for test_pomidor_csv_data_none_key_error!!
 @feature csv_data7
 @data pageObjects/csv_data_source.csv
-crazytomato -1
 2-First, Click on login_field #practice_menu_button page title
 2-and TyPE <<FirstNam9e>> in #name_field. Then, type 2- [[2-second
 !! This is a comment

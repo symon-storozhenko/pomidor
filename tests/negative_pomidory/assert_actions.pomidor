@@ -5,9 +5,11 @@ Release date:
 Sprint:
 
 @Feature: Is_Displayed
-sStory 2
+@name sStory 2
+crazytomato -1
 first paragraph click on #practice_menu_button and make sure the
 #non_existent_obj is displayed
+
 
 @Feature: Not_Displayed
 first paragraph click on #practice_menu_button and make sure the
