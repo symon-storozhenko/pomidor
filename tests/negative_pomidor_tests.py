@@ -90,12 +90,12 @@ class TestPomidor:
                               feature="Reporting")
         assert scenario_num == 1
 
-    def test_pomidor_run_is_displayed_negative(self):
+    def test_pomidor_run_is_displayed_negative(self): #
         with pytest.raises(TimeoutException):
             po.run(assert_actions, feature="Is_displayed")
 
     def test_pomidor_run_not_displayed(self):
-        scenario_num = po.run(assert_actions, feature="Not_Displayed")
+        scenario_num = po.run(assert_actions, feature="Not_Displayed", wait=2)
         assert scenario_num == 1
 
     def test_pomidor_csv_data(self):

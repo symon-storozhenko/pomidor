@@ -1,5 +1,6 @@
 import concurrent.futures
 import functools
+import time
 import traceback
 
 import pytest
@@ -562,6 +563,7 @@ class Pomidor:
 
     def run(self, dir_path, feature=False, verbose=True, wait=10,
             parallel=None):
+        start = time.perf_counter()
         scenario_number = 0
         file_number = 0
         results = []
@@ -606,20 +608,42 @@ class Pomidor:
                     print(f'List of all TCs ran: {tcs_list}')
                 results.append(tcs_list)
 
+        finish = time.perf_counter()
+        t_time = f'{finish-start:0.2f}s'
         if verbose:
             # Use list comprehension to convert a list of lists to a flat list
             results_flat_list = [item for elem in results for item in elem]
             print(f'results_flat_list -> {results_flat_list}')
+            print('\n\n===========tests ran============= ')
+            # TODO: os.get_terminal_size()
+            passed = 0
+            failed = 0
             for i in results_flat_list:
                 if i.startswith("PASS"):
                     print(f'{Colors.OKGREEN}{i}{Colors.ENDC}')
+                    passed += 1
                 elif i.startswith("FAIL"):
                     print(f'{Colors.FAIL}{i}{Colors.ENDC}')
+                    failed += 1
                 else:
                     continue
-            print('========================')    # TODO: os.get_terminal_size()
-            print(f'\nNumber of files used --> {file_number + 1}')  #
+            print('\n===========pomidor files and scenarios involved=========')
+            # TODO: os.get_terminal_size()
+            print(f'{Colors.OKBLUE}Files used --> {file_number + 1}')  #
             print(f'Number of scenarios --> {scenario_number}{Colors.ENDC}')
+            print('\n===========short test summary info============= ')
+            # TODO: os.get_terminal_size()
+            if failed > 0 and passed > 0:
+                print(f'{Colors.FAIL}{failed} failed,{Colors.OKGREEN} {passed}'
+                      f' passed {Colors.FAIL} in {t_time} {Colors.ENDC}')
+            if failed > 0 and passed == 0:
+                print(f'{Colors.FAIL}{failed} failed in {t_time}{Colors.ENDC}')
+            if failed == 0 and passed > 0:
+                print(f'{Colors.OKGREEN}{passed} passed in '
+                      f'{t_time}{Colors.ENDC}')
+            if failed == 0 and passed == 0:
+                print('Zero tests ran...')
+            print(f'')
 
         return scenario_number
 
