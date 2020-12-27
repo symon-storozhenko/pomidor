@@ -13,8 +13,9 @@ import concurrent.futures
 url = 'https://pomidor-automation.com/'
 page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
 addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
+prereqs = "pageObjects/prerequisites.pomidor"
 
-po = Pomidor("Chrome", page_obj, url, urls=addtl_urls)
+po = Pomidor("Chrome", page_obj, url, urls=addtl_urls, prerequisites=prereqs)
 
 # po.delete_all_cookies()
 # po.max_window()
@@ -43,6 +44,7 @@ pro_pomidor = 'negative_pomidory/pro.pomidor'
 smoke_test_dir = 'negative_pomidory/SmokeTest'
 assert_actions = 'negative_pomidory/assert_actions.pomidor'
 data_file = 'negative_pomidory/data_file.pomidor'
+prereqs_test = 'negative_pomidory/prereqs_test.pomidor'
 obj_in_page_factory_but_not_on_webpage = \
     'negative_pomidory/obj_in_page_factory_but_not_on_webpage.pomidor'
 obj_in_page_factory_but_not_on_webpage2 = \
@@ -104,6 +106,14 @@ class TestPomidor:
 
     def test_pomidor_csv_data(self):
         scenario_num = po.run(data_file, feature="csv_data")
+        assert scenario_num == 2
+
+    def test_pomidor_csv_data_with_prereqs_feature(self):
+        scenario_num = po.run(prereqs_test, feature="csv_data")
+        assert scenario_num == 1
+
+    def test_pomidor_csv_data_with_prereqs_all(self):
+        scenario_num = po.run(prereqs_test)
         assert scenario_num == 2
 
     def test_pomidor_feature_list_csv_data1(self):

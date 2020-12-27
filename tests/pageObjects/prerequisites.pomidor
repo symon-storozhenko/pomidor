@@ -1,0 +1,17 @@
+App Name:
+Version:
+Release date:
+
+Sprint:
+
+!!@data pageObjects/csv_data_source.csv
+@name Login
+@url practice_page
+and type [[PREREQUISITE!!!First, on login_field
+practice_menu_button page title]]in #name_field.
+
+!!@data pageObjects/csv_data_source.csv
+@name Logins
+@url practice_page
+and type [[#2 Logins PREREQUISITE#2!!!First, on login_field
+practice]]in #name_field.

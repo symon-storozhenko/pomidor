@@ -1,0 +1,26 @@
+App Name:
+Version:
+Release date:
+
+Sprint:
+
+
+!!Used for test_pomidor_csv_data_with_prereqs!!
+@Feature CSV_data
+@prereq Logins
+@param delete_cookies, full_screen
+@DATA   pageObjects/csv_data_source.csv
+@name   CSV_Test_case#1
+Comment first line - First, click on login_field #practice_menu_button page title
+and type <<FirstName>> in #name_field. Then, type [[some
+free text]] in #name_field,
+
+!!Used for test_pomidor_csv_data_with_prereqs!!
+@Feature CSV_data3
+@prereq Login
+@param   delete_cookies, full_screen
+@DATA   pageObjects/csv_data_source.csv
+@url     practice_page
+!!Comment first line - First, click on login_field #practice_menu_button page title
+Second CSV scenario
+and type <<FirstName>> in #name_field.

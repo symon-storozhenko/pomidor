@@ -40,13 +40,14 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     return tomato_files_list
 
 
-def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
-                     urls, wait):
+def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
+                     urls, wait, prerequisites):
     scenario_number = 0
     spl = get_all_file_paragraphs_into_list(filepath)
     counter = 1
     tc_name = ''
     tcs_list = []
+    story = None
     for x in spl:
         line_num = x[0][0]
         list_of_lists_wo_enum = [list(y[1:]) for y in x]
@@ -54,8 +55,11 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
                        for item in t]
         markers_list = [y.lower() for y in prgrph_list
                         if y.startswith("@")]
-        data_mark, feature_mark_list, tc_name_value, url = all_markers(
+        data_mark, feature_mark_list, tc_name_value, url, prereq = all_markers(
             base_url, markers_list, urls)
+        if prereq:
+            story = prereq
+        print(f'story -> {story}')
         test_case = [y for y in prgrph_list if not y.startswith("@")
                      and not y.startswith("!!")]
         test_case_str = ' '.join([str(i) for i in test_case])
@@ -79,20 +83,55 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
                 if feature:
                     if feature.lower() in feature_mark_list:
                         scenario_number += 1
-                        test_p = execute_test_paragraph(
-                            test_case_str, filepath, tc_name,
-                            scenario_title_line_num, line_num, obj_dict,
-                            driver,
-                            url, wait, data_mark)
+                        if story:
+                            print(f'story - {story} - started feature !')
+                            pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
+                            match = go_thru_prereq_file(
+                                url, driver, story, prerequisites,
+                                obj_dict, urls, wait)
+                            print(f'match - {match}')
+                            if match:
+                                test_p = execute_test_paragraph(
+                                    test_case_str, filepath,
+                                    scenario_title_line_num, tc_name, line_num,
+                                    obj_dict, driver, url, wait, data_mark,
+                                    prereq_tcs=pre_tc_str, prereq_url=preq_url,
+                                    prereq_path=prerequisites, prereq_str_to_type=
+                                    pre_str_in_br)
+                            print(f'story ran feature !')
+                        else:
+                            test_p = execute_test_paragraph(
+                                test_case_str, filepath, tc_name,
+                                scenario_title_line_num, line_num, obj_dict,
+                                driver, url, wait, data_mark)
                         tcs_list.append(f"PASSED {tc_id}")
                     else:
                         pass
                 else:
                     scenario_number += 1
-                    test_p = execute_test_paragraph(
-                        test_case_str, filepath, tc_name,
-                        scenario_title_line_num, line_num, obj_dict, driver,
-                        url, wait, data_mark)
+                    if story:
+                        print(f'story - {story} - started feature !')
+                        print(f'story - {story} - started feature !')
+                        print(f'story - {story} - started feature !')
+                        pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
+                        match = go_thru_prereq_file(
+                            url, driver, story, prerequisites,
+                            obj_dict, urls, wait)
+                        print(f'match - {match}')
+                        if match:
+                            test_p = execute_test_paragraph(
+                                test_case_str, filepath,
+                                scenario_title_line_num, tc_name, line_num,
+                                obj_dict, driver, url, wait, data_mark,
+                                prereq_tcs=pre_tc_str, prereq_url=preq_url,
+                                prereq_path=prerequisites, prereq_str_to_type=
+                                pre_str_in_br)
+                            print(f'story ran feature !')
+                    else:
+                        test_p = execute_test_paragraph(
+                            test_case_str, filepath, tc_name,
+                            scenario_title_line_num, line_num, obj_dict,
+                            driver, url, wait, data_mark)
                     tcs_list.append(f"PASSED {tc_id}")
             except Exception as e:
                 tcs_list.append(f"FAILED {tc_id}")
@@ -104,6 +143,57 @@ def go_thru_one_file(base_url, driver, feature, filepath, obj_dict,
                 else:
                     continue
     return scenario_number, tc_name, tcs_list
+
+
+def go_thru_prereq_file(base_url, driver, story, filepath, obj_dict,
+                        urls, wait):
+    scenario_number = 0
+    spl = get_all_file_paragraphs_into_list(filepath)
+    counter = 1
+    tc_name = ''
+    url = ''
+    test_case_str = []
+    match = False
+    for x in spl:
+        line_num = x[0][0]
+        list_of_lists_wo_enum = [list(y[1:]) for y in x]
+        prgrph_list = [item for t in list_of_lists_wo_enum
+                       for item in t]
+        markers_list = [y.lower() for y in prgrph_list
+                        if y.startswith("@")]
+        data_mark, feature_mark_list, tc_name_value, url, prereq = all_markers(
+            base_url, markers_list, urls)
+        if prereq:
+            story = prereq
+        test_case = [y for y in prgrph_list if not y.startswith("@")
+                     and not y.startswith("!!")]
+        test_case_str = ' '.join([str(i) for i in test_case])
+        prereq_str_in_brackets = re.findall(r" \[\[(.+?)]]", test_case_str)
+
+        str_list = re.split(r'[;,.!?\s]', test_case_str)
+
+        actions = [x.lower() for x in str_list
+                   if x.lower() in backward_action_dict or \
+                   x.lower() in forward_action_dict]
+
+        objects = [y.strip("#") for y in str_list
+                   if y.startswith("#")]
+
+        if actions or objects:
+            if tc_name_value:
+                tc_name = tc_name_value
+            else:
+                tc_name = ''.join(test_case[0])
+            print(f'tc_name -> {tc_name}')
+            print(f'story name -{story}')
+            print(f'tc_name_value - {tc_name_value}')
+            tc_id = f'Prerequisite::{filepath}::{tc_name}::line {line_num}'
+            scenario_title_line_num = counter + (len(x) + 1)
+            if story == tc_name:
+                match = True
+                print('stories matched!')
+                break
+    return tc_name, test_case_str, url, prereq_str_in_brackets, match
 
 
 act = ForwardAction()
@@ -122,9 +212,10 @@ def get_list_of_dicts_from_csv(file):
         PomidorFileNotFoundError(file)
 
 
-def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
-                           tc_name, line_num,
-                           obj_dict, driver, url, wait, data_mark) -> str:
+def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
+                           line_num, obj_dict, driver, url, wait, data_mark,
+                           prereq_tcs=None, prereq_url=None,
+                           prereq_path=None, prereq_str_to_type=None) -> str:
     csv_list_of_dicts = []
     csv_list_of_dicts_range = 0
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
@@ -146,36 +237,22 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
                                      angle_square_list,
                                      csv_list_of_dicts, line_num, data_mark)
     str_in_brackets = re.findall(r" \[\[(.+?)]]", scenarioSteps)
-    str_list = re.split(r'[;,.!?\s]', scenarioSteps)
-
-    actions = [x.lower() for x in str_list
-               if x.lower() in backward_action_dict or \
-               x.lower() in forward_action_dict]
-
-    objects = [y.strip("#") for y in str_list
-               if y.startswith("#")]
-    if len(actions) > len(objects):
-        raise PomidorSyntaxErrorTooManyActions(path=filepath,
-                                               line_num=line_num)
-    elif len(objects) > len(actions):
-        raise PomidorSyntaxErrorTooManyObjects(path=filepath,
-                                               line_num=line_num)
-
-    obj_source = [obj_dict.get(i) for i in objects]
-    for enum, i in enumerate(obj_source):
-        if i is None:
-            raise PomidorObjectDoesNotExistInCSVFile(path=filepath,
-                                                     line_num=line_num,
-                                                     obj=objects[enum])
-    act_obj_list = [list(a) for a in zip(actions, obj_source)]
+    act_obj_list, objects = prep_acts_n_objs(filepath, line_num, obj_dict,
+                                             scenarioSteps)
 
     try:
         pomidor = Pomidor(driver, obj_dict, url)
         driver = pomidor.define_browser()
-        driver.get(url)
-        driver.delete_all_cookies()
-        # driver.maximize_window()
+        if prereq_tcs:
+            driver.get(prereq_url)
+            driver.delete_all_cookies()
+            # driver.maximize_window()
+            prereq_act_obj_list, prereq_objects = \
+                prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
+            run_once(driver, prereq_objects, prereq_act_obj_list,
+                     prereq_str_to_type, prereq_path, line_num, wait)
 
+        driver.get(url)
         if str_in_angle_brackets:
             for i in range(csv_list_of_dicts_range):
                 run_once(driver, objects, act_obj_list,
@@ -186,6 +263,29 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line,
 
     finally:
         driver.quit()
+
+
+def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
+    str_list = re.split(r'[;,.!?\s]', scenarioSteps)
+    actions = [x.lower() for x in str_list
+               if x.lower() in backward_action_dict or \
+               x.lower() in forward_action_dict]
+    objects = [y.strip("#") for y in str_list
+               if y.startswith("#")]
+    if len(actions) > len(objects):
+        raise PomidorSyntaxErrorTooManyActions(path=filepath,
+                                               line_num=line_num)
+    elif len(objects) > len(actions):
+        raise PomidorSyntaxErrorTooManyObjects(path=filepath,
+                                               line_num=line_num)
+    obj_source = [obj_dict.get(i) for i in objects]
+    for enum, i in enumerate(obj_source):
+        if i is None:
+            raise PomidorObjectDoesNotExistInCSVFile(path=filepath,
+                                                     line_num=line_num,
+                                                     obj=objects[enum])
+    act_obj_list = [list(a) for a in zip(actions, obj_source)]
+    return act_obj_list, objects
 
 
 def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
@@ -238,7 +338,7 @@ def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
 
 
 def all_markers(base_url, markers_list, urls):
-    #   TODO: implement @precond
+    #   TODO: implement @prereq
     #   TODO: implement @param
     # process all markers with markers_list
     feature_mark_string = ''.join([x for x in
@@ -246,10 +346,22 @@ def all_markers(base_url, markers_list, urls):
                                    if x.startswith("@feature")])
     feature_mark_list = [x.strip(r'[;,]') for x in
                          feature_mark_string.split()]
-    tc_name_line = ''.join([x[1:] for x in
+
+    prereq_mark_string = ''.join([x for x in
+                                  markers_list
+                                  if x.startswith("@prereq")])
+
+    prereq_val = prereq_mark_string.strip("@prereq").strip()
+    print(f'param_value -> {prereq_val}')
+
+    tc_name_line = ''.join([x for x in
                             markers_list
                             if x.startswith("@name")])
-    tc_name_value = tc_name_line.strip("@name").strip()
+    print(f'tc_name_line -> {tc_name_line}')
+    tc_name_value = tc_name_line.replace("@name", '').strip()
+    # tc_name_value = 'login'
+    print(f'tc_name_value -{tc_name_value}')
+
     data_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
                          markers_list
                          if x.startswith("@data")])
@@ -261,7 +373,7 @@ def all_markers(base_url, markers_list, urls):
             url = url_mark
         else:
             url = urls.get(url_mark)
-    return data_mark, feature_mark_list, tc_name_value, url
+    return data_mark, feature_mark_list, tc_name_value, url, prereq_val
 
 
 def get_all_file_paragraphs_into_list(filepath):
@@ -390,11 +502,13 @@ class Pomidor:
 
     extension = '.pomidor'
 
-    def __init__(self, driver, obj_dict, url, urls=None):
+    def __init__(self, driver, obj_dict, url, urls=None,
+                 prerequisites=None):
         self.urls = urls
         self.obj_dict = obj_dict
         self.url = url
         self.driver = driver
+        self.prerequisites = prerequisites
         # self.obj_repo = self.get_page_objects()
 
     def __repr__(self):
@@ -463,7 +577,7 @@ class Pomidor:
     #     pass
 
     def run(self, dir_path, feature=False, verbose=True, wait=10,
-            parallel=None):
+            parallel=None, story=None):
         start = time.perf_counter()
         scenario_number = 0
         file_number = 0
@@ -474,8 +588,9 @@ class Pomidor:
             with ThreadPoolExecutor(parallel, 'pre') as executor:
                 for file_number, pom_file in enumerate(pom_list):
                     futures = executor.submit(
-                        go_thru_one_file, self.url, self.driver,
-                        feature, pom_file, self.obj_dict, self.urls, wait)
+                        go_thru_one_file, self.url, self.driver, feature,
+                        story, pom_file, self.obj_dict, self.urls, wait,
+                        self.prerequisites)
                     futures_list.append(futures)
 
                 for future in futures_list:
@@ -487,9 +602,10 @@ class Pomidor:
 
             for file_number, pom_file in enumerate(
                     generate_list_of_pomidor_files(dir_path)):
+                print(f'pom_list -> {pom_file}')
                 sce_num, tc_name, tcs_list = go_thru_one_file(
-                    self.url, self.driver, feature, pom_file, self.obj_dict,
-                    self.urls, wait)
+                    self.url, self.driver, feature, story, pom_file,
+                    self.obj_dict, self.urls, wait, self.prerequisites)
                 if tc_name:
                     scenario_number += sce_num
                 results.append(tcs_list)
@@ -527,38 +643,9 @@ class Pomidor:
                 print(f'{Colors.OKGREEN}{passed} passed in '
                       f'{t_time}{Colors.ENDC}')
             if failed == 0 and passed == 0:
-                print('Zero tests ran...')
-            print(f'')
+                print(f'{Colors.BOLD}Zero tests ran...{Colors.ENDC}')
 
         return scenario_number
-
-    @staticmethod
-    def list_all_marker_values(dir_path, feature_type):
-        marker_list, markers_num = list_all_mark_values(
-            generate_list_of_pomidor_files(dir_path), feature_type)
-        print(f'{feature_type} total list : {marker_list}')
-        print(f"There're {markers_num} values found total")
-        print(f"\nUnique {feature_type} list: {set(marker_list)}")
-        print(f"Unique number of {feature_type} is {len(set(marker_list))}")
-        return markers_num, len(set(marker_list))
-
-    @staticmethod
-    def run_standalone_custom_identifier(self, dir_path, feature=False,
-                                         verbose=True, wait=10,
-                                         parallel=None):
-        scenario_number = 0
-        file_number = 0
-        for file_number, pom_file in enumerate(
-                generate_list_of_pomidor_files(dir_path)):
-            sce_num, tc_name = go_thru_one_file(
-                self.url, self.driver, feature, pom_file, self.obj_dict,
-                self.urls, wait)
-            scenario_number += sce_num
-
-        if verbose:
-            print('\n\n-------\nEND -- All tests PASSED\n-------\n')
-            print(f'Number of files used --> {file_number + 1}')  #
-            print(f'Number of scenarios --> {scenario_number}')
 
     @staticmethod
     def how_many_files(dir_path):
