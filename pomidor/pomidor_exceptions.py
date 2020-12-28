@@ -94,7 +94,7 @@ class PomidorObjectDoesNotExistInCSVFile(Exception):
               f' Please check page object selector and value{Colors.ENDC}')
 
 
-class PomidorObjectDoesNotExistOnPage(BaseException):
+class PomidorObjectDoesNotExistOnPage(Exception):
     """ Pomidor syntax error class: Page object does not exist on the page """
 
     def __init__(self, path, line_num, obj, *args, **kwargs):
@@ -107,6 +107,20 @@ class PomidorObjectDoesNotExistOnPage(BaseException):
               f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
               f'#{obj}{Colors.FAIL} does not exist on page.'
               f' Please check page object selector and value{Colors.ENDC}')
+
+
+class PomidorPrerequisiteScenarioNotFoundError(Exception):
+    def __init__(self, path, line_num, prereq_path, story, *args, **kwargs):
+        self.path = path
+        self.line_num = line_num
+        self.prereq_path = prereq_path
+        self.story = story
+        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
+        print(f'{Colors.FAIL}PrerequisiteScenarioNotFoundError{Colors.ENDC}')
+        print(f'{Colors.FAIL}FilePath: {path}\nParagraph starts on line '
+              f'{line_num}\nERROR:  {Colors.WARNING}{story}{Colors.FAIL} '
+              f'prerequisite scenario not found in prerequisites file '
+              f'{Colors.WARNING}{prereq_path}{Colors.ENDC}')
 
 
 class Colors:

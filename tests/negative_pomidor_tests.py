@@ -6,7 +6,8 @@ from pomidor.pomidor_runner import Pomidor
 from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
     PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
     PomidorSyntaxErrorTooManyActions, PomidorSyntaxErrorTooManyObjects, \
-    PomidorObjectDoesNotExistInCSVFile, PomidorObjectDoesNotExistOnPage
+    PomidorObjectDoesNotExistInCSVFile, PomidorObjectDoesNotExistOnPage, \
+    PomidorPrerequisiteScenarioNotFoundError
 import pytest
 import concurrent.futures
 
@@ -46,6 +47,7 @@ assert_actions = 'negative_pomidory/assert_actions.pomidor'
 data_file = 'negative_pomidory/data_file.pomidor'
 prereqs_test = 'negative_pomidory/prereqs_test.pomidor'
 prereqs_test2 = 'negative_pomidory/prereqs_test2.pomidor'
+prereqs_test3 = 'negative_pomidory/prereqs_test3.pomidor'
 obj_in_page_factory_but_not_on_webpage = \
     'negative_pomidory/obj_in_page_factory_but_not_on_webpage.pomidor'
 obj_in_page_factory_but_not_on_webpage2 = \
@@ -79,7 +81,11 @@ class TestPomidorPrerequisites:
 
     def test_pomidor_csv_data_with_prereqs_all(self):
         scenario_num = po.run(prereqs_test, wait=2)
-        assert scenario_num == 3
+        assert scenario_num == 3    # one prereq not found, exception printed
+
+    def test_pomidor_prereq_not_found(self):
+        with pytest.raises(PomidorPrerequisiteScenarioNotFoundError):
+            po.run(prereqs_test3, wait=2)
 
     def test_pomidor_csv_data_with_prereqs_all_one_fails(self):
         scenario_num = po.run(prereqs_test2, wait=2)

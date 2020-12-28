@@ -21,7 +21,8 @@ from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
     PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
     PomidorFileNotFoundError, PomidorSyntaxErrorTooManyActions, \
     PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistInCSVFile, \
-    Colors, PomidorObjectDoesNotExistOnPage
+    Colors, PomidorObjectDoesNotExistOnPage, \
+    PomidorPrerequisiteScenarioNotFoundError
 
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
@@ -86,7 +87,7 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                             pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
                             match = go_thru_prereq_file(
                                 url, driver, story, prerequisites,
-                                obj_dict, urls, wait)
+                                obj_dict, urls, wait, line_num, filepath)
                             if match:
                                 test_p = execute_test_paragraph(
                                     test_case_str, filepath,
@@ -109,7 +110,7 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                         pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
                         match = go_thru_prereq_file(
                             url, driver, story, prerequisites,
-                            obj_dict, urls, wait)
+                            obj_dict, urls, wait, line_num, filepath)
                         if match:
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath,
@@ -136,16 +137,16 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
     return scenario_number, tc_name, tcs_list
 
 
-def go_thru_prereq_file(base_url, driver, story, filepath, obj_dict,
-                        urls, wait):
-    spl = get_all_file_paragraphs_into_list(filepath)
+def go_thru_prereq_file(base_url, driver, story, prereq_filepath, obj_dict,
+                        urls, wait, line_num, path):
+    spl = get_all_file_paragraphs_into_list(prereq_filepath)
     counter = 1
     tc_name = ''
     url = ''
     test_case_str = []
     match = False
     for x in spl:
-        line_num = x[0][0]
+        # line_num = x[0][0]
         list_of_lists_wo_enum = [list(y[1:]) for y in x]
         prgrph_list = [item for t in list_of_lists_wo_enum
                        for item in t]
@@ -174,11 +175,15 @@ def go_thru_prereq_file(base_url, driver, story, filepath, obj_dict,
                 tc_name = tc_name_value
             else:
                 tc_name = ''.join(test_case[0])
-            tc_id = f'Prerequisite::{filepath}::{tc_name}::line {line_num}'
+            tc_id = f'Prerequisite::{prereq_filepath}::{tc_name}::line ' \
+                    f'{line_num}'
             scenario_title_line_num = counter + (len(x) + 1)
             if story == tc_name:
                 match = True
                 break
+    if not match:
+        raise PomidorPrerequisiteScenarioNotFoundError(
+            path, line_num, prereq_filepath, story)
     return tc_name, test_case_str, url, prereq_str_in_brackets, match
 
 
