@@ -45,10 +45,12 @@ smoke_test_dir = 'negative_pomidory/SmokeTest'
 assert_actions = 'negative_pomidory/assert_actions.pomidor'
 data_file = 'negative_pomidory/data_file.pomidor'
 prereqs_test = 'negative_pomidory/prereqs_test.pomidor'
+prereqs_test2 = 'negative_pomidory/prereqs_test2.pomidor'
 obj_in_page_factory_but_not_on_webpage = \
     'negative_pomidory/obj_in_page_factory_but_not_on_webpage.pomidor'
 obj_in_page_factory_but_not_on_webpage2 = \
     'negative_pomidory/obj_in_page_factory_but_not_on_webpage2.pomidor'
+prereqs2 = "pageObjects/prerequisites2.pomidor"
 
 
 # po.run(nested_dir, parallel=4)
@@ -57,6 +59,31 @@ class TestPomidorPro:
     def test_pomidor_pro(self):
         scenario_num = po.run(pro_pomidor, feature='SmokeTest')
         assert scenario_num == 2
+
+
+class TestPomidorPrerequisites:
+
+    # Exception is raised. Test summary missing FAILED line,
+    # but test total is correct
+    def test_pomidor_prerequisite_file_itself(self):
+        scenario_num = po.run(prereqs, wait=2)
+        assert scenario_num == 4
+
+    def test_pomidor_prerequisite_file_timeout_on_type_action(self):
+        with pytest.raises(PomidorObjectDoesNotExistOnPage):
+            po.run(prereqs2, wait=2, feature="timeout_test")     # raised
+
+    def test_pomidor_csv_data_with_prereqs_feature(self):
+        scenario_num = po.run(prereqs_test, feature="csv_data")
+        assert scenario_num == 1
+
+    def test_pomidor_csv_data_with_prereqs_all(self):
+        scenario_num = po.run(prereqs_test, wait=2)
+        assert scenario_num == 3
+
+    def test_pomidor_csv_data_with_prereqs_all_one_fails(self):
+        scenario_num = po.run(prereqs_test2, wait=2)
+        assert scenario_num == 3    # Exception on prereq is raised
 
 
 class TestPomidor:
@@ -106,14 +133,6 @@ class TestPomidor:
 
     def test_pomidor_csv_data(self):
         scenario_num = po.run(data_file, feature="csv_data")
-        assert scenario_num == 2
-
-    def test_pomidor_csv_data_with_prereqs_feature(self):
-        scenario_num = po.run(prereqs_test, feature="csv_data")
-        assert scenario_num == 1
-
-    def test_pomidor_csv_data_with_prereqs_all(self):
-        scenario_num = po.run(prereqs_test)
         assert scenario_num == 2
 
     def test_pomidor_feature_list_csv_data1(self):

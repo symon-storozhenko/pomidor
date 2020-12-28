@@ -20,6 +20,7 @@ practice]]in #name_field.
 @feature timeout_test
 @name Google_search_timeout
 @url https://www.google.com
+crazytomato -1
 When I go to google, I type [[Pomidor]] in the #google_search_field_timeout
 
 @name Google_search

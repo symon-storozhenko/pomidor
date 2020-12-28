@@ -94,7 +94,7 @@ class PomidorObjectDoesNotExistInCSVFile(Exception):
               f' Please check page object selector and value{Colors.ENDC}')
 
 
-class PomidorObjectDoesNotExistOnPage(Exception):
+class PomidorObjectDoesNotExistOnPage(BaseException):
     """ Pomidor syntax error class: Page object does not exist on the page """
 
     def __init__(self, path, line_num, obj, *args, **kwargs):
@@ -102,7 +102,8 @@ class PomidorObjectDoesNotExistOnPage(Exception):
         self.line_num = line_num
         self.obj = obj
         print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}\nFilePath: {path}\n'
+        print(f'{Colors.FAIL}PomidorObjectDoesNotExistOnPageError{Colors.ENDC}')
+        print(f'{Colors.FAIL}FilePath: {path}\n'
               f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
               f'#{obj}{Colors.FAIL} does not exist on page.'
               f' Please check page object selector and value{Colors.ENDC}')

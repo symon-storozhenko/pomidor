@@ -5,3 +5,6 @@ Reporting page objects,,
 non_existent_obj,LINK_TEXT, Yo
 name_field, CSS_SELECTOR, input#name
 back_home_button, CSS_SELECTOR,a.wp-block-button__link
+google_search_field, NAME,q
+google_search_field_timeout, NAME, q
+
