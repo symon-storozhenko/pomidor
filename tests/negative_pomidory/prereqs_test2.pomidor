@@ -7,7 +7,7 @@ Sprint:
 
 !!Used for test_pomidor_csv_data_with_prereqs!!
 @Feature CSV_data
-@prereq Logins
+@prereq Loginsq
 @param delete_cookies, full_screen
 @DATA   pageObjects/csv_data_source.csv
 @name   Logins prereq2 scenario

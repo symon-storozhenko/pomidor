@@ -15,6 +15,7 @@ url = 'https://pomidor-automation.com/'
 page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
 addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
 prereqs = "pageObjects/prerequisites.pomidor"
+# driver = webdriver.Chrome()
 
 po = Pomidor("Chrome", page_obj, url, urls=addtl_urls, prerequisites=prereqs)
 
@@ -71,10 +72,6 @@ class TestPomidorPrerequisites:
         scenario_num = po.run(prereqs, wait=2)
         assert scenario_num == 4
 
-    def test_pomidor_prerequisite_file_timeout_on_type_action(self):
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
-            po.run(prereqs2, wait=2, feature="timeout_test")     # raised
-
     def test_pomidor_csv_data_with_prereqs_feature(self):
         scenario_num = po.run(prereqs_test, feature="csv_data")
         assert scenario_num == 1
@@ -83,21 +80,12 @@ class TestPomidorPrerequisites:
         scenario_num = po.run(prereqs_test, wait=2)
         assert scenario_num == 3    # one prereq not found, exception printed
 
-    def test_pomidor_prereq_not_found(self):
-        with pytest.raises(PomidorPrerequisiteScenarioNotFoundError):
-            po.run(prereqs_test3, wait=2)
-
     def test_pomidor_csv_data_with_prereqs_all_one_fails(self):
         scenario_num = po.run(prereqs_test2, wait=2)
         assert scenario_num == 3    # Exception on prereq is raised
 
 
 class TestPomidor:
-
-    def test_pomidor_empty_dir(self):
-        with pytest.raises(FileNotFoundError):
-            po.run(empty_str)
-            print("Sucess")  # Exception printed
 
     def test_pomidor_run_all_and_nested_dir(self):
         scenario_num = po.run(nested_dir)
@@ -127,12 +115,6 @@ class TestPomidor:
                               feature="Reporting")
         assert scenario_num == 1
 
-    # Final Test Summary NOT printed: crazytomato -1 found
-    # prints Exception
-    def test_pomidor_run_is_displayed_negative(self): #
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
-            po.run(assert_actions, feature="Is_displayed", wait=3)
-
     def test_pomidor_run_not_displayed(self):
         scenario_num = po.run(assert_actions, feature="Not_Displayed", wait=2)
         assert scenario_num == 1    # test summary printed
@@ -153,68 +135,88 @@ class TestPomidor:
         scenario_num = po.run(orph_obj_b4_frwd_act)
         assert scenario_num == 1
 
-
-class TestPomidorSyntaxPositive:
-    def test_pomidor_last_line_is_read(self):
-        scenario_num = po.run(last_line_3_scenarios)
-        assert scenario_num == 3
-
-
-class TestPomidorSyntaxNegative:
-
-    # has 'crazytomato -1' in front
-    # 4 scenarios total but one fails, 2 ran in total
-    def test_pomidor_parallel_raise_exception_and_continue_and_exception(self):
-        with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(nested_dir2, parallel=4)    # prints Exception
-
-    # has 'crazytomato -1' in front
-    def test_pomidor_more_than_1_obj_bckwrd_action_except(self):
-        with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(more_than_1_back)    # prints Exception
-
-    # has 'crazytomato -1' in front
-    def test_pomidor_two_actions(self):
-        with pytest.raises(PomidorSyntaxErrorTooManyActions):
-            po.run(two_actions) # prints Exception
-
-    # has 'crazytomato -1' in front
-    def test_pomidor_no_obj_found(self):
-        with pytest.raises(PomidorSyntaxErrorTooManyActions):
-            po.run(no_obj_found) # prints Exception
-
-    # has 'crazytomato -1' in front
-    def test_pomidor_no_obj_in_page_fctry(self):
-        with pytest.raises(PomidorObjectDoesNotExistInCSVFile):
-            po.run(no_obj_in_page_fctry) # prints Exception
-
-    # has 'crazytomato -1' in front
-    def test_pomidor_last_orphan_obj(self):
-        with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(last_orphan_obj) # prints Exception
-
-    # has 'crazytomato -1' in front
-    # prints Exception
-    def test_pomidor_obj_in_page_factory_but_not_on_webpage(self):
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
-            po.run(obj_in_page_factory_but_not_on_webpage, wait=2)
-
     def test_pomidor_obj_in_page_factory_but_not_on_webpage_and_continue(self):
         scenario_num = po.run(obj_in_page_factory_but_not_on_webpage2,
                               wait=2)
         assert scenario_num == 2    # prints Exception and Test Summary
 
-    # has 'crazytomato -1' in front
-    def test_pomidor_csv_data_none_key_error(self):
-        with pytest.raises(PomidorDataFeedNoKeyError):
-            po.run(data_file, feature="csv_data7")  # prints Exception
 
-    # has 'PomidorError -1' in front
-    def test_pomidor_PomidorDataFeedNoAngleKeysProvided(self):
-        with pytest.raises(PomidorDataFeedNoAngleKeysProvided):
-            po.run(data_file, feature="csv_data3")  # prints Exception
+class TestPomidorSyntaxPositive:
 
-    # has 'PomidorError -1' in front
-    def test_pomidor_PomidorDataFeedNoCSVFileProvided(self):
-        with pytest.raises(PomidorDataFeedNoCSVFileProvided):
-            po.run(data_file, feature="csv_data4")  # prints Exception
+    def test_pomidor_last_line_is_read(self):
+        scenario_num = po.run(last_line_3_scenarios)
+        assert scenario_num == 3
+
+#
+# class TestPomidorSyntaxExceptions:
+#
+#     # has 'crazytomato -1' in front
+#     # 4 scenarios total but one fails, 2 ran in total
+#     def test_pomidor_parallel_raise_exception_and_continue_and_exception(self):
+#         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
+#             po.run(nested_dir2, parallel=4)    # prints Exception
+#
+#     # has 'crazytomato -1' in front
+#     def test_pomidor_more_than_1_obj_bckwrd_action_except(self):
+#         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
+#             po.run(more_than_1_back)    # prints Exception
+#
+#     # has 'crazytomato -1' in front
+#     def test_pomidor_two_actions(self):
+#         with pytest.raises(PomidorSyntaxErrorTooManyActions):
+#             po.run(two_actions) # prints Exception
+#
+#     # has 'crazytomato -1' in front
+#     def test_pomidor_no_obj_found(self):
+#         with pytest.raises(PomidorSyntaxErrorTooManyActions):
+#             po.run(no_obj_found) # prints Exception
+#
+#     # has 'crazytomato -1' in front
+#     def test_pomidor_no_obj_in_page_fctry(self):
+#         with pytest.raises(PomidorObjectDoesNotExistInCSVFile):
+#             po.run(no_obj_in_page_fctry) # prints Exception
+#
+#     # has 'crazytomato -1' in front
+#     def test_pomidor_last_orphan_obj(self):
+#         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
+#             po.run(last_orphan_obj) # prints Exception
+#
+#     # has 'crazytomato -1' in front
+#     # prints Exception
+#     def test_pomidor_obj_in_page_factory_but_not_on_webpage(self):
+#         with pytest.raises(PomidorObjectDoesNotExistOnPage):
+#             po.run(obj_in_page_factory_but_not_on_webpage, wait=2)
+#
+#     # has 'crazytomato -1' in front
+#     def test_pomidor_csv_data_none_key_error(self):
+#         with pytest.raises(PomidorDataFeedNoKeyError):
+#             po.run(data_file, feature="csv_data7")  # prints Exception
+#
+#     # has 'PomidorError -1' in front
+#     def test_pomidor_PomidorDataFeedNoAngleKeysProvided(self):
+#         with pytest.raises(PomidorDataFeedNoAngleKeysProvided):
+#             po.run(data_file, feature="csv_data3")  # prints Exception
+#
+#     # has 'PomidorError -1' in front
+#     def test_pomidor_PomidorDataFeedNoCSVFileProvided(self):
+#         with pytest.raises(PomidorDataFeedNoCSVFileProvided):
+#             po.run(data_file, feature="csv_data4")  # prints Exception
+#
+#     # Final Test Summary NOT printed: crazytomato -1 found
+#     # prints Exception
+#     def test_pomidor_run_is_displayed_negative(self): #
+#         with pytest.raises(PomidorObjectDoesNotExistOnPage):
+#             po.run(assert_actions, feature="Is_displayed", wait=3)
+#
+#     def test_pomidor_prereq_not_found(self):
+#         with pytest.raises(PomidorPrerequisiteScenarioNotFoundError):
+#             po.run(prereqs_test3, wait=2)
+#
+#     def test_pomidor_empty_dir(self):
+#         with pytest.raises(FileNotFoundError):
+#             po.run(empty_str)
+#             print("Sucess")  # Exception printed
+#
+#     def test_pomidor_prerequisite_file_timeout_on_type_action(self):
+#         with pytest.raises(PomidorObjectDoesNotExistOnPage):
+#             po.run(prereqs2, wait=2, feature="timeout_test")  # raised
