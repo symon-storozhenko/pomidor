@@ -42,14 +42,15 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
 
 
 def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
-                      urls, wait, prerequisites, browser_per_file):
+                      urls, wait, prerequisites, browser_per_file,
+                      slow_mode):
     if browser_per_file:
         try:
             po = Pomidor(driver, obj_dict, base_url)
             driver = po.define_browser()
             scenario_number, tc_name, tcs_list = go_thru_one_file(
                 base_url, driver, feature, story, filepath, obj_dict,
-                urls, wait, prerequisites, browser_per_file)
+                urls, wait, prerequisites, browser_per_file, slow_mode)
             return scenario_number, tc_name, tcs_list
 
         finally:
@@ -57,19 +58,18 @@ def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
     else:
         scenario_number, tc_name, tcs_list = go_thru_one_file(
             base_url, driver, feature, story, filepath, obj_dict,
-            urls, wait, prerequisites, browser_per_file)
+            urls, wait, prerequisites, browser_per_file, slow_mode)
         return scenario_number, tc_name, tcs_list
 
 
 def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
-                     urls, wait, prerequisites, browser_per_file):
+                     urls, wait, prerequisites, browser_per_file, slow_mode):
     scenario_number = 0
     spl = get_all_file_paragraphs_into_list(filepath)
     counter = 1
     tc_name = ''
     tcs_list = []
     story = None
-    # driver = None
     for x in spl:
         line_num = x[0][0]
         list_of_lists_wo_enum = [list(y[1:]) for y in x]
@@ -114,7 +114,7 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                                     test_case_str, filepath,
                                     scenario_title_line_num, tc_name, line_num,
                                     obj_dict, driver, url, wait, data_mark,
-                                    browser_per_file,
+                                    browser_per_file, slow_mode,
                                     prereq_tcs=pre_tc_str, prereq_url=preq_url,
                                     prereq_path=prerequisites,
                                     prereq_str_to_type=pre_str_in_br)
@@ -122,7 +122,8 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath, tc_name,
                                 scenario_title_line_num, line_num, obj_dict,
-                                driver, url, wait, data_mark, browser_per_file)
+                                driver, url, wait, data_mark, browser_per_file,
+                                slow_mode)
                         tcs_list.append(f"PASSED {tc_id}")
                     else:
                         pass
@@ -138,7 +139,7 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                                 test_case_str, filepath,
                                 scenario_title_line_num, tc_name, line_num,
                                 obj_dict, driver, url, wait, data_mark,
-                                browser_per_file,
+                                browser_per_file, slow_mode,
                                 prereq_tcs=pre_tc_str, prereq_url=preq_url,
                                 prereq_path=prerequisites, prereq_str_to_type=
                                 pre_str_in_br)
@@ -146,7 +147,8 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                         test_p = execute_test_paragraph(
                             test_case_str, filepath, tc_name,
                             scenario_title_line_num, line_num, obj_dict,
-                            driver, url, wait, data_mark, browser_per_file)
+                            driver, url, wait, data_mark, browser_per_file,
+                            slow_mode)
                     tcs_list.append(f"PASSED {tc_id}")
             except Exception as e:
                 tcs_list.append(f"FAILED {tc_id}")
@@ -228,7 +230,7 @@ def get_list_of_dicts_from_csv(file):
 
 def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                            line_num, obj_dict, driver, url, wait, data_mark,
-                           browser_per_file,
+                           browser_per_file, slow_mode,
                            prereq_tcs=None, prereq_url=None,
                            prereq_path=None, prereq_str_to_type=None) -> str:
     csv_list_of_dicts = []
@@ -267,21 +269,32 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
             prereq_act_obj_list, prereq_objects = \
                 prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
             run_once(driver, prereq_objects, prereq_act_obj_list,
-                     prereq_str_to_type, prereq_path, line_num, wait)
+                     prereq_str_to_type, prereq_path, line_num, wait,
+                     slow_mode)
 
-        if driver.current_url == url or \
-                str(driver.current_url).rstrip("/") == url:
-            pass
-        else:
-            driver.get(url)
         if str_in_angle_brackets:
             for i in range(csv_list_of_dicts_range):
+                if slow_mode:
+                    time.sleep(slow_mode)
+                if driver.current_url == url or \
+                        str(driver.current_url).rstrip("/") == url:
+                    pass
+                else:
+                    driver.get(url)
                 run_once(driver, objects, act_obj_list,
-                         angle_square_list, filepath, line_num, wait)
+                         angle_square_list, filepath, line_num, wait,
+                         slow_mode)
         #         TODO: review why page seems to be refreshing with csv_data
         else:
+            if slow_mode:
+                time.sleep(slow_mode)
+            if driver.current_url == url or \
+                    str(driver.current_url).rstrip("/") == url:
+                pass
+            else:
+                driver.get(url)
             run_once(driver, objects, act_obj_list,
-                     str_in_brackets, filepath, line_num, wait)
+                     str_in_brackets, filepath, line_num, wait, slow_mode)
     except Exception as e:
         raise e
     finally:
@@ -335,7 +348,7 @@ def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
 
 
 def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
-             path, line_num, wait):
+             path, line_num, wait, present_mode):
     type_list = ['type', 'types', 'typed']
     for enum, i in enumerate(act_obj_list):
         acti = i[0]
@@ -344,7 +357,8 @@ def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
         obj_name = obj_dict[enum]
         act_func, str_for_send_keys = which_action(
             acti, page_object_src, page_obj_loc, str_in_brackets, wait)
-
+        if present_mode:
+            time.sleep(present_mode)
         if acti.startswith("type"):
             try:
                 exec(f'WebDriverWait(driver, '
@@ -359,8 +373,6 @@ def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
             exec(act_func)
         except TimeoutException:
             raise PomidorObjectDoesNotExistOnPage(path, line_num, obj_name)
-
-        # time.sleep(1)
         if acti in type_list:
             str_in_brackets.pop(0)
 
@@ -600,7 +612,8 @@ class Pomidor:
     #     pass
 
     def run(self, dir_path, feature=False, verbose=True, wait=10,
-            parallel=None, story=None, browser_per_file=True):
+            parallel=None, story=None, browser_per_file=True,
+            slow_mode=False):
         start = time.perf_counter()
         scenario_number = 0
         file_number = 0
@@ -613,7 +626,7 @@ class Pomidor:
                     futures = executor.submit(
                         browser_frequency, self.url, self.driver, feature,
                         story, pom_file, self.obj_dict, self.urls, wait,
-                        self.prerequisites, browser_per_file)
+                        self.prerequisites, browser_per_file, slow_mode)
                     futures_list.append(futures)
 
                 for future in futures_list:
@@ -629,7 +642,7 @@ class Pomidor:
                 sce_num, tc_name, tcs_list = browser_frequency(
                     self.url, self.driver, feature, story, pom_file,
                     self.obj_dict, self.urls, wait, self.prerequisites,
-                    browser_per_file)
+                    browser_per_file, slow_mode)
                 if tc_name:
                     scenario_number += sce_num
                 results.append(tcs_list)
