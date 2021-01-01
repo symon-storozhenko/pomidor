@@ -36,9 +36,11 @@ class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
     """ PomidorDataFeedNoAngleKeysProvided"""
     def __init__(self, path, line_num, data_file, *args, **kwargs):
         PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}Please add @data marker with a csv file in the '
-              f'beginning of your paragraph.\nExample: '
-              f'\n"@data csv_file_name.csv'
+        print(f'{Colors.FAIL}If you want to use keys from double angle '
+              f'brackets {Colors.WARNING}<<key>>{Colors.FAIL}, add @data marker'
+              f' with a csv file in the beginning of your paragraph.\nExample:'
+              f'\n"@feature Regression'
+              f'\n{Colors.WARNING}@data csv_file_name.csv{Colors.FAIL}'
               f'\nSome paragraph text..."{Colors.ENDC}')
 
 

@@ -43,14 +43,16 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
 
 def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
                       urls, wait, prerequisites, browser_per_file,
-                      slow_mode):
+                      slow_mode, failed_screenshots, passed_screenshots,
+                      adhoc_screenshots):
     if browser_per_file:
         try:
             po = Pomidor(driver, obj_dict, base_url)
             driver = po.define_browser()
             scenario_number, tc_name, tcs_list = go_thru_one_file(
                 base_url, driver, feature, story, filepath, obj_dict,
-                urls, wait, prerequisites, browser_per_file, slow_mode)
+                urls, wait, prerequisites, browser_per_file, slow_mode,
+                failed_screenshots, passed_screenshots, adhoc_screenshots)
             return scenario_number, tc_name, tcs_list
 
         finally:
@@ -58,12 +60,16 @@ def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
     else:
         scenario_number, tc_name, tcs_list = go_thru_one_file(
             base_url, driver, feature, story, filepath, obj_dict,
-            urls, wait, prerequisites, browser_per_file, slow_mode)
+            urls, wait, prerequisites, browser_per_file, slow_mode,
+            failed_screenshots, passed_screenshots, adhoc_screenshots)
+
         return scenario_number, tc_name, tcs_list
 
 
 def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
-                     urls, wait, prerequisites, browser_per_file, slow_mode):
+                     urls, wait, prerequisites, browser_per_file, slow_mode,
+                     failed_screenshots, passed_screenshots,
+                     adhoc_screenshots):
     scenario_number = 0
     spl = get_all_file_paragraphs_into_list(filepath)
     counter = 1
@@ -99,6 +105,7 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
             else:
                 tc_name = ''.join(test_case[0])
             tc_id = f'{filepath}::{tc_name}::line {line_num}'
+            tc_id_screenshot = f'{tc_name}_line {line_num}'
             scenario_title_line_num = counter + (len(x) + 1)
             try:
                 if feature:
@@ -115,15 +122,19 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                                     scenario_title_line_num, tc_name, line_num,
                                     obj_dict, driver, url, wait, data_mark,
                                     browser_per_file, slow_mode,
+                                    failed_screenshots, passed_screenshots,
+                                    adhoc_screenshots,
                                     prereq_tcs=pre_tc_str, prereq_url=preq_url,
                                     prereq_path=prerequisites,
-                                    prereq_str_to_type=pre_str_in_br)
+                                    prereq_str_to_type=pre_str_in_br,
+                                    )
                         else:
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath, tc_name,
                                 scenario_title_line_num, line_num, obj_dict,
                                 driver, url, wait, data_mark, browser_per_file,
-                                slow_mode)
+                                slow_mode, failed_screenshots,
+                                passed_screenshots, adhoc_screenshots)
                         tcs_list.append(f"PASSED {tc_id}")
                     else:
                         pass
@@ -140,21 +151,30 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                                 scenario_title_line_num, tc_name, line_num,
                                 obj_dict, driver, url, wait, data_mark,
                                 browser_per_file, slow_mode,
-                                prereq_tcs=pre_tc_str, prereq_url=preq_url,
-                                prereq_path=prerequisites, prereq_str_to_type=
-                                pre_str_in_br)
+                                failed_screenshots, passed_screenshots,
+                                adhoc_screenshots, prereq_tcs=pre_tc_str,
+                                prereq_url=preq_url, prereq_path=prerequisites,
+                                prereq_str_to_type= pre_str_in_br)
                     else:
                         test_p = execute_test_paragraph(
                             test_case_str, filepath, tc_name,
                             scenario_title_line_num, line_num, obj_dict,
                             driver, url, wait, data_mark, browser_per_file,
-                            slow_mode)
+                            slow_mode, failed_screenshots, passed_screenshots,
+                            adhoc_screenshots)
                     tcs_list.append(f"PASSED {tc_id}")
+                    if passed_screenshots:
+                        driver.save_screenshot(
+                        f'{passed_screenshots}/{tc_id_screenshot}.png')
             except Exception as e:
                 tcs_list.append(f"FAILED {tc_id}")
+                if failed_screenshots:
+                    driver.save_screenshot(
+                        f'{failed_screenshots}/{tc_id_screenshot}.png')
                 print(e)
                 raise e
             finally:
+                continue    # uncomment when testing Test summary output
                 if test_case_str.startswith('crazytomato -1'):
                     print(f'crazytomato -1 found')
                 else:
@@ -230,7 +250,8 @@ def get_list_of_dicts_from_csv(file):
 
 def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                            line_num, obj_dict, driver, url, wait, data_mark,
-                           browser_per_file, slow_mode,
+                           browser_per_file, slow_mode, failed_screenshots,
+                           passed_screenshots, adhoc_screenshots,
                            prereq_tcs=None, prereq_url=None,
                            prereq_path=None, prereq_str_to_type=None) -> str:
     csv_list_of_dicts = []
@@ -270,8 +291,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                 prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
             run_once(driver, prereq_objects, prereq_act_obj_list,
                      prereq_str_to_type, prereq_path, line_num, wait,
-                     slow_mode)
-
+                     slow_mode, failed_screenshots, passed_screenshots,
+                     adhoc_screenshots)
         if str_in_angle_brackets:
             for i in range(csv_list_of_dicts_range):
                 if slow_mode:
@@ -283,8 +304,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                     driver.get(url)
                 run_once(driver, objects, act_obj_list,
                          angle_square_list, filepath, line_num, wait,
-                         slow_mode)
-        #         TODO: review why page seems to be refreshing with csv_data
+                         slow_mode, failed_screenshots, passed_screenshots,
+                         adhoc_screenshots)
         else:
             if slow_mode:
                 time.sleep(slow_mode)
@@ -294,13 +315,14 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
             else:
                 driver.get(url)
             run_once(driver, objects, act_obj_list,
-                     str_in_brackets, filepath, line_num, wait, slow_mode)
+                     str_in_brackets, filepath, line_num, wait, slow_mode,
+                     failed_screenshots, passed_screenshots, adhoc_screenshots)
     except Exception as e:
+        driver.save_screenshot(f'{filepath}::{tc_name}')
         raise e
     finally:
         if not browser_per_file:
             driver.quit()
-        print('Hey!')
 
 
 def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
@@ -348,7 +370,8 @@ def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
 
 
 def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
-             path, line_num, wait, present_mode):
+             path, line_num, wait, present_mode, failed_screenshots,
+             passed_screenshots, adhoc_screenshots):
     type_list = ['type', 'types', 'typed']
     for enum, i in enumerate(act_obj_list):
         acti = i[0]
@@ -368,6 +391,7 @@ def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
                 raise PomidorObjectDoesNotExistOnPage(path, line_num, obj_name)
             # TODO add is_selected and is_enabled asserts
             # TODO add "page_title" assert
+
 
         try:
             exec(act_func)
@@ -611,22 +635,26 @@ class Pomidor:
     # def delete_all_cookies(self):
     #     pass
 
-    def run(self, dir_path, feature=False, verbose=True, wait=10,
+    def run(self, path='', feature=False, verbose=True, wait=10,
             parallel=None, story=None, browser_per_file=True,
-            slow_mode=False):
+            slow_mode=False, failed_screenshots=None, passed_screenshots=None,
+            adhoc_screenshots=None):
         start = time.perf_counter()
         scenario_number = 0
         file_number = 0
         results = []
         if parallel:
-            pom_list = generate_list_of_pomidor_files(dir_path)
+            pom_list = generate_list_of_pomidor_files(path)
             futures_list = []
             with ThreadPoolExecutor(parallel, 'pre') as executor:
                 for file_number, pom_file in enumerate(pom_list):
                     futures = executor.submit(
                         browser_frequency, self.url, self.driver, feature,
                         story, pom_file, self.obj_dict, self.urls, wait,
-                        self.prerequisites, browser_per_file, slow_mode)
+                        self.prerequisites, browser_per_file, slow_mode,
+                        failed_screenshots, passed_screenshots,
+                        adhoc_screenshots
+                    )
                     futures_list.append(futures)
 
                 for future in futures_list:
@@ -637,12 +665,13 @@ class Pomidor:
         else:
 
             for file_number, pom_file in enumerate(
-                    generate_list_of_pomidor_files(dir_path)):
+                    generate_list_of_pomidor_files(path)):
                 # print(f'pom_list -> {pom_file}')
                 sce_num, tc_name, tcs_list = browser_frequency(
                     self.url, self.driver, feature, story, pom_file,
                     self.obj_dict, self.urls, wait, self.prerequisites,
-                    browser_per_file, slow_mode)
+                    browser_per_file, slow_mode, failed_screenshots,
+                    passed_screenshots, adhoc_screenshots)
                 if tc_name:
                     scenario_number += sce_num
                 results.append(tcs_list)

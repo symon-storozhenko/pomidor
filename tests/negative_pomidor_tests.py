@@ -19,13 +19,6 @@ prereqs = "pageObjects/prerequisites.pomidor"
 
 po = Pomidor("Chrome", page_obj, url, urls=addtl_urls, prerequisites=prereqs)
 
-# po.delete_all_cookies()
-# po.max_window()
-# po.fullscreen()
-
-# po.before_tests_launch_url()
-# po.quit()
-
 root_dir = ''
 empty_str = 'negative_pomidory/empty_dir'
 nested_dir = 'negative_pomidory/SmokeTest'
@@ -56,7 +49,18 @@ obj_in_page_factory_but_not_on_webpage2 = \
 prereqs2 = "pageObjects/prerequisites2.pomidor"
 
 
-# po.run(nested_dir, parallel=4)
+class TestPomidorRunAll:
+
+    # Browser opens even for empty .pomidor files
+    def test_pomidor_run_all_browser_per_file(self):
+        po.run(parallel=4, browser_per_file=True)   # 67.84s (-13.00s)
+    #     77.80s with idle screenshots
+
+    # Browser opens only for
+    def test_pomidor_run_all_browser_per_each_test(self):
+        po.run(parallel=4, browser_per_file=False)  # 79.00s
+        #     81.91s with idle screenshots
+
 
 class TestPomidorPro:
     def test_pomidor_pro(self):
