@@ -66,7 +66,7 @@ def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
         return scenario_number, tc_name, tcs_list
 
 
-def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
+def go_thru_one_file(base_url, drv, feature, story, filepath, obj_dict,
                      urls, wait, prerequisites, browser_per_file, slow_mode,
                      failed_screenshots, passed_screenshots,
                      adhoc_screenshots):
@@ -76,6 +76,7 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
     tc_name = ''
     tcs_list = []
     story = None
+    driver = drv
     for x in spl:
         line_num = x[0][0]
         list_of_lists_wo_enum = [list(y[1:]) for y in x]
@@ -98,7 +99,6 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
 
         objects = [y.strip("#") for y in str_list
                    if y.startswith("#")]
-
         if actions or objects:
             if tc_name_value:
                 tc_name = tc_name_value
@@ -107,7 +107,10 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
             tc_id = f'{filepath}::{tc_name}::line {line_num}'
             tc_id_screenshot = f'{tc_name}_line {line_num}'
             scenario_title_line_num = counter + (len(x) + 1)
+            browser_initialized = False
             try:
+                if not browser_per_file:
+                    pomidor = Pomidor(driver, obj_dict, url)
                 if feature:
                     if feature.lower() in feature_mark_list:
                         scenario_number += 1
@@ -117,7 +120,10 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                                 url, driver, story, prerequisites,
                                 obj_dict, urls, wait, line_num, filepath)
                             if match:
-                                test_p = execute_test_paragraph(
+                                if not browser_per_file:
+                                    driver = pomidor.define_browser()
+                                    browser_initialized = True
+                                test_p = execute_test_paragraph(    #TODO decorator
                                     test_case_str, filepath,
                                     scenario_title_line_num, tc_name, line_num,
                                     obj_dict, driver, url, wait, data_mark,
@@ -126,9 +132,11 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                                     adhoc_screenshots,
                                     prereq_tcs=pre_tc_str, prereq_url=preq_url,
                                     prereq_path=prerequisites,
-                                    prereq_str_to_type=pre_str_in_br,
-                                    )
+                                    prereq_str_to_type=pre_str_in_br)
                         else:
+                            if not browser_per_file:
+                                driver = pomidor.define_browser()
+                                browser_initialized = True
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath, tc_name,
                                 scenario_title_line_num, line_num, obj_dict,
@@ -146,6 +154,9 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                             url, driver, story, prerequisites,
                             obj_dict, urls, wait, line_num, filepath)
                         if match:
+                            if not browser_per_file:
+                                driver = pomidor.define_browser()
+                                browser_initialized = True
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath,
                                 scenario_title_line_num, tc_name, line_num,
@@ -154,8 +165,11 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                                 failed_screenshots, passed_screenshots,
                                 adhoc_screenshots, prereq_tcs=pre_tc_str,
                                 prereq_url=preq_url, prereq_path=prerequisites,
-                                prereq_str_to_type= pre_str_in_br)
+                                prereq_str_to_type=pre_str_in_br)
                     else:
+                        if not browser_per_file:
+                            driver = pomidor.define_browser()
+                            browser_initialized = True
                         test_p = execute_test_paragraph(
                             test_case_str, filepath, tc_name,
                             scenario_title_line_num, line_num, obj_dict,
@@ -165,16 +179,19 @@ def go_thru_one_file(base_url, driver, feature, story, filepath, obj_dict,
                     tcs_list.append(f"PASSED {tc_id}")
                     if passed_screenshots:
                         driver.save_screenshot(
-                        f'{passed_screenshots}/{tc_id_screenshot}.png')
+                            f'{passed_screenshots}/{tc_id_screenshot}.png')
             except Exception as e:
-                tcs_list.append(f"FAILED {tc_id}")
+                tcs_list.append(f"FAILED {tc_id}")  # Research test.html
                 if failed_screenshots:
                     driver.save_screenshot(
                         f'{failed_screenshots}/{tc_id_screenshot}.png')
                 print(e)
                 raise e
             finally:
-                continue    # uncomment when testing Test summary output
+                if not browser_per_file and browser_initialized:
+                    driver.quit()
+                    driver = drv
+                continue  # uncomment when testing Test summary output
                 if test_case_str.startswith('crazytomato -1'):
                     print(f'crazytomato -1 found')
                 else:
@@ -280,9 +297,6 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
 
     try:
         # TODO: research on how driver can be created outside
-        if not browser_per_file:
-            pomidor = Pomidor(driver, obj_dict, url)
-            driver = pomidor.define_browser()
         if prereq_tcs:
             driver.get(prereq_url)
             driver.delete_all_cookies()
@@ -321,8 +335,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         driver.save_screenshot(f'{filepath}::{tc_name}')
         raise e
     finally:
-        if not browser_per_file:
-            driver.quit()
+        pass
 
 
 def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
@@ -391,7 +404,6 @@ def run_once(driver, obj_dict, act_obj_list, str_in_brackets,
                 raise PomidorObjectDoesNotExistOnPage(path, line_num, obj_name)
             # TODO add is_selected and is_enabled asserts
             # TODO add "page_title" assert
-
 
         try:
             exec(act_func)
@@ -636,8 +648,9 @@ class Pomidor:
     #     pass
 
     def run(self, path='', feature=False, verbose=True, wait=10,
-            parallel=None, story=None, browser_per_file=True,
-            slow_mode=False, failed_screenshots=None, passed_screenshots=None,
+            parallel=None, story=None, browser_per_file=False,
+            slow_mode=False, passed_screenshots='passed_screenshots',
+            failed_screenshots='failed_screenshots',
             adhoc_screenshots=None):
         start = time.perf_counter()
         scenario_number = 0

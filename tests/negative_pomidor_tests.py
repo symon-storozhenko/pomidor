@@ -52,14 +52,22 @@ prereqs2 = "pageObjects/prerequisites2.pomidor"
 class TestPomidorRunAll:
 
     # Browser opens even for empty .pomidor files
+    # 30 browser initializations
+    # 26 failed, 34 passed
     def test_pomidor_run_all_browser_per_file(self):
-        po.run(parallel=4, browser_per_file=True)   # 67.84s (-13.00s)
-    #     77.80s with idle screenshots
+        po.run(parallel=4, browser_per_file=True)
+    #     67.84s (-13.00s) without any screenshot logic
+    #     77s - 118s with passed and failed screenshots with dirs created
+    #     76s - 160.51s with passed and failed screenshots but no dirs created
+    #     68.69 - 100.83s with passed and failed screenshots=None
 
-    # Browser opens only for
+    # Browser opens only for tests with actions and objects
+    # 57 browser initializations
     def test_pomidor_run_all_browser_per_each_test(self):
         po.run(parallel=4, browser_per_file=False)  # 79.00s
-        #     81.91s with idle screenshots
+    #     81.91s with idle screenshots
+    #     79s with passed and failed screenshots=None
+    #     78.12s -  - 99s with passed and failed screenshots with dirs created
 
 
 class TestPomidorPro:
@@ -77,7 +85,7 @@ class TestPomidorPrerequisites:
         assert scenario_num == 4
 
     def test_pomidor_csv_data_with_prereqs_feature(self):
-        scenario_num = po.run(prereqs_test, feature="csv_data")
+        scenario_num = po.run(prereqs_test, feature="csv_data", slow_mode=1)
         assert scenario_num == 1
 
     def test_pomidor_csv_data_with_prereqs_all(self):
