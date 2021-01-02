@@ -41,7 +41,7 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
     return tomato_files_list
 
 
-def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
+def browser_frequency(base_url, driver, feature, prerequisite, filepath, obj_dict,
                       urls, wait, prerequisites, browser_per_file,
                       slow_mode, failed_screenshots, passed_screenshots,
                       adhoc_screenshots):
@@ -50,7 +50,7 @@ def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
             po = Pomidor(driver, obj_dict, base_url)
             driver = po.define_browser()
             scenario_number, tc_name, tcs_list = go_thru_one_file(
-                base_url, driver, feature, story, filepath, obj_dict,
+                base_url, driver, feature, prerequisite, filepath, obj_dict,
                 urls, wait, prerequisites, browser_per_file, slow_mode,
                 failed_screenshots, passed_screenshots, adhoc_screenshots)
             return scenario_number, tc_name, tcs_list
@@ -59,14 +59,14 @@ def browser_frequency(base_url, driver, feature, story, filepath, obj_dict,
             driver.quit()
     else:
         scenario_number, tc_name, tcs_list = go_thru_one_file(
-            base_url, driver, feature, story, filepath, obj_dict,
+            base_url, driver, feature, prerequisite, filepath, obj_dict,
             urls, wait, prerequisites, browser_per_file, slow_mode,
             failed_screenshots, passed_screenshots, adhoc_screenshots)
 
         return scenario_number, tc_name, tcs_list
 
 
-def go_thru_one_file(base_url, drv, feature, story, filepath, obj_dict,
+def go_thru_one_file(base_url, drv, feature, prerequisite, filepath, obj_dict,
                      urls, wait, prerequisites, browser_per_file, slow_mode,
                      failed_screenshots, passed_screenshots,
                      adhoc_screenshots):
@@ -75,7 +75,6 @@ def go_thru_one_file(base_url, drv, feature, story, filepath, obj_dict,
     counter = 1
     tc_name = ''
     tcs_list = []
-    story = None
     driver = drv
     for x in spl:
         line_num = x[0][0]
@@ -87,7 +86,7 @@ def go_thru_one_file(base_url, drv, feature, story, filepath, obj_dict,
         data_mark, feature_mark_list, tc_name_value, url, prereq = all_markers(
             base_url, markers_list, urls)
         if prereq:
-            story = prereq
+            prerequisite = prereq
         test_case = [y for y in prgrph_list if not y.startswith("@")
                      and not y.startswith("!!")]
         test_case_str = ' '.join([str(i) for i in test_case])
@@ -114,10 +113,10 @@ def go_thru_one_file(base_url, drv, feature, story, filepath, obj_dict,
                 if feature:
                     if feature.lower() in feature_mark_list:
                         scenario_number += 1
-                        if story:
+                        if prerequisite:
                             pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
                             match = go_thru_prereq_file(
-                                url, driver, story, prerequisites,
+                                url, driver, prerequisite, prerequisites,
                                 obj_dict, urls, wait, line_num, filepath)
                             if match:
                                 if not browser_per_file:
@@ -148,10 +147,10 @@ def go_thru_one_file(base_url, drv, feature, story, filepath, obj_dict,
                         pass
                 else:
                     scenario_number += 1
-                    if story:
+                    if prerequisite:
                         pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
                         match = go_thru_prereq_file(
-                            url, driver, story, prerequisites,
+                            url, driver, prerequisite, prerequisites,
                             obj_dict, urls, wait, line_num, filepath)
                         if match:
                             if not browser_per_file:
@@ -240,7 +239,7 @@ def go_thru_prereq_file(base_url, driver, story, prereq_filepath, obj_dict,
             tc_id = f'Prerequisite::{prereq_filepath}::{tc_name}::line ' \
                     f'{line_num}'
             scenario_title_line_num = counter + (len(x) + 1)
-            if story == tc_name:
+            if story.lower() == tc_name.lower():
                 match = True
                 break
     if not match:
@@ -648,10 +647,10 @@ class Pomidor:
     #     pass
 
     def run(self, path='', feature=False, verbose=True, wait=10,
-            parallel=None, story=None, browser_per_file=False,
+            parallel=None, prerequisite=None, browser_per_file=False,
             slow_mode=False, passed_screenshots='passed_screenshots',
             failed_screenshots='failed_screenshots',
-            adhoc_screenshots=None):
+            adhoc_screenshots='adhoc_screenshots'):
         start = time.perf_counter()
         scenario_number = 0
         file_number = 0
@@ -663,7 +662,7 @@ class Pomidor:
                 for file_number, pom_file in enumerate(pom_list):
                     futures = executor.submit(
                         browser_frequency, self.url, self.driver, feature,
-                        story, pom_file, self.obj_dict, self.urls, wait,
+                        prerequisite, pom_file, self.obj_dict, self.urls, wait,
                         self.prerequisites, browser_per_file, slow_mode,
                         failed_screenshots, passed_screenshots,
                         adhoc_screenshots
@@ -681,7 +680,7 @@ class Pomidor:
                     generate_list_of_pomidor_files(path)):
                 # print(f'pom_list -> {pom_file}')
                 sce_num, tc_name, tcs_list = browser_frequency(
-                    self.url, self.driver, feature, story, pom_file,
+                    self.url, self.driver, feature, prerequisite, pom_file,
                     self.obj_dict, self.urls, wait, self.prerequisites,
                     browser_per_file, slow_mode, failed_screenshots,
                     passed_screenshots, adhoc_screenshots)

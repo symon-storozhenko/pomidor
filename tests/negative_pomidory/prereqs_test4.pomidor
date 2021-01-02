@@ -1,0 +1,38 @@
+App Name:
+Version:
+Release date:
+
+Sprint:
+
+
+!!Used for test_pomidor_csv_data_with_prereqs!!
+@Feature CSV_data_loginski
+!!@prereq Loginski
+@url    practice_page
+@param delete_cookies, full_screen
+@DATA   pageObjects/csv_data_source.csv
+@name   Loginski prereq scenario with exception
+!!Comment first line - First, click on login_field #practice_menu_button page title
+and type <<FirstName>> in #name_field. Then, type [[some
+free text]] in #name_field,
+
+@Feature CSV_data
+@prereq google_search
+@param   delete_cookies, full_screen
+@DATA   pageObjects/csv_data_source.csv
+!!@url     practice_page
+Comment first line - First, click on login_field #practice_menu_button page title
+google_search prereq scenario
+type [[some
+free text]] in #name_field,
+and type <<FirstName>> in #name_field.
+
+!!Used for test_pomidor_csv_data_with_prereqs!!
+@Feature CSV_data3
+@prereq Login
+@param   delete_cookies, full_screen
+@DATA   pageObjects/csv_data_source.csv
+@url     practice_page
+!!Comment first line - First, click on login_field #practice_menu_button page title
+Login prereq scenario
+and type <<FirstName>> in #name_field.

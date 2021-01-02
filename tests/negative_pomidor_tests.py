@@ -42,6 +42,7 @@ data_file = 'negative_pomidory/data_file.pomidor'
 prereqs_test = 'negative_pomidory/prereqs_test.pomidor'
 prereqs_test2 = 'negative_pomidory/prereqs_test2.pomidor'
 prereqs_test3 = 'negative_pomidory/prereqs_test3.pomidor'
+prereqs_test4 = 'negative_pomidory/prereqs_test4.pomidor'
 obj_in_page_factory_but_not_on_webpage = \
     'negative_pomidory/obj_in_page_factory_but_not_on_webpage.pomidor'
 obj_in_page_factory_but_not_on_webpage2 = \
@@ -55,7 +56,7 @@ class TestPomidorRunAll:
     # 30 browser initializations
     # 26 failed, 34 passed
     def test_pomidor_run_all_browser_per_file(self):
-        po.run(parallel=4, browser_per_file=True)
+        po.run(parallel=4, browser_per_file=True, prerequisite='Google_search')
     #     67.84s (-13.00s) without any screenshot logic
     #     77s - 118s with passed and failed screenshots with dirs created
     #     76s - 160.51s with passed and failed screenshots but no dirs created
@@ -92,6 +93,11 @@ class TestPomidorPrerequisites:
         scenario_num = po.run(prereqs_test, wait=2)
         assert scenario_num == 3    # one prereq not found, exception printed
 
+    def test_pomidor_csv_data_with_common_prereqs(self):
+        scenario_num = po.run(prereqs_test4, wait=2,
+                              prerequisite='GoOgle_search', slow_mode=1)
+        assert scenario_num == 3    # one prereq not found, exception printed
+
     def test_pomidor_csv_data_with_prereqs_all_one_fails(self):
         scenario_num = po.run(prereqs_test2, wait=2)
         assert scenario_num == 3    # Exception on prereq is raised
@@ -114,13 +120,17 @@ class TestPomidor:
         assert scenario_num == 4  # 8.3 sec # Exception printed
 
     def test_pomidor_parallel_with_feature(self):
-        scenario_num = po.run(nested_dir, feature='CSV_data1', parallel=4)
+        scenario_num = po.run(nested_dir, feature='CSV_data1',
+                              parallel=4, prerequisite='Google_Search')
         assert scenario_num == 2  # 8.3 sec # Exception printed
 
     def test_pomidor_run_feature(self):
-        scenario_num = po.run(run_story,
-                              feature='Report')
+        scenario_num = po.run(run_story, feature='Report')
         assert scenario_num == 3
+
+    def test_pomidor_run_story(self):
+        scenario_num = po.run(run_story, story='Jira - 4233')
+        assert scenario_num == 1
 
     def test_pomidor_run_is_displayed(self):
         scenario_num = po.run(run_story,
