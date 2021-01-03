@@ -44,15 +44,16 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
 def browser_frequency(base_url, driver, feature, prerequisite, filepath, obj_dict,
                       urls, wait, prerequisites, browser_per_file,
                       slow_mode, failed_screenshots, passed_screenshots,
-                      adhoc_screenshots):
+                      adhoc_screenshots, headless):
     if browser_per_file:
         try:
             po = Pomidor(driver, obj_dict, base_url)
-            driver = po.define_browser()
+            driver = po.define_browser(headless)
             scenario_number, tc_name, tcs_list = go_thru_one_file(
                 base_url, driver, feature, prerequisite, filepath, obj_dict,
                 urls, wait, prerequisites, browser_per_file, slow_mode,
-                failed_screenshots, passed_screenshots, adhoc_screenshots)
+                failed_screenshots, passed_screenshots, adhoc_screenshots,
+                headless)
             return scenario_number, tc_name, tcs_list
 
         finally:
@@ -61,7 +62,8 @@ def browser_frequency(base_url, driver, feature, prerequisite, filepath, obj_dic
         scenario_number, tc_name, tcs_list = go_thru_one_file(
             base_url, driver, feature, prerequisite, filepath, obj_dict,
             urls, wait, prerequisites, browser_per_file, slow_mode,
-            failed_screenshots, passed_screenshots, adhoc_screenshots)
+            failed_screenshots, passed_screenshots, adhoc_screenshots,
+            headless)
 
         return scenario_number, tc_name, tcs_list
 
@@ -69,7 +71,7 @@ def browser_frequency(base_url, driver, feature, prerequisite, filepath, obj_dic
 def go_thru_one_file(base_url, drv, feature, default_prerequisite, filepath, obj_dict,
                      urls, wait, prerequisites, browser_per_file, slow_mode,
                      failed_screenshots, passed_screenshots,
-                     adhoc_screenshots):
+                     adhoc_screenshots, headless):
     scenario_number = 0
     spl = get_all_file_paragraphs_into_list(filepath)
     counter = 1
@@ -122,12 +124,11 @@ def go_thru_one_file(base_url, drv, feature, default_prerequisite, filepath, obj
                             match = go_thru_prereq_file(
                                 url, driver, prerequisite, prerequisites,
                                 obj_dict, urls, wait, line_num, filepath)
-                            prerequisite=None
                             if match:
                                 if not browser_per_file:
-                                    driver = pomidor.define_browser()
+                                    driver = pomidor.define_browser(headless)
                                     browser_initialized = True
-                                test_p = execute_test_paragraph(    #TODO decorator
+                                test_p = execute_test_paragraph(
                                     test_case_str, filepath,
                                     scenario_title_line_num, tc_name, line_num,
                                     obj_dict, driver, url, wait, data_mark,
@@ -139,7 +140,7 @@ def go_thru_one_file(base_url, drv, feature, default_prerequisite, filepath, obj
                                     prereq_str_to_type=pre_str_in_br)
                         else:
                             if not browser_per_file:
-                                driver = pomidor.define_browser()
+                                driver = pomidor.define_browser(headless)
                                 browser_initialized = True
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath, tc_name,
@@ -159,7 +160,7 @@ def go_thru_one_file(base_url, drv, feature, default_prerequisite, filepath, obj
                             obj_dict, urls, wait, line_num, filepath)
                         if match:
                             if not browser_per_file:
-                                driver = pomidor.define_browser()
+                                driver = pomidor.define_browser(headless)
                                 browser_initialized = True
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath,
@@ -172,7 +173,7 @@ def go_thru_one_file(base_url, drv, feature, default_prerequisite, filepath, obj
                                 prereq_str_to_type=pre_str_in_br)
                     else:
                         if not browser_per_file:
-                            driver = pomidor.define_browser()
+                            driver = pomidor.define_browser(headless)
                             browser_initialized = True
                         test_p = execute_test_paragraph(
                             test_case_str, filepath, tc_name,
@@ -618,13 +619,17 @@ class Pomidor:
         pass
 
     @trackcalls
-    def define_browser(self):
+    def define_browser(self, headless):
         if self.driver == 'Chrome':
             chrome_options = Options()
-            # chrome_options.add_argument("start-maximized")
-            # chrome_options.add_argument("--headless")
-            # driver = webdriver.Chrome(options=chrome_options)
-            driver = webdriver.Chrome()
+            # chrome_options.add_argument("--start-maximized") # not working
+            if headless:
+                chrome_options.add_argument("--window-size=1400,600")
+                chrome_options.add_argument("--headless")
+            driver = webdriver.Chrome(options=chrome_options)
+            # driver.maximize_window()
+            # driver.manage().window().maximize();
+            # driver = webdriver.Chrome()
             return driver
         if self.driver == 'Firefox':
             driver = webdriver.Firefox()
@@ -655,7 +660,7 @@ class Pomidor:
             parallel=None, prerequisite=None, browser_per_file=False,
             slow_mode=False, passed_screenshots='passed_screenshots',
             failed_screenshots='failed_screenshots',
-            adhoc_screenshots='adhoc_screenshots'):
+            adhoc_screenshots='adhoc_screenshots', headless=False):
         start = time.perf_counter()
         scenario_number = 0
         file_number = 0
@@ -670,8 +675,7 @@ class Pomidor:
                         prerequisite, pom_file, self.obj_dict, self.urls, wait,
                         self.prerequisites, browser_per_file, slow_mode,
                         failed_screenshots, passed_screenshots,
-                        adhoc_screenshots
-                    )
+                        adhoc_screenshots, headless)
                     futures_list.append(futures)
 
                 for future in futures_list:
@@ -688,7 +692,7 @@ class Pomidor:
                     self.url, self.driver, feature, prerequisite, pom_file,
                     self.obj_dict, self.urls, wait, self.prerequisites,
                     browser_per_file, slow_mode, failed_screenshots,
-                    passed_screenshots, adhoc_screenshots)
+                    passed_screenshots, adhoc_screenshots, headless)
                 if tc_name:
                     scenario_number += sce_num
                 results.append(tcs_list)
