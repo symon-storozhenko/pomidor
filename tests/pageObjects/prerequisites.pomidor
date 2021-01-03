@@ -7,8 +7,8 @@ Sprint:
 !!@data pageObjects/csv_data_source.csv
 @name Login
 @url practice_page
-and type [[PREREQUISITE!!!First, on login_field
-practice_menu_button page title]]in #name_field.
+and type [[Login
+PREREQUISITE!!!]]in #name_field.
 
 !!@data pageObjects/csv_data_source.csv
 @name Logins

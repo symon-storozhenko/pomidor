@@ -66,7 +66,7 @@ def browser_frequency(base_url, driver, feature, prerequisite, filepath, obj_dic
         return scenario_number, tc_name, tcs_list
 
 
-def go_thru_one_file(base_url, drv, feature, prerequisite, filepath, obj_dict,
+def go_thru_one_file(base_url, drv, feature, default_prerequisite, filepath, obj_dict,
                      urls, wait, prerequisites, browser_per_file, slow_mode,
                      failed_screenshots, passed_screenshots,
                      adhoc_screenshots):
@@ -83,10 +83,14 @@ def go_thru_one_file(base_url, drv, feature, prerequisite, filepath, obj_dict,
                        for item in t]
         markers_list = [y.lower() for y in prgrph_list
                         if y.startswith("@")]
+        data_mark, feature_mark_list, \
+        tc_name_value, url, prereq = None, None, None, None, None
         data_mark, feature_mark_list, tc_name_value, url, prereq = all_markers(
             base_url, markers_list, urls)
         if prereq:
             prerequisite = prereq
+        else:
+            prerequisite = default_prerequisite
         test_case = [y for y in prgrph_list if not y.startswith("@")
                      and not y.startswith("!!")]
         test_case_str = ' '.join([str(i) for i in test_case])
@@ -118,6 +122,7 @@ def go_thru_one_file(base_url, drv, feature, prerequisite, filepath, obj_dict,
                             match = go_thru_prereq_file(
                                 url, driver, prerequisite, prerequisites,
                                 obj_dict, urls, wait, line_num, filepath)
+                            prerequisite=None
                             if match:
                                 if not browser_per_file:
                                     driver = pomidor.define_browser()

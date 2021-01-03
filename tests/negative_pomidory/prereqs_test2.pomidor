@@ -33,3 +33,13 @@ and type <<FirstName>> in #name_field.
 !!Comment first line - First, click on login_field #practice_menu_button page title
 Login prereq2 scenario
 and type <<FirstName>> in #name_field.
+
+!!Used for test_pomidor_csv_data_with_prereqs!!
+@Feature CSV_data3
+!!@prereq Login
+@param   delete_cookies, full_screen
+@DATA   pageObjects/csv_data_source.csv
+@url     practice_page
+!!Comment first line - First, click on login_field #practice_menu_button page title
+Login prereq2 scenario
+and type <<FirstName>> in #name_field.

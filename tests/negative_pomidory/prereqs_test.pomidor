@@ -17,7 +17,7 @@ and type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field,
 
 @Feature CSV_data
-@prereq google_search
+@prereq login
 @param   delete_cookies, full_screen
 @DATA   pageObjects/csv_data_source.csv
 !!@url     practice_page
@@ -29,7 +29,7 @@ and type <<FirstName>> in #name_field.
 
 !!Used for test_pomidor_csv_data_with_prereqs!!
 @Feature CSV_data3
-@prereq Login
+!!@prereq Login
 @param   delete_cookies, full_screen
 @DATA   pageObjects/csv_data_source.csv
 @url     practice_page
