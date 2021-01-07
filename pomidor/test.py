@@ -1,3 +1,4 @@
+import itertools
 from collections import defaultdict
 from csv import DictReader
 
@@ -121,3 +122,13 @@ old_stdout = sys.stdout # Memorize the default stdout stream
 buffer = io.StringIO()
 
 print(f'sys.stdout -> {buffer.getvalue()}')
+
+
+def list1(k):
+    for i in range(10):
+        return k + "{i}"
+
+
+list2 = itertools.cycle(['a', 'b', 'c'])
+
+print(list(map(list1, list2)))

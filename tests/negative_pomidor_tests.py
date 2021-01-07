@@ -24,6 +24,7 @@ empty_str = 'negative_pomidory/empty_dir'
 nested_dir = 'negative_pomidory/SmokeTest'
 nested_dir2 = 'negative_pomidory/SmokeTest2'
 nested_dir3 = 'negative_pomidory/SmokeTest3'
+nested_dir4 = 'negative_pomidory/SmokeTest4'
 all_tomato_scripts = 'tomato3/tests/negative_pomidory'
 one_file = 'negative_pomidory/two_actions.pomidor'
 more_than_1_back = 'negative_pomidory/' \
@@ -60,6 +61,7 @@ class TestPomidorRunAll:
     def test_pomidor_run_all_browser_per_file(self):
         po.run(parallel=4, browser_per_file=True, prerequisite='Google_search',
                headless=True)
+
     #     67.84s (-13.00s) without any screenshot logic
     #     77s - 118s with passed and failed screenshots with dirs created
     #     76s - 160.51s with passed and failed screenshots but no dirs created
@@ -70,12 +72,22 @@ class TestPomidorRunAll:
     def test_pomidor_run_all_browser_per_each_test(self):
         po.run(parallel=4, browser_per_file=False, headless=True,
                prerequisite='Google_search')  # 79.00s
+
     #     81.91s with idle screenshots
     #     79s with passed and failed screenshots=None
     #     78.12s -  - 99s with passed and failed screenshots with dirs created
     # 128s - with passed'n'failed screenshots with dirs created and all prereqs
     # 93s - headless, passed'n'failed screenshots with dirs, all prereqs
 
+    def test_pomidor_run_all_one_browser_parallel(self):
+        po.run(parallel=4, browser_per_file=True, prerequisite='Google_search',
+               headless=0)
+
+
+class TestPomidorParallel:
+    def test_pomidor_run_parallel_one_browser_contexts(self):
+        po.run(path='negative_pomidory/SmokeTest4',
+               browser='one', prerequisite='google_search')
 
 
 class TestPomidorPro:
@@ -100,18 +112,18 @@ class TestPomidorPrerequisites:
     def test_pomidor_csv_data_with_prereqs_all(self):
         scenario_num = po.run(prereqs_test, wait=2, slow_mode=0.5,
                               prerequisite='GoOgle_search')
-        assert scenario_num == 3    # one prereq not found, exception printed
+        assert scenario_num == 3  # one prereq not found, exception printed
 
     def test_pomidor_csv_data_with_common_prereqs(self):
         scenario_num = po.run(prereqs_test4, wait=6, browser_per_file=True,
                               prerequisite='GoOgle_search', slow_mode=.2)
-        assert scenario_num == 3    # one prereq not found, exception printed
+        assert scenario_num == 3  # one prereq not found, exception printed
 
     def test_pomidor_csv_data_with_prereqs_all_one_fails(self):
         scenario_num = po.run(prereqs_test2, wait=2, slow_mode=0.2,
                               prerequisite='GooglE_SearcH',
                               feature='CSV_data3', browser_per_file=False)
-        assert scenario_num == 3    # Exception on prereq is raised
+        assert scenario_num == 3  # Exception on prereq is raised
 
 
 class TestPomidor:
@@ -121,7 +133,7 @@ class TestPomidor:
         assert scenario_num == 4  # 19.5 sec
 
     def test_pomidor_parallel(self):
-        scenario_num = po.run(nested_dir, parallel=4)
+        scenario_num = po.run(nested_dir, parallel=4, browser_per_file=1)
         assert scenario_num == 4  # 8.3 sec
 
     # 3 browsers should invoke simultaneously, skipping one error paragraph
@@ -150,7 +162,7 @@ class TestPomidor:
 
     def test_pomidor_run_not_displayed(self):
         scenario_num = po.run(assert_actions, feature="Not_Displayed", wait=2)
-        assert scenario_num == 1    # test summary printed
+        assert scenario_num == 1  # test summary printed
 
     def test_pomidor_csv_data(self):
         scenario_num = po.run(data_file, feature="csv_data")
@@ -171,7 +183,7 @@ class TestPomidor:
     def test_pomidor_obj_in_page_factory_but_not_on_webpage_and_continue(self):
         scenario_num = po.run(obj_in_page_factory_but_not_on_webpage2,
                               wait=2)
-        assert scenario_num == 2    # prints Exception and Test Summary
+        assert scenario_num == 2  # prints Exception and Test Summary
 
 
 class TestPomidorSyntaxPositive:
@@ -187,32 +199,32 @@ class TestPomidorSyntaxExceptions:
     # 4 scenarios total but one fails, 2 ran in total
     def test_pomidor_parallel_raise_exception_and_continue_and_exception(self):
         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(nested_dir2, parallel=4)    # prints Exception
+            po.run(nested_dir2, parallel=4)  # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_more_than_1_obj_bckwrd_action_except(self):
         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(more_than_1_back)    # prints Exception
+            po.run(more_than_1_back)  # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_two_actions(self):
         with pytest.raises(PomidorSyntaxErrorTooManyActions):
-            po.run(two_actions) # prints Exception
+            po.run(two_actions)  # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_no_obj_found(self):
         with pytest.raises(PomidorSyntaxErrorTooManyActions):
-            po.run(no_obj_found) # prints Exception
+            po.run(no_obj_found)  # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_no_obj_in_page_fctry(self):
         with pytest.raises(PomidorObjectDoesNotExistInCSVFile):
-            po.run(no_obj_in_page_fctry) # prints Exception
+            po.run(no_obj_in_page_fctry)  # prints Exception
 
     # has 'crazytomato -1' in front
     def test_pomidor_last_orphan_obj(self):
         with pytest.raises(PomidorSyntaxErrorTooManyObjects):
-            po.run(last_orphan_obj) # prints Exception
+            po.run(last_orphan_obj)  # prints Exception
 
     # has 'crazytomato -1' in front
     # prints Exception
@@ -237,7 +249,7 @@ class TestPomidorSyntaxExceptions:
 
     # Final Test Summary NOT printed: crazytomato -1 found
     # prints Exception
-    def test_pomidor_run_is_displayed_negative(self): #
+    def test_pomidor_run_is_displayed_negative(self):  #
         with pytest.raises(PomidorObjectDoesNotExistOnPage):
             po.run(assert_actions, feature="Is_displayed", wait=3)
 
