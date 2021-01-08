@@ -1,0 +1,37 @@
+@Story:    Jira-3344_0
+!!When I click on the #login_field I get tomato :)
+
+@Feature: Report
+@tcname: Jira-4233
+@url practice_page
+Type [['Halava']] in #name_field
+
+@url home_page
+!!Second // Feature comment
+Given "her we go!" user is on he's big boots's Instagram landing page, CLICK
+on login_field #practice_menu_button page title
+ans type [['stosimon@gmail.com]]' in #name_field and types [['Second bodybuilder']] in #name_field
+!!dfvd
+
+
+!!dvdvd
+@Feature: Report
+@url practice_page
+!!Second Feature!!!
+Tahen for granted and "her we go!" user is on he's big boots's Instagram landing page,
+CLICK on #name_field
+ans type [['stosimon@gmail]].com' in #name_field and typed [['third bodybuilder']] in #name_field
+and click on the #back_home_button
+
+
+@Feature: Reporting Shouldn't pick this up'
+ sStory 2
+ first paragraph click on #practice_menu_button and make sure the
+ #back_home_button is displayed
+
+
+@Feature: Report, 5
+@url practice_page
+!!"The last story in this file"
+Sstory 3s
+first paragraph click on #name_field and type [['failing marker']] in #name_field number 3

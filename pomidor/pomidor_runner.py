@@ -22,7 +22,8 @@ from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
     PomidorFileNotFoundError, PomidorSyntaxErrorTooManyActions, \
     PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistInCSVFile, \
     Colors, PomidorObjectDoesNotExistOnPage, \
-    PomidorPrerequisiteScenarioNotFoundError
+    PomidorPrerequisiteScenarioNotFoundError, \
+    PomidorCantRunOneBrowserInstanceInParallel
 
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
@@ -46,12 +47,12 @@ def browser_frequency(po, base_url, driver, feature, prerequisite, filepath,
                       urls, wait, prerequisites, browser,
                       slow_mode, failed_screenshots, passed_screenshots,
                       adhoc_screenshots, headless):
-    if browser == 'per_file':
+    if browser.lower() == 'per_file':
         try:
+            # po = Pomidor(driver, obj_dict, base_url)
             driver = po.define_browser(headless)
-            scenario_number, tc_name, tcs_list = go_thru_one_file(
-                po, base_url, driver, feature, prerequisite, filepath,
-                obj_dict,
+            scenario_number, tc_name, tcs_list = go_thru_one_file(po,
+                base_url, driver, feature, prerequisite, filepath, obj_dict,
                 urls, wait, prerequisites, browser, slow_mode,
                 failed_screenshots, passed_screenshots, adhoc_screenshots,
                 headless)
@@ -59,10 +60,9 @@ def browser_frequency(po, base_url, driver, feature, prerequisite, filepath,
 
         finally:
             driver.quit()
-            pass
     else:
-        scenario_number, tc_name, tcs_list = go_thru_one_file(
-            po, base_url, driver, feature, prerequisite, filepath, obj_dict,
+        scenario_number, tc_name, tcs_list = go_thru_one_file(po,
+            base_url, driver, feature, prerequisite, filepath, obj_dict,
             urls, wait, prerequisites, browser, slow_mode,
             failed_screenshots, passed_screenshots, adhoc_screenshots,
             headless)
@@ -306,7 +306,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         # TODO: research on how driver can be created outside
         if prereq_tcs:
             driver.get(prereq_url)
-            driver.delete_all_cookies()
+            driver.delete_all_cookies()     # TODO: store and use cookies
             # driver.maximize_window()
             prereq_act_obj_list, prereq_objects = \
                 prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
@@ -580,12 +580,12 @@ class Pomidor:
     extension = '.pomidor'
 
     def __init__(self, driver, obj_dict, url, urls=None,
-                 prerequisites=None):
+                 prerequisite_file=None):
         self.urls = urls
         self.obj_dict = obj_dict
         self.url = url
         self.driver = driver
-        self.prerequisites = prerequisites
+        self.prerequisite_file = prerequisite_file
         # self.obj_repo = self.get_page_objects()
 
     def __repr__(self):
@@ -659,7 +659,7 @@ class Pomidor:
     #     pass
 
     def run(self, path='', feature=False, verbose=True, wait=10,
-            parallel=None, prerequisite=None, browser='one',
+            parallel=None, prerequisite=None, browser='per_file',
             slow_mode=False, passed_screenshots='passed_screenshots',
             failed_screenshots='failed_screenshots',
             adhoc_screenshots='adhoc_screenshots', headless=False):
@@ -667,66 +667,38 @@ class Pomidor:
         scenario_number = 0
         file_number = 0
         results = []
-        po = Pomidor(self.driver, self.obj_dict, self.url)
+        pom_list = generate_list_of_pomidor_files(path)
+        po = Pomidor(self.driver, self.obj_dict, self.url, self.urls)
         if parallel:
-            pom_list = generate_list_of_pomidor_files(path)
+            if browser.lower() == 'one':
+                raise PomidorCantRunOneBrowserInstanceInParallel
             futures_list = []
-            # drivers = itertools.cycle([po.define_browser(headless)
-            #                            for _ in range(parallel)])
-            generate_list_of_pomidor_files(path)
             with ThreadPoolExecutor(parallel, 'pre') as executor:
-                if browser == 'one':
-                    for driver in itertools.cycle([po.define_browser(headless)
-                                                   for _ in range(parallel)]):
-                        print(f'driver -> ')
-                        futures = executor.submit(
-                            browser_frequency, po, self.url, driver, feature,
-                            prerequisite,
-                            generate_list_of_pomidor_files(path).pop(0),
-                            self.obj_dict, self.urls, wait,
-                            self.prerequisites, browser, slow_mode,
-                            failed_screenshots, passed_screenshots,
-                            adhoc_screenshots, headless)
-                        futures_list.append(futures)
-                else:
+                for file_number, pom_file in enumerate(pom_list):
                     futures = executor.submit(
                         browser_frequency, po, self.url, self.driver, feature,
-                        prerequisite,
-                        generate_list_of_pomidor_files(path).pop(0),
-                        self.obj_dict, self.urls, wait,
-                        self.prerequisites, browser, slow_mode,
+                        prerequisite, pom_file, self.obj_dict, self.urls, wait,
+                        self.prerequisite_file, browser, slow_mode,
                         failed_screenshots, passed_screenshots,
                         adhoc_screenshots, headless)
                     futures_list.append(futures)
 
-                # futur = executor.submit(po.define_browser, headless)
-                # for file_number, pom_file in enumerate(pom_list):
-                #     futures = executor.submit(
-                #         browser_frequency, po, self.url, futur.result(timeout=3), feature,
-                #         prerequisite, pom_file, self.obj_dict, self.urls, wait,
-                #         self.prerequisites, browser, slow_mode,
-                #         failed_screenshots, passed_screenshots,
-                #         adhoc_screenshots, headless)
-                #     futures_list.append(futures)
-                #
                 for future in futures_list:
                     result, tc_name, tcs_list = future.result(timeout=60)
                     scenario_number += result
                     results.append(tcs_list)
 
         else:
-            if browser == 'one':
+            if browser.lower() == 'one':
                 driver = po.define_browser(headless)
             else:
                 driver = self.driver
-            for file_number, pom_file in enumerate(
-                    generate_list_of_pomidor_files(path)):
-                # print(f'pom_list -> {pom_file}')
+            for file_number, pom_file in enumerate(pom_list):
                 sce_num, tc_name, tcs_list = browser_frequency(
                     po, self.url, driver, feature, prerequisite, pom_file,
-                    self.obj_dict, self.urls, wait, self.prerequisites,
-                    browser, slow_mode, failed_screenshots, passed_screenshots,
-                    adhoc_screenshots, headless)
+                    self.obj_dict, self.urls, wait, self.prerequisite_file,
+                    browser, slow_mode, failed_screenshots,
+                    passed_screenshots, adhoc_screenshots, headless)
                 if tc_name:
                     scenario_number += sce_num
                 results.append(tcs_list)
@@ -748,11 +720,11 @@ class Pomidor:
                     failed += 1
                 else:
                     continue
-            print('\n===========pomidor files and scenarios involved=========')
+            print('\n========= pomidor files and scenarios involved =========')
             # TODO: os.get_terminal_size()
             print(f'{Colors.OKBLUE}Files used --> {file_number + 1}')  #
             print(f'Number of tests --> {scenario_number}{Colors.ENDC}')
-            print('\n===========test summary info============= ')
+            print('\n=========== test summary info ============= ')
             # TODO: os.get_terminal_size()
             if failed > 0 and passed > 0:
                 print(f'{Colors.FAIL}{failed} failed,{Colors.OKGREEN} {passed}'

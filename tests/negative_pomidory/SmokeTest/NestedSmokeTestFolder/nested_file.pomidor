@@ -14,7 +14,7 @@ and type [[Yo!]] in #name_field
 
 !!Used for test_pomidor_run_all_and_nested_dir #2!!
 @Feature CSV_data1
-@precond Login
+@prereq google_search
 @param delete_cookies, full_screen
 @DATA pageObjects/csv_data_source.csv
 @url practice_page

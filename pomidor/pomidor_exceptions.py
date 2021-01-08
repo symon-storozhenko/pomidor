@@ -14,6 +14,15 @@ class PomidorDataFeedError(KeyError):
               f'csv file: {data_file}{Colors.ENDC}')
 
 
+class PomidorCantRunOneBrowserInstanceInParallel(Exception):
+    """PomidorCantRunOneBrowserInstanceInParallel Exception"""
+    def __init__(self):
+        print(f'{Colors.FAIL}\n{pomidor}ERROR\nCannot run browser=\'one\' '
+              f'with parallel enabled.\nEither set browser=\'per_file\' or '
+              f'browser=\'per_test\' or remove parallel from run(..) function'
+              f'{Colors.ENDC}')
+
+
 class PomidorDataFeedNoKeyError(PomidorDataFeedError):
     """ Pomidor syntax error class: more actions than objects """
 

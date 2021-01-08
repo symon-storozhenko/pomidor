@@ -129,6 +129,8 @@ def list1(k):
         return k + "{i}"
 
 
-list2 = itertools.cycle(['a', 'b', 'c'])
 
-print(list(map(list1, list2)))
+a = [1,2,3,4,5,6,7,8,9]
+
+# for i in range(10):
+#     print(a.(i+3).pop(0))

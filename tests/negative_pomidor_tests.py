@@ -17,7 +17,8 @@ addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
 prereqs = "pageObjects/prerequisites.pomidor"
 # driver = webdriver.Chrome()
 
-po = Pomidor("Chrome", page_obj, url, urls=addtl_urls, prerequisites=prereqs)
+po = Pomidor("Chrome", page_obj, url, urls=addtl_urls,
+             prerequisite_file=prereqs)
 
 root_dir = ''
 empty_str = 'negative_pomidory/empty_dir'
@@ -59,8 +60,8 @@ class TestPomidorRunAll:
     # 102s - with passed'n'failed screenshots with dirs created and all prereqs
     # 76 - 80s - headless, passed'n'failed screenshots with dirs, all prereqs
     def test_pomidor_run_all_browser_per_file(self):
-        po.run(parallel=4, browser_per_file=True, prerequisite='Google_search',
-               headless=True)
+        po.run(parallel=4, browser='per_file', prerequisite='Google_search',
+               headless=True, wait=2) # 27 failed, 49 passed  in 78.12s; 36/76
 
     #     67.84s (-13.00s) without any screenshot logic
     #     77s - 118s with passed and failed screenshots with dirs created
@@ -70,8 +71,9 @@ class TestPomidorRunAll:
     # Browser opens only for tests with actions and objects
     # 57 browser initializations
     def test_pomidor_run_all_browser_per_each_test(self):
-        po.run(parallel=4, browser_per_file=False, headless=True,
-               prerequisite='Google_search')  # 79.00s
+        po.run(parallel=4, browser='per_test', headless=True,
+               prerequisite='Google_search', wait=2)  # 79.00s
+        # 27 failed, 49 passed  in 96.86s; 36/76
 
     #     81.91s with idle screenshots
     #     79s with passed and failed screenshots=None
@@ -79,15 +81,38 @@ class TestPomidorRunAll:
     # 128s - with passed'n'failed screenshots with dirs created and all prereqs
     # 93s - headless, passed'n'failed screenshots with dirs, all prereqs
 
-    def test_pomidor_run_all_one_browser_parallel(self):
-        po.run(parallel=4, browser_per_file=True, prerequisite='Google_search',
-               headless=0)
+    def test_pomidor_run_all_one_browser_not_parallel(self):
+        po.run(browser='one', prerequisite='Google_search',
+               headless=5, wait=2)  # 27 failed, 49 passed  in 196.80s 36/76
 
 
 class TestPomidorParallel:
     def test_pomidor_run_parallel_one_browser_contexts(self):
-        po.run(path='negative_pomidory/SmokeTest4',
-               browser='one', prerequisite='google_search')
+        po.run(path='negative_pomidory/SmokeTest4', slow_mode=.1,
+               browser='one')#, prerequisite='google_search')
+
+    def test_pomidor_run_parallel_per_file_browser_contexts(self):
+        po.run(path='negative_pomidory/SmokeTest4', slow_mode=.1,
+               parallel=2)#, prerequisite='google_search')
+
+    def test_pomidor_parallel(self):
+        scenario_num = po.run(nested_dir4,  # shows visual differences
+                              prerequisite='google_search', browser='one',
+                              #parallel=4,
+                              #slow_mode=.1
+                              )
+        assert scenario_num == 4  # 8.3 sec
+
+    # 3 browsers should invoke simultaneously, skipping one error paragraph
+    # 4 scenarios ran total, but 1 fails in the beginning and script continues
+    def test_pomidor_parallel_one_fails_but_continue(self):
+        scenario_num = po.run(nested_dir3, parallel=4)
+        assert scenario_num == 4  # 8.3 sec # Exception printe
+
+    def test_pomidor_parallel_with_feature(self):
+        scenario_num = po.run(nested_dir3, feature='CSV_data1', headless=False,
+                              parallel=4, prerequisite='Google_Search')
+        assert scenario_num == 2  # 8.3 sec # Exception printed
 
 
 class TestPomidorPro:
@@ -115,14 +140,14 @@ class TestPomidorPrerequisites:
         assert scenario_num == 3  # one prereq not found, exception printed
 
     def test_pomidor_csv_data_with_common_prereqs(self):
-        scenario_num = po.run(prereqs_test4, wait=6, browser_per_file=True,
+        scenario_num = po.run(prereqs_test4, wait=6, browser = 'per_file',
                               prerequisite='GoOgle_search', slow_mode=.2)
         assert scenario_num == 3  # one prereq not found, exception printed
 
     def test_pomidor_csv_data_with_prereqs_all_one_fails(self):
         scenario_num = po.run(prereqs_test2, wait=2, slow_mode=0.2,
                               prerequisite='GooglE_SearcH',
-                              feature='CSV_data3', browser_per_file=False)
+                              feature='CSV_data3', browser = 'per_test')
         assert scenario_num == 3  # Exception on prereq is raised
 
 
@@ -132,20 +157,6 @@ class TestPomidor:
         scenario_num = po.run(nested_dir)
         assert scenario_num == 4  # 19.5 sec
 
-    def test_pomidor_parallel(self):
-        scenario_num = po.run(nested_dir, parallel=4, browser_per_file=1)
-        assert scenario_num == 4  # 8.3 sec
-
-    # 3 browsers should invoke simultaneously, skipping one error paragraph
-    # 4 scenarios ran total, but 1 fails in the beginning and script continues
-    def test_pomidor_parallel_one_fails_but_continue(self):
-        scenario_num = po.run(nested_dir3, parallel=4)
-        assert scenario_num == 4  # 8.3 sec # Exception printed
-
-    def test_pomidor_parallel_with_feature(self):
-        scenario_num = po.run(nested_dir, feature='CSV_data1', headless=True,
-                              parallel=4, prerequisite='Google_Search')
-        assert scenario_num == 2  # 8.3 sec # Exception printed
 
     def test_pomidor_run_feature(self):
         scenario_num = po.run(run_story, feature='Report')

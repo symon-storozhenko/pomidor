@@ -1,6 +1,6 @@
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
-@Feature CSV_data
+@Feature CSV_data1
 @precond Login
 @param delete_cookies, full_screen
 @DATA pageObjects/csv_data_source.csv
