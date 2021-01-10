@@ -1,0 +1,12 @@
+App Name:
+Version:
+Release date:
+
+Sprint:
+
+!!test_pomidor_PomidorDataFeedNoAngleKeysProvided!!
+@feature csv_data3
+First, click on login_field #practice_menu_button page title
+and type [[text-1]]in #name_field. Wait for #4 seconds. Then, type [[some
+free text]] in #name_field and press #Enter
+

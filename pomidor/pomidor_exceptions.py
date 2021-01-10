@@ -101,7 +101,7 @@ class PomidorObjectDoesNotExistInCSVFile(Exception):
         print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
         print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
               f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
-              f'#{obj}{Colors.FAIL} does not exist in csv file.'
+              f'#{obj}{Colors.FAIL} does not exist in page object csv file.'
               f' Please check page object selector and value{Colors.ENDC}')
 
 

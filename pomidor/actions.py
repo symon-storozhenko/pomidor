@@ -5,6 +5,11 @@
 # driver.close()
 
 
+class InputKeys:
+    def __init__(self):
+        self.keys = ['ARROW_LEFT']
+
+
 #operations on objects
 class ForwardAction:
     def __init__(self):
@@ -16,7 +21,12 @@ class ForwardAction:
             'types': 'send_keys()',
             'typed': 'send_keys()',
             'clear': 'clear()',
-        #     ActionChains:
+            'press': "Key",
+            'pressed': "Key",
+            'presses': "Key",
+            'wait': 'wait',
+
+            #     ActionChains:
         }
 
 
