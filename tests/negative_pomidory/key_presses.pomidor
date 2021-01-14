@@ -6,7 +6,9 @@ Sprint:
 
 !!test_pomidor_PomidorDataFeedNoAngleKeysProvided!!
 @feature csv_data3
-First, click on login_field #practice_menu_button page title
-and type [[text-1]]in #name_field. Wait for #4 seconds. Then, type [[some
-free text]] in #name_field and press #Enter
+First, clicked on login_field #practice_menu_button page title wait #1
+Then, click on #female_rb, seconds and make sure that #female_rb is selected.
+and typed [[text-1]]in #phone_field. Wait for #1 seconds. Then, typed [[some
+free text]] in #name_field and press #ARROW_LEFT and press #NUMPAD9 wait #0.2 seconds
+
 

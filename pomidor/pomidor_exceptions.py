@@ -14,6 +14,14 @@ class PomidorDataFeedError(KeyError):
               f'csv file: {data_file}{Colors.ENDC}')
 
 
+class PomidorKeyDoesNotExist(Exception):
+    """PomidorCantRunOneBrowserInstanceInParallel Exception"""
+    def __init__(self, key):
+        self.key = key
+        print(f'{Colors.FAIL}\n{pomidor}ERROR\nKeyboard key {key} does not '
+              f'exist{Colors.ENDC}')
+
+
 class PomidorCantRunOneBrowserInstanceInParallel(Exception):
     """PomidorCantRunOneBrowserInstanceInParallel Exception"""
     def __init__(self):

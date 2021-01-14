@@ -7,4 +7,10 @@ name_field, CSS_SELECTOR, input#name
 back_home_button, CSS_SELECTOR,a.wp-block-button__link
 google_search_field, NAME,q
 google_search_field_timeout, NAME, q
+female_rb, CSS_SELECTOR, input#male
+male_rb, CSS_SELECTOR, input#female
+empty_page_obj,,
+phone_field, CSS_SELECTOR , input#phone
+
+
 
