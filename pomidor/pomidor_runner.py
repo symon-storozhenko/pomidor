@@ -52,21 +52,22 @@ def browser_frequency(po, base_url, driver, feature, prerequisite, filepath,
         try:
             # po = Pomidor(driver, obj_dict, base_url)
             driver = po.define_browser(headless)
-            scenario_number, tc_name, tcs_list = go_thru_one_file(po,
-                                                                  base_url,
-                                                                  driver,
-                                                                  feature,
-                                                                  prerequisite,
-                                                                  filepath,
-                                                                  obj_dict,
-                                                                  urls, wait,
-                                                                  prerequisites,
-                                                                  browser,
-                                                                  slow_mode,
-                                                                  failed_screenshots,
-                                                                  passed_screenshots,
-                                                                  adhoc_screenshots,
-                                                                  headless)
+            scenario_number, tc_name, tcs_list = go_thru_one_file(
+                po,
+                base_url,
+                driver,
+                feature,
+                prerequisite,
+                filepath,
+                obj_dict,
+                urls, wait,
+                prerequisites,
+                browser,
+                slow_mode,
+                failed_screenshots,
+                passed_screenshots,
+                adhoc_screenshots,
+                headless)
             return scenario_number, tc_name, tcs_list
 
         finally:
@@ -111,8 +112,8 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                         if y.startswith("@")]
         data_mark, feature_mark_list, \
         tc_name_value, url, prereq = None, None, None, None, None
-        data_mark, feature_mark_list, tc_name_value, url, prereq = all_markers(
-            base_url, markers_list, urls)
+        data_mark, feature_mark_list, tc_name_value, url, prereq,\
+            param_list = all_markers(base_url, markers_list, urls)
         if prereq:
             prerequisite = prereq
         else:
@@ -156,7 +157,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                     obj_dict, driver, url, wait, data_mark,
                                     browser, slow_mode,
                                     failed_screenshots, passed_screenshots,
-                                    adhoc_screenshots,
+                                    adhoc_screenshots, param_list,
                                     prereq_tcs=pre_tc_str, prereq_url=preq_url,
                                     prereq_path=prerequisites,
                                     prereq_str_to_type=pre_str_in_br)
@@ -169,7 +170,8 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                 scenario_title_line_num, line_num, obj_dict,
                                 driver, url, wait, data_mark, browser,
                                 slow_mode, failed_screenshots,
-                                passed_screenshots, adhoc_screenshots)
+                                passed_screenshots, adhoc_screenshots,
+                                param_list)
                         tcs_list.append(f"PASSED {tc_id}")
                     else:
                         pass
@@ -190,7 +192,8 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                 obj_dict, driver, url, wait, data_mark,
                                 browser, slow_mode,
                                 failed_screenshots, passed_screenshots,
-                                adhoc_screenshots, prereq_tcs=pre_tc_str,
+                                adhoc_screenshots, param_list,
+                                prereq_tcs=pre_tc_str,
                                 prereq_url=preq_url, prereq_path=prerequisites,
                                 prereq_str_to_type=pre_str_in_br)
                     else:
@@ -202,7 +205,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                             scenario_title_line_num, line_num, obj_dict,
                             driver, url, wait, data_mark, browser,
                             slow_mode, failed_screenshots, passed_screenshots,
-                            adhoc_screenshots)
+                            adhoc_screenshots, param_list)
                     tcs_list.append(f"PASSED {tc_id}")
                     if passed_screenshots:
                         driver.save_screenshot(
@@ -241,7 +244,8 @@ def go_thru_prereq_file(base_url, driver, story, prereq_filepath, obj_dict,
                        for item in t]
         markers_list = [y.lower() for y in prgrph_list
                         if y.startswith("@")]
-        data_mark, feature_mark_list, tc_name_value, url, prereq = all_markers(
+        data_mark, feature_mark_list, tc_name_value, url, prereq,\
+            param_list= all_markers(
             base_url, markers_list, urls)
         if prereq:
             story = prereq
@@ -298,7 +302,7 @@ def get_list_of_dicts_from_csv(file):
 def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                            line_num, obj_dict, driver, url, wait, data_mark,
                            browser, slow_mode, failed_screenshots,
-                           passed_screenshots, adhoc_screenshots,
+                           passed_screenshots, adhoc_screenshots, params,
                            prereq_tcs=None, prereq_url=None,
                            prereq_path=None, prereq_str_to_type=None) -> str:
     csv_list_of_dicts = []
@@ -337,7 +341,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                      prereq_act_obj_list,
                      prereq_str_to_type, prereq_path, line_num, wait,
                      slow_mode, failed_screenshots, passed_screenshots,
-                     adhoc_screenshots)
+                     adhoc_screenshots, params)
         if str_in_angle_brackets:
             for i in range(csv_list_of_dicts_range):
                 if slow_mode:
@@ -350,7 +354,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                 run_once(driver, objects, orig_obj_dict, act_obj_list,
                          angle_square_list, filepath, line_num, wait,
                          slow_mode, failed_screenshots, passed_screenshots,
-                         adhoc_screenshots)
+                         adhoc_screenshots, params)
         else:
             if slow_mode:
                 time.sleep(slow_mode)
@@ -361,7 +365,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                 driver.get(url)
             run_once(driver, objects, orig_obj_dict, act_obj_list,
                      str_in_brackets, filepath, line_num, wait, slow_mode,
-                     failed_screenshots, passed_screenshots, adhoc_screenshots)
+                     failed_screenshots, passed_screenshots, adhoc_screenshots,
+                     params)
     except Exception as e:
         driver.save_screenshot(f'{filepath}::{tc_name}')
         raise e
@@ -427,8 +432,21 @@ def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
 
 def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
              path, line_num, wait, present_mode, failed_screenshots,
-             passed_screenshots, adhoc_screenshots):
+             passed_screenshots, adhoc_screenshots, params):
     type_list = ['type', 'types', 'typed']
+    scroll_time = None
+    for t in params:
+        if t.startswith('auto_scroll'):
+            if '=' in t:
+                scroll_time = t.replace('auto_scroll=', "")
+                print(f'auto_scroll -> {scroll_time}')
+            else:
+                scroll_time = 0.2
+                print(f'auto_scroll -> {scroll_time}')
+        if t == 'max_window':
+            driver.maximize_window()
+        if t == 'delete_cookies':
+            driver.delete_all_cookies()
     for enum, i in enumerate(act_obj_list):
         acti = i[0]
         if acti.lower().startswith('press'):
@@ -436,10 +454,6 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 raise PomidorKeyDoesNotExist(i[1])
             key = keys_dict.get(i[1])
             webdriver.ActionChains(driver).key_down(key).perform()
-
-            # exec_str = f'webdriver.ActionChains(driver).key_down(' \
-            #            f'Keys.{i[1]}).perform()'
-            # exec(exec_str)
             if present_mode:
                 time.sleep(present_mode)
         elif acti.lower() == 'wait':  # TODO: add dropdown, radiobutton sel.
@@ -457,12 +471,10 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 raise PomidorObjectDoesNotExistInCSVFile(path=path,
                                                          line_num=line_num,
                                                          obj=obj_name)
-            print(f'page_object_src -> {page_object_src}')
             for p in locator_dict:
                 if p == page_obj_loc.upper():
                     loc_id = locator_dict.get(p)
                     break
-            print(f'loc_id -> {loc_id}')
             if acti == 'selected' or acti == 'not_selected':
                 css = By.CSS_SELECTOR
                 fun_ex = WebDriverWait(driver, wait).until(
@@ -477,41 +489,23 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
             if acti.lower().startswith('click') or \
                     acti.lower().startswith('type'):
                 a = WebDriverWait(driver, wait).until(
-                    ec.visibility_of_element_located((loc_id, page_object_src)))
-                # driver.execute_script("arguments[0].scrollIntoView();", a)
-                webdriver.ActionChains(driver).move_to_element(a)
-                # time.sleep(.5)  # TODO: work on items out of view
+                    ec.element_to_be_clickable((loc_id, page_object_src)))
+                print(f'a - {a.is_enabled()}')
+                if scroll_time:
+                    webdriver.ActionChains(driver).move_to_element(a)
+                    driver.execute_script("arguments[0].scrollIntoView();", a)
+                    time.sleep(float(scroll_time))  # TODO: work on items out of view
+                    print(f'auto_scrollski -> {scroll_time}')
                 if acti.lower().startswith('type'):
                     a.clear()
-                    # str_list = list(str_in_brackets)
-                    a.send_keys(str_in_brackets[0])
-                    str_in_brackets.pop(0)
+                    a.send_keys(str_in_brackets.pop(0))
                 elif acti.lower().startswith('click'):
                     a.click()
-
-            #
-            # raw_act = i[0]
-            # act_func, str_for_send_keys = which_action(
-            #     driver, raw_act, acti, page_object_src, page_obj_loc,
-            #     str_in_brackets, wait)
         if present_mode:
             time.sleep(present_mode)
 
-            # if acti.startswith("type"):
-            #     try:
-            #         exec(f'WebDriverWait(driver, '
-            #              f'{wait}).until(ec.visibility_of_element_located('
-            #              f'(By.{page_obj_loc},\"{page_object_src}\"))).clear()')
-            #     except TimeoutException:
-            #         raise PomidorObjectDoesNotExistOnPage(path, line_num,
-            #                                               obj_name)
             # TODO add is_selected and is_enabled asserts
             # TODO add "page_title" assert
-
-            # try:
-            #     ex_func = exec(act_func)
-            # except TimeoutException:
-            #     raise PomidorObjectDoesNotExistOnPage(path, line_num, obj_name)
 
 
 def all_markers(base_url, markers_list, urls):
@@ -528,6 +522,14 @@ def all_markers(base_url, markers_list, urls):
                                   markers_list
                                   if x.startswith("@prereq")])
     prereq_val = prereq_mark_string.replace("@prereq", '').strip()
+
+    param_string = ''.join([x for x in
+                                  markers_list
+                                  if x.startswith("@param")])
+    param = param_string.replace("@param", '').strip()
+    param_list = re.split(r'[;,!?\s]', param)
+    print(f'param_list - >{param_list}: {type(param_list)}')
+
     tc_name_line = ''.join([x for x in
                             markers_list
                             if x.startswith("@name")])
@@ -544,7 +546,8 @@ def all_markers(base_url, markers_list, urls):
             url = url_mark
         else:
             url = urls.get(url_mark)
-    return data_mark, feature_mark_list, tc_name_value, url, prereq_val
+    return data_mark, feature_mark_list, tc_name_value, url, prereq_val, \
+           param_list
 
 
 def get_all_file_paragraphs_into_list(filepath):
@@ -593,79 +596,6 @@ def list_all_mark_values(func, feature_type):
                     print(f'{feature_type.upper()} \n\n++++MARKER Line ! --> '
                           f'{marker_values}++++++++++\n')
     return marker_values, len(marker_values)
-
-
-# Selenium action functions:
-
-def assert_negative(act, obj_source, locator, wait):
-    return f'with pytest.raises(TimeoutException):\n\t' \
-           f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
-           f'element_located((By.{locator},\"{obj_source}\"))).{act}'
-
-
-def action_func_visible(act, obj_source, locator, wait):
-    """Function to construct a string with expected condition:
-    visibility_of_element_located"""
-    actb = backward_action_dict.get(act)
-    if act.lower().startswith('not'):
-        return f'with pytest.raises(TimeoutException):\n\t' \
-               f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
-               f'element_located((By.{locator},\"{obj_source}\"))).{actb}'
-    else:
-        return f'WebDriverWait(driver, {wait}).until(ec.visibility_of_' \
-               f'element_located((By.{locator},\"{obj_source}\"))).{actb}'
-
-
-def send_keys_func(str_list):
-    """Function to construct a string:
-        send_keys(str_list[0]"""
-
-    str_list = list(str_list)
-    keys_to_send = str_list[0]
-    return f"send_keys(\"{keys_to_send}\")", str_list
-
-
-def action_func_clickable(driver, act, obj_source, locator, str_list, wait):
-    """Function to construct a string with expected condition:
-        element_to_be_clickable"""
-    a = None
-    by_id = None
-    runski = ''
-    if locator == 'LINK_TEXT':
-        by_id = By.LINK_TEXT
-    if locator == 'CSS_SELECTOR':
-        by_id = By.CSS_SELECTOR
-    if locator == 'NAME':
-        by_id = By.NAME
-    if act == "click()" or act == "send_keys()":
-        if act == "send_keys()":
-            act, str_list = send_keys_func(str_list)
-        a = WebDriverWait(driver, wait).until(
-            ec.element_to_be_clickable((By.LINK_TEXT, obj_source)))
-        driver.execute_script("arguments[0].scrollIntoView();", a)
-        runski = f'{a}.{act}'
-
-    return runski, str_list
-
-
-def click(act, element):
-    return f'{element}.{act}'
-
-
-def which_action(driver, raw_act, act, obj_source, locator, str_list, wait):
-    """Function to determine which action type need to be used, based on the
-    selenium action"""
-
-    if act.lower().startswith('click') or act.lower().startswith('type'):
-        actf = forward_action_dict.get(act)
-        func, str_list = action_func_clickable(driver, actf, obj_source,
-                                               locator,
-                                               str_list, wait)
-    elif act.lower().startswith('press'):
-        return "Keys.{raw_act}.upper()"
-    else:
-        func = action_func_visible(act, obj_source, locator, wait)
-    return func, str_list
 
 
 def trackcalls(func):
