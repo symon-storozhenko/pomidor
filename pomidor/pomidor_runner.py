@@ -50,7 +50,6 @@ def browser_frequency(po, base_url, driver, feature, prerequisite, filepath,
                       adhoc_screenshots, headless):
     if browser.lower() == 'per_file':
         try:
-            # po = Pomidor(driver, obj_dict, base_url)
             driver = po.define_browser(headless)
             scenario_number, tc_name, tcs_list = go_thru_one_file(
                 po,
@@ -112,8 +111,8 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                         if y.startswith("@")]
         data_mark, feature_mark_list, \
         tc_name_value, url, prereq = None, None, None, None, None
-        data_mark, feature_mark_list, tc_name_value, url, prereq,\
-            param_list = all_markers(base_url, markers_list, urls)
+        data_mark, feature_mark_list, tc_name_value, url, prereq, \
+        param_list = all_markers(base_url, markers_list, urls)
         if prereq:
             prerequisite = prereq
         else:
@@ -135,7 +134,15 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
             else:
                 tc_name = ''.join(test_case[0])
             tc_id = f'{filepath}::{tc_name}::line {line_num}'
-            tc_id_screenshot = f'{tc_name}_line {line_num}'
+            tc_id_screenshot = f'[{tc_name}] [line {line_num}]'
+            filepath_for_screenshot = filepath
+            try:
+                if "/" in filepath:
+                    filepath_for_screenshot = filepath.replace('/', "(slash)")
+                if "\\" in filepath:  # TODO: test it on Windows
+                    filepath_for_screenshot = filepath.replace('\\', "(slash)")
+            except TypeError as te:
+                print(te)
             scenario_title_line_num = counter + (len(x) + 1)
             browser_initialized = False
             try:
@@ -209,12 +216,14 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                     tcs_list.append(f"PASSED {tc_id}")
                     if passed_screenshots:
                         driver.save_screenshot(
-                            f'{passed_screenshots}/{tc_id_screenshot}.png')
+                            f'{passed_screenshots}/PASS {tc_id_screenshot} '
+                            f'[{filepath_for_screenshot}].png')
             except Exception as e:
                 tcs_list.append(f"FAILED {tc_id}")  # Research test.html
                 if failed_screenshots:
                     driver.save_screenshot(
-                        f'{failed_screenshots}/{tc_id_screenshot}.png')
+                        f'{failed_screenshots}/FAIL {tc_id_screenshot} '
+                        f'[{filepath_for_screenshot}].png')
                 print(e)
                 raise e
             finally:
@@ -244,8 +253,8 @@ def go_thru_prereq_file(base_url, driver, story, prereq_filepath, obj_dict,
                        for item in t]
         markers_list = [y.lower() for y in prgrph_list
                         if y.startswith("@")]
-        data_mark, feature_mark_list, tc_name_value, url, prereq,\
-            param_list= all_markers(
+        data_mark, feature_mark_list, tc_name_value, url, prereq, \
+        param_list = all_markers(
             base_url, markers_list, urls)
         if prereq:
             story = prereq
@@ -436,16 +445,17 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
     type_list = ['type', 'types', 'typed']
     scroll_time = None
     for t in params:
-        if t.startswith('auto_scroll'):
+        if t.startswith('auto'):
             if '=' in t:
                 scroll_time = t.replace('auto_scroll=', "")
+                scroll_time = re.sub(r'^.*?=', '', t)
                 print(f'auto_scroll -> {scroll_time}')
             else:
                 scroll_time = 0.2
                 print(f'auto_scroll -> {scroll_time}')
-        if t == 'max_window':
+        if t.startswith('max'):
             driver.maximize_window()
-        if t == 'delete_cookies':
+        if t.startswith('del'):
             driver.delete_all_cookies()
     for enum, i in enumerate(act_obj_list):
         acti = i[0]
@@ -476,7 +486,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                     loc_id = locator_dict.get(p)
                     break
             if acti == 'selected' or acti == 'not_selected':
-                css = By.CSS_SELECTOR
+                css = By.CSS_SELECTOR  # TODO: work on asserts
                 fun_ex = WebDriverWait(driver, wait).until(
                     ec.presence_of_element_located((
                         css, page_object_src))) \
@@ -490,11 +500,12 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                     acti.lower().startswith('type'):
                 a = WebDriverWait(driver, wait).until(
                     ec.element_to_be_clickable((loc_id, page_object_src)))
-                print(f'a - {a.is_enabled()}')
+                # print(f'a - {a.is_enabled()}')
                 if scroll_time:
                     webdriver.ActionChains(driver).move_to_element(a)
                     driver.execute_script("arguments[0].scrollIntoView();", a)
-                    time.sleep(float(scroll_time))  # TODO: work on items out of view
+                    time.sleep(
+                        float(scroll_time))  # TODO: work on items out of view
                     print(f'auto_scrollski -> {scroll_time}')
                 if acti.lower().startswith('type'):
                     a.clear()
@@ -524,8 +535,8 @@ def all_markers(base_url, markers_list, urls):
     prereq_val = prereq_mark_string.replace("@prereq", '').strip()
 
     param_string = ''.join([x for x in
-                                  markers_list
-                                  if x.startswith("@param")])
+                            markers_list
+                            if x.startswith("@param")])
     param = param_string.replace("@param", '').strip()
     param_list = re.split(r'[;,!?\s]', param)
     print(f'param_list - >{param_list}: {type(param_list)}')
@@ -546,6 +557,19 @@ def all_markers(base_url, markers_list, urls):
             url = url_mark
         else:
             url = urls.get(url_mark)
+
+    for param in param_list:
+        if param.startswith('url'):
+            url = param.replace("url=", '').strip()
+            if url.startswith("http") and "://" in url:
+                url = url
+            else:
+                url = urls.get(url)
+        if param.startswith('prereq'):
+            prereq_val = param.replace("prereq=", '').strip()
+
+    print(f'url - {url} :: prereq - {prereq_val}')
+
     return data_mark, feature_mark_list, tc_name_value, url, prereq_val, \
            param_list
 
@@ -618,12 +642,15 @@ class Pomidor:
     extension = '.pomidor'
 
     def __init__(self, driver, obj_dict, url, urls=None,
-                 prerequisite_file=None):
+                 prerequisite_file=None, passed_screenshots=None,
+                 failed_screenshots=None):
         self.urls = urls
         self.obj_dict = obj_dict
         self.url = url
         self.driver = driver
         self.prerequisite_file = prerequisite_file
+        self.passed_screenshots = passed_screenshots
+        self.failed_screenshots = failed_screenshots
         # self.obj_repo = self.get_page_objects()
 
     def __repr__(self):
@@ -698,8 +725,7 @@ class Pomidor:
 
     def run(self, path='', feature=False, verbose=True, wait=10,
             parallel=None, prerequisite=None, browser='per_file',
-            slow_mode=False, passed_screenshots='passed_screenshots',
-            failed_screenshots='failed_screenshots',
+            slow_mode=False,
             adhoc_screenshots='adhoc_screenshots', headless=False):
         start = time.perf_counter()
         scenario_number = 0
@@ -717,7 +743,7 @@ class Pomidor:
                         browser_frequency, po, self.url, self.driver, feature,
                         prerequisite, pom_file, self.obj_dict, self.urls, wait,
                         self.prerequisite_file, browser, slow_mode,
-                        failed_screenshots, passed_screenshots,
+                        self.failed_screenshots, self.passed_screenshots,
                         adhoc_screenshots, headless)
                     futures_list.append(futures)
 
@@ -735,8 +761,8 @@ class Pomidor:
                 sce_num, tc_name, tcs_list = browser_frequency(
                     po, self.url, driver, feature, prerequisite, pom_file,
                     self.obj_dict, self.urls, wait, self.prerequisite_file,
-                    browser, slow_mode, failed_screenshots,
-                    passed_screenshots, adhoc_screenshots, headless)
+                    browser, slow_mode, self.failed_screenshots,
+                    self.passed_screenshots, adhoc_screenshots, headless)
                 if tc_name:
                     scenario_number += sce_num
                 results.append(tcs_list)

@@ -15,10 +15,13 @@ url = 'https://pomidor-automation.com/'
 page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
 addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
 prereqs = "pageObjects/prerequisites.pomidor"
-# driver = webdriver.Chrome()
+passed_screenshots = "passed_screenshots"
+failed_screenshots = 'failed_screenshots'
 
 po = Pomidor("Chrome", page_obj, url, urls=addtl_urls,
-             prerequisite_file=prereqs)
+             prerequisite_file=prereqs,
+             passed_screenshots='passed_screenshots',
+             failed_screenshots='failed_screenshots') # TODO: move screenshots here
 
 root_dir = ''
 empty_str = 'negative_pomidory/empty_dir'
@@ -64,7 +67,7 @@ class TestPomidorRunAll:
     # 76 - 80s - headless, passed'n'failed screenshots with dirs, all prereqs
     def test_pomidor_run_all_browser_per_file(self):
         po.run(parallel=4, browser='per_file', prerequisite='Google_search',
-               headless=False, wait=2) # 27 failed, 50 passed  in 81.49s; 38/78
+               headless=True, wait=2) # 27 failed, 51 passed in 77.68s; 38/78
     #     28 failed, 50 passed in 78.90s
     #   27 failed, 51 passed in 110.50s - not headless
 
