@@ -486,10 +486,10 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                     loc_id = locator_dict.get(p)
                     break
             if acti == 'selected' or acti == 'not_selected':
-                css = By.CSS_SELECTOR  # TODO: work on asserts
+                # TODO: work on asserts
                 fun_ex = WebDriverWait(driver, wait).until(
                     ec.presence_of_element_located((
-                        css, page_object_src))) \
+                        loc_id, page_object_src))) \
                     # .is_selected()
                 print('hey')
                 if fun_ex:
@@ -505,7 +505,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                     webdriver.ActionChains(driver).move_to_element(a)
                     driver.execute_script("arguments[0].scrollIntoView();", a)
                     time.sleep(
-                        float(scroll_time))  # TODO: work on items out of view
+                        float(scroll_time))
                     print(f'auto_scrollski -> {scroll_time}')
                 if acti.lower().startswith('type'):
                     a.clear()
@@ -520,8 +520,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
 
 
 def all_markers(base_url, markers_list, urls):
-    #   TODO: implement screenshot #page and screenshot #object
-    #   TODO: implement @param max_window, full_window, screenshots, delete_cookies
+    #   TODO: implement adhoc_screenshot #page and screenshot #object
     # process all markers with markers_list
     feature_mark_string = ''.join([x for x in
                                    markers_list
@@ -567,8 +566,11 @@ def all_markers(base_url, markers_list, urls):
                 url = urls.get(url)
         if param.startswith('prereq'):
             prereq_val = param.replace("prereq=", '').strip()
+        if param.startswith('data') or param.startswith('<<data>>'):
+            data_mark = param.replace("data=", '')
 
-    print(f'url - {url} :: prereq - {prereq_val}')
+
+    print(f'url - {url} :: prereq - {prereq_val}::data_mark -> {data_mark}')
 
     return data_mark, feature_mark_list, tc_name_value, url, prereq_val, \
            param_list
@@ -690,7 +692,7 @@ class Pomidor:
         if self.driver == 'Chrome':
             chrome_options = Options()
             # chrome_options.add_argument("--start-maximized") # not working
-            if headless:
+            if headless:    # TODO: add set_window_size option
                 chrome_options.add_argument("--window-size=1400,600")
                 chrome_options.add_argument("--headless")
             driver = webdriver.Chrome(options=chrome_options)
@@ -772,7 +774,6 @@ class Pomidor:
             # Use list comprehension to convert a list of lists to a flat list
             results_flat_list = [item for elem in results for item in elem]
             print('\n\n===========pomidor tests ran============= ')
-            # TODO: os.get_terminal_size()
             passed = 0
             failed = 0
             for i in results_flat_list:
@@ -785,7 +786,6 @@ class Pomidor:
                 else:
                     continue
             print('\n========= pomidor files and scenarios involved =========')
-            # TODO: os.get_terminal_size()
             print(f'{Colors.OKBLUE}Files used --> {file_number + 1}')  #
             print(f'Number of tests --> {scenario_number}{Colors.ENDC}')
             print('\n=========== test summary info ============= ')

@@ -67,7 +67,7 @@ class TestPomidorRunAll:
     # 76 - 80s - headless, passed'n'failed screenshots with dirs, all prereqs
     def test_pomidor_run_all_browser_per_file(self):
         po.run(parallel=4, browser='per_file', prerequisite='Google_search',
-               headless=True, wait=2) # 27 failed, 51 passed in 77.68s; 38/78
+               headless=True, wait=2) # 26 failed, 52 passed in 78.31s; 38/78
     #     28 failed, 50 passed in 78.90s
     #   27 failed, 51 passed in 110.50s - not headless
 
@@ -107,7 +107,7 @@ class TestPomidorParallel:
         scenario_num = po.run(nested_dir4,  # shows visual differences
                               prerequisite='google_search',
                               # browser='one',
-                              parallel=2,
+                              parallel=1,
                               slow_mode=.1
                               )
         assert scenario_num == 12  # 8.3 sec

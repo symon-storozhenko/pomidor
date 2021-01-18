@@ -61,7 +61,7 @@ class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
               f'\nSome paragraph text..."{Colors.ENDC}')
 
 
-class PomidorFileNotFoundError(FileNotFoundError):
+class PomidorFileNotFoundError(Exception):
     """ Pomidor syntax error class: more actions than objects """
 
     def __init__(self, path, *args, **kwargs):

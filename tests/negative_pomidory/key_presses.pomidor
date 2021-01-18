@@ -1,12 +1,11 @@
 
 !!test_pomidor_PomidorDataFeedNoAngleKeysProvided!!
 @feature csv_data3
-@params max, auto=.2, del, url=practice_page, prereq=google_search
-!!@data test_data.csv
+@params max, auto=.2, del, url=practice_page, prereq=google_search, data=pageobjects/csv_data_source.csv
 JIRA-13989
 !!First, clicked on login_field #practice_menu_button page title wait #1
 Then, click on #male_rb, seconds and make sure that #female_rb is selected.
-and typed [[text-1]]in #phone_field. Wait for #1 seconds. Then, typed [[some
-free text]] in #name_field and press #ARROW_LEFT and press #NUMPAD9 wait #0.2 seconds
+and typed [[text-1]] in #phone_field. Wait for #1 seconds. Then, typed <<FirstName>>
+in #name_field and press #ARROW_LEFT and press #NUMPAD9 wait #0.2 seconds
 
 
