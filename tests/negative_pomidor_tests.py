@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from pomidor.pomidor_runner import Pomidor
 from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
-    PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
+    PomidorDataFeedNoAngleKeysProvidedException, PomidorDataFeedNoCSVFileProvided, \
     PomidorSyntaxErrorTooManyActions, PomidorSyntaxErrorTooManyObjects, \
     PomidorObjectDoesNotExistInCSVFile, PageObjectNotFound, \
     PomidorPrerequisiteScenarioNotFoundError
@@ -140,6 +140,9 @@ class TestPomidorKeys:
 
 class TestPomidorPrerequisites:
 
+    def test_pomidor_prereq_not_found(self):
+        po.run(prereqs_test3, wait=2)
+
     # Exception is raised. Test summary missing FAILED line,
     # but test total is correct
     def test_pomidor_prerequisite_file_itself(self):
@@ -169,6 +172,15 @@ class TestPomidorPrerequisites:
 
 
 class TestPomidor:
+
+    def test_pomidor_empty_dir(self):
+        po.run(empty_str)
+
+    def test_pomidor_more_objects(self):
+        po.run(more_than_1_back)
+
+    def test_pomidor_no_obj_in_csv_file(self):
+        po.run(no_obj_in_page_fctry)
 
     def test_pomidor_run_all_and_nested_dir(self):
         scenario_num = po.run(nested_dir)
@@ -270,7 +282,7 @@ class TestPomidorSyntaxExceptions:  # 14 exception tests
 
     # has 'PomidorError -1' in front
     def test_pomidor_PomidorDataFeedNoAngleKeysProvided(self):
-        with pytest.raises(PomidorDataFeedNoAngleKeysProvided):
+        with pytest.raises(PomidorDataFeedNoAngleKeysProvidedException):
             po.run(data_file, feature="csv_data3")  # prints Exception
 
     # has 'PomidorError -1' in front

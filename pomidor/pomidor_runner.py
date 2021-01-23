@@ -21,7 +21,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
 from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
-    PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
+    PomidorDataFeedNoAngleKeysProvidedException, PomidorDataFeedNoCSVFileProvided, \
     PomidorFileNotFoundError, PomidorSyntaxErrorTooManyActions, \
     PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistInCSVFile, \
     Colors, PageObjectNotFound, \
@@ -40,9 +40,13 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
         tomato_files_list.append(tomato_directory)
     for enum, path in enumerate(
             tom_dir.rglob(f'*{Pomidor.extension}')):
-        tomato_files_list.append(path)
-    if not tomato_files_list:
-        raise PomidorFileNotFoundError(tom_dir)
+        tomato_files_list.append(str(path))
+    try:
+        assert len(tomato_files_list) > 0
+        print('True')
+    # if not tomato_files_list:
+    except Exception as e:
+        raise Exception(PomidorFileNotFoundError(str(tom_dir)), e)
     return tomato_files_list
 
 
@@ -373,7 +377,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     csv_list_of_dicts_range = 0
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
     if data_mark and not str_in_angle_brackets:
-        raise PomidorDataFeedNoAngleKeysProvided(filepath, line_num, data_mark)
+        raise PomidorDataFeedNoAngleKeysProvidedException(filepath, line_num, data_mark)
 
     if not data_mark and str_in_angle_brackets:
         raise PomidorDataFeedNoCSVFileProvided(filepath, line_num, data_mark)

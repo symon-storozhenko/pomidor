@@ -3,79 +3,93 @@ from selenium.webdriver.support.color import Colors
 pomidor = 'Pomidor'
 
 
-class PomidorDataFeedError(KeyError):
-    """ Pomidor syntax error class: more actions than objects """
-
-    def __init__(self, file_path, line_num, data_file, *args, **kwargs):
-        self.file_path = file_path
-        self.line_num = line_num
-        self.data_file = data_file
-
-    def print_error_header(self, line_num, data_file):
-        print(f'{Colors.FAIL}\n{pomidor}ERROR\nPomidorDataFeed ERROR:\nPomidor'
-              f'File Path: {self}\nParagraph starts on line: {line_num}\n'
-              f'csv file: {data_file}{Colors.ENDC}')
-
-
 class PomidorKeyDoesNotExist(Exception):
     """PomidorCantRunOneBrowserInstanceInParallel Exception"""
 
     def __init__(self, key):
         self.key = key
-        print(f'{Colors.FAIL}\n{pomidor}ERROR\nKeyboard key {key} does not '
-              f'exist{Colors.ENDC}')
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\nKeyboard key {self.key} does ' \
+               f'not exist{Colors.ENDC}'
 
 
 class PomidorCantRunOneBrowserInstanceInParallel(Exception):
     """PomidorCantRunOneBrowserInstanceInParallel Exception"""
 
     def __init__(self):
-        print(f'{Colors.FAIL}\n{pomidor}ERROR\nCannot run browser=\'one\' '
-              f'with parallel enabled.\nEither set browser=\'per_file\' or '
-              f'browser=\'per_test\' or remove parallel from run(..) function'
-              f'{Colors.ENDC}')
+        pass
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\nCannot run browser=\'one\' ' \
+               f'with parallel enabled.\nEither set browser=\'per_file\' or ' \
+               f'browser=\'per_test\' or remove parallel from run(..) function' \
+               f'{Colors.ENDC}'
 
 
-class PomidorDataFeedNoKeyError(PomidorDataFeedError):
+class PomidorDataFeedNoKeyError(Exception):
     """ Pomidor syntax error class: more actions than objects """
 
-    def __init__(self, path, line_num, key, data_file, *args, **kwargs):
+    def __init__(self, path, line_num, key, data_file):
         self.key = key
-        PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}"{data_file}" file doesn\'t have <<{key}>> '
-              f'column{Colors.ENDC}')
+        self.path = path
+        self.line_num = line_num
+        self.data_file = data_file
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
+               f'{Colors.FAIL}"PomidorDataFeedNoKeyError\n' \
+               f'File Path: {self.path}\nParagraph starts on line: ' \
+               f'{self.line_num}\n"{self.data_file}" file doesn\'t have ' \
+               f'<<{self.key}>> column{Colors.ENDC}\n'
 
 
-class PomidorDataFeedNoAngleKeysProvided(PomidorDataFeedError):
-    """ PomidorDataFeedNoAngleKeysProvided"""
+class PomidorDataFeedNoAngleKeysProvidedException(Exception):
+    """ PomidorDataFeedNoAngleKeysProvidedException"""
 
-    def __init__(self, path, line_num, data_file, *args, **kwargs):
-        PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}Please include csv column names in double angle '
-              f'quotes: Example: type <<FirstName>>\n{Colors.ENDC}')
+    def __init__(self, path, line_num, data_file):
+        self.path = path
+        self.line_num = line_num
+        self.data_file = data_file
 
-
-class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
-    """ PomidorDataFeedNoAngleKeysProvided"""
-
-    def __init__(self, path, line_num, data_file, *args, **kwargs):
-        PomidorDataFeedError.print_error_header(path, line_num, data_file)
-        print(f'{Colors.FAIL}If you want to use keys from double angle '
-              f'brackets {Colors.WARNING}<<key>>{Colors.FAIL}, add @data marker'
-              f' with a csv file in the beginning of your paragraph.\nExample:'
-              f'\n"@feature Regression'
-              f'\n{Colors.WARNING}@data csv_file_name.csv{Colors.FAIL}'
-              f'\nSome paragraph text..."{Colors.ENDC}')
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
+               f'PomidorDataFeedNoAngleKeysProvidedException\n' \
+               f'File Path: {self.path}\nParagraph starts on line: ' \
+               f'{self.line_num}\nPlease include csv column ' \
+               f'names in double angle quotes: \nExample: {Colors.WARNING}' \
+               f'type <<FirstName>>\n{Colors.ENDC}'
 
 
-class PomidorFileNotFoundError(FileNotFoundError):
+class PomidorDataFeedNoCSVFileProvided(Exception):
+    """ PomidorDataFeedNoAngleKeysProvidedException"""
+
+    def __init__(self, path, line_num, data_file):
+        self.path = path
+        self.line_num = line_num
+        self.data_file = data_file
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
+               f'PomidorDataFeedNoCSVFileProvided\n' \
+               f'File Path: {self.path}\nParagraph starts on line: ' \
+               f'{self.line_num}\nIf you want to use keys from double angle ' \
+               f'brackets {Colors.WARNING}<<key>>{Colors.FAIL}, add ' \
+               f'{Colors.WARNING}@data marker {Colors.FAIL} with a csv file ' \
+               f'in the beginning of your paragraph.\nExample: ' \
+               f'{Colors.WARNING}\n@data csv_file_name.csv{Colors.FAIL}' \
+               f'\nSome paragraph text..."{Colors.ENDC}'
+
+
+class PomidorFileNotFoundError(Exception):
     """ Pomidor syntax error class: more actions than objects """
 
-    def __init__(self, path, *args, **kwargs):
+    def __init__(self, path):
         self.path = path
-        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}No pomidor files found.\nFile Path: '
-              f'{path}{Colors.ENDC}')
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\nPomidorFileNotFoundError' \
+               f'No pomidor files found.\nFile Path: {self.path}{Colors.ENDC}'
 
 
 class PomidorSyntaxErrorTooManyActions(Exception):
@@ -84,12 +98,14 @@ class PomidorSyntaxErrorTooManyActions(Exception):
     def __init__(self, path, line_num, *args, **kwargs):
         self.path = path
         self.line_num = line_num
-        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
-              f'{path}\nParagraph starts on line: {line_num}\n'
-              f'ERROR: You have more actions than objects. Number of actions '
-              f'(click, type, wait, etc.) should match number of your objects '
-              f'(Ex. #home_button){Colors.ENDC}')
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
+               f'PomidorSyntaxErrorTooManyActions\nFile Path: ' \
+               f'{self.path}\nParagraph starts on line: {self.line_num}\n' \
+               f'ERROR: You have more actions than objects. Number of actions ' \
+               f'(click, type, wait, etc.) should match number of your objects' \
+               f' (Ex. #home_button){Colors.ENDC}'
 
 
 class PomidorSyntaxErrorTooManyObjects(Exception):
@@ -98,12 +114,15 @@ class PomidorSyntaxErrorTooManyObjects(Exception):
     def __init__(self, path, line_num, *args, **kwargs):
         self.path = path
         self.line_num = line_num
-        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFile Path: '
-              f'{path}\nParagraph starts on line: {line_num}\n'
-              f'ERROR: You have more objects than actions. Number of actions '
-              f'(click, type, wait, etc.) should match number of your objects '
-              f'(Ex. #home_button){Colors.ENDC}')
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
+               f'PomidorSyntaxErrorTooManyObjects' \
+               f'\nFile Path: {self.path}\nParagraph ' \
+               f'starts on line: {self.line_num}\nERROR: You have more ' \
+               f'objects than actions. Number of actions ' \
+               f'(click, type, wait, etc.) should match number of your ' \
+               f'objects (Ex. #home_button){Colors.ENDC}'
 
 
 class PomidorObjectDoesNotExistInCSVFile(Exception):
@@ -113,11 +132,14 @@ class PomidorObjectDoesNotExistInCSVFile(Exception):
         self.path = path
         self.line_num = line_num
         self.obj = obj
-        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}Pomidor Syntax ERROR:\nFilePath: {path}\n'
-              f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
-              f'#{obj}{Colors.FAIL} does not exist in page object csv file.'
-              f' Please check page object selector and value{Colors.ENDC}')
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
+               f'PomidorObjectDoesNotExistInCSVFile\nFilePath: ' \
+               f'{self.path}\nParagraph starts on line: {self.line_num}\n' \
+               f'ERROR:  {Colors.WARNING}#{self.obj}{Colors.FAIL} does not ' \
+               f'exist in page object csv file.' \
+               f' Please check page object selector and value{Colors.ENDC}'
 
 
 class PageObjectNotFound(Exception):
@@ -132,7 +154,7 @@ class PageObjectNotFound(Exception):
         return f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}\n' \
                f'{Colors.FAIL}PageObjectNotFound{Colors.ENDC}\n' \
                f'{Colors.FAIL}FilePath: {self.path}\n' \
-               f'Paragraph starts on line: {self.line_num}\nERROR:  {Colors.WARNING}' \
+               f'Paragraph starts on line: {self.line_num}\nERROR: {Colors.WARNING}' \
                f'#{self.obj}{Colors.FAIL} was not found on page.' \
                f' Please check page object selector and value{Colors.ENDC}'
 
@@ -169,7 +191,7 @@ class ElementNotClickable(Exception):
                f'{Colors.FAIL}FilePath: {self.path}\n' \
                f'Paragraph starts on line: {self.line_num}\nERROR:  ' \
                f'{Colors.WARNING}#{self.obj}{Colors.FAIL} is ' \
-               f'hidden from view. Consider using \'max\' and/or \'scroll\'\n'\
+               f'hidden from view. Consider using \'max\' and/or \'scroll\'\n' \
                f'Example:\n{Colors.WARNING}@params max, scroll\n{Colors.ENDC}'
 
 
@@ -179,12 +201,15 @@ class PomidorPrerequisiteScenarioNotFoundError(Exception):
         self.line_num = line_num
         self.prereq_path = prereq_path
         self.story = story
-        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}PrerequisiteScenarioNotFoundError{Colors.ENDC}')
-        print(f'{Colors.FAIL}FilePath: {path}\nParagraph starts on line '
-              f'{line_num}\nERROR:  {Colors.WARNING}{story}{Colors.FAIL} '
-              f'prerequisite scenario not found in prerequisites file '
-              f'{Colors.WARNING}{prereq_path}{Colors.ENDC}')
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
+               f'PomidorPrerequisiteScenarioNotFoundError\n' \
+               f'FilePath: {self.path}\nParagraph starts on line ' \
+               f'{self.line_num}\nERROR: {Colors.WARNING}{self.story}' \
+               f'{Colors.FAIL} prerequisite scenario not found in ' \
+               f'prerequisites file ' \
+               f'{Colors.WARNING}{self.prereq_path}{Colors.ENDC}'
 
 
 class Colors:
