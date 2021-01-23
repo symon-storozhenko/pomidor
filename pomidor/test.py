@@ -141,3 +141,5 @@ keys = 'scroll_to_object=1'
 get_int = re.split('=', keys)[1]
 
 print(f'get_int -> {get_int}')
+
+assert 43 in a

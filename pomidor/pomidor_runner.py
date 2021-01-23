@@ -1,5 +1,6 @@
 import concurrent.futures
 import functools
+import sys
 import time
 import traceback
 from selenium.webdriver.common.keys import Keys
@@ -9,7 +10,8 @@ import re
 from csv import DictReader
 from concurrent.futures import ThreadPoolExecutor
 import itertools
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, \
+    ElementClickInterceptedException
 from selenium.webdriver.chrome.options import Options
 from pomidor.actions import ForwardAction, BackwardAction, InputKeys, Locators
 from selenium import webdriver
@@ -22,9 +24,10 @@ from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
     PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
     PomidorFileNotFoundError, PomidorSyntaxErrorTooManyActions, \
     PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistInCSVFile, \
-    Colors, PomidorObjectDoesNotExistOnPage, \
+    Colors, PageObjectNotFound, \
     PomidorPrerequisiteScenarioNotFoundError, \
-    PomidorCantRunOneBrowserInstanceInParallel, PomidorKeyDoesNotExist
+    PomidorCantRunOneBrowserInstanceInParallel, PomidorKeyDoesNotExist, \
+    PomidorAssertError, ElementNotClickable
 
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
@@ -49,43 +52,26 @@ def browser_frequency(po, base_url, driver, feature, prerequisite, filepath,
                       slow_mode, failed_screenshots, passed_screenshots,
                       adhoc_screenshots, headless):
     if browser.lower() == 'per_file':
-        try:
-            driver = po.define_browser(headless)
+        driver = po.define_browser(headless)
+        with driver:
             scenario_number, tc_name, tcs_list = go_thru_one_file(
-                po,
-                base_url,
-                driver,
-                feature,
-                prerequisite,
-                filepath,
-                obj_dict,
-                urls, wait,
-                prerequisites,
-                browser,
-                slow_mode,
-                failed_screenshots,
-                passed_screenshots,
-                adhoc_screenshots,
+                po, base_url, driver, feature, prerequisite, filepath,
+                obj_dict, urls, wait, prerequisites, browser, slow_mode,
+                failed_screenshots, passed_screenshots, adhoc_screenshots,
                 headless)
             return scenario_number, tc_name, tcs_list
 
-        finally:
-            driver.quit()
+        # finally:
+        #     if type(driver) == str:
+        #         raise Exception(f'{Colors.FAIL}PomidorERROR\n'
+        #                         f'Consider updating the '
+        #                         f'webdriver{Colors.ENDC}')
+        #     driver.quit()
     else:
-        scenario_number, tc_name, tcs_list = go_thru_one_file(po,
-                                                              base_url, driver,
-                                                              feature,
-                                                              prerequisite,
-                                                              filepath,
-                                                              obj_dict,
-                                                              urls, wait,
-                                                              prerequisites,
-                                                              browser,
-                                                              slow_mode,
-                                                              failed_screenshots,
-                                                              passed_screenshots,
-                                                              adhoc_screenshots,
-                                                              headless)
+        scenario_number, tc_name, tcs_list = go_thru_one_file(
+            po, base_url, driver, feature, prerequisite, filepath, obj_dict,
+            urls, wait, prerequisites, browser, slow_mode, failed_screenshots,
+            passed_screenshots, adhoc_screenshots, headless)
 
         return scenario_number, tc_name, tcs_list
 
@@ -144,7 +130,6 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
             except TypeError as te:
                 print(te)
             scenario_title_line_num = counter + (len(x) + 1)
-            browser_initialized = False
             try:
                 if feature:
                     if feature.lower() in feature_mark_list:
@@ -152,33 +137,60 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                         if prerequisite:
                             pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
                             match = go_thru_prereq_file(
-                                url, driver, prerequisite, prerequisites,
-                                obj_dict, urls, wait, line_num, filepath)
+                                url, prerequisite, prerequisites, urls,
+                                line_num, filepath)
                             if match:
                                 if browser == 'per_test':
                                     driver = po.define_browser(headless)
-                                    browser_initialized = True
-                                test_p = execute_test_paragraph(
-                                    test_case_str, filepath,
-                                    scenario_title_line_num, tc_name, line_num,
-                                    obj_dict, driver, url, wait, data_mark,
-                                    browser, slow_mode,
-                                    failed_screenshots, passed_screenshots,
-                                    adhoc_screenshots, param_list,
-                                    prereq_tcs=pre_tc_str, prereq_url=preq_url,
-                                    prereq_path=prerequisites,
-                                    prereq_str_to_type=pre_str_in_br)
+                                    with driver:
+                                        test_p = execute_test_paragraph(
+                                            test_case_str, filepath,
+                                            scenario_title_line_num, tc_name,
+                                            line_num,
+                                            obj_dict, driver, url, wait,
+                                            data_mark,
+                                            browser, slow_mode,
+                                            failed_screenshots,
+                                            passed_screenshots,
+                                            adhoc_screenshots, param_list,
+                                            prereq_tcs=pre_tc_str,
+                                            prereq_url=preq_url,
+                                            prereq_path=prerequisites,
+                                            prereq_str_to_type=pre_str_in_br)
+                                else:
+                                    test_p = execute_test_paragraph(
+                                        test_case_str, filepath,
+                                        scenario_title_line_num, tc_name,
+                                        line_num,
+                                        obj_dict, driver, url, wait, data_mark,
+                                        browser, slow_mode,
+                                        failed_screenshots, passed_screenshots,
+                                        adhoc_screenshots, param_list,
+                                        prereq_tcs=pre_tc_str,
+                                        prereq_url=preq_url,
+                                        prereq_path=prerequisites,
+                                        prereq_str_to_type=pre_str_in_br)
                         else:
                             if browser == 'per_test':
                                 driver = po.define_browser(headless)
-                                browser_initialized = True
-                            test_p = execute_test_paragraph(
-                                test_case_str, filepath, tc_name,
-                                scenario_title_line_num, line_num, obj_dict,
-                                driver, url, wait, data_mark, browser,
-                                slow_mode, failed_screenshots,
-                                passed_screenshots, adhoc_screenshots,
-                                param_list)
+                                with driver:
+                                    execute_test_paragraph(
+                                        test_case_str, filepath, tc_name,
+                                        scenario_title_line_num, line_num,
+                                        obj_dict,
+                                        driver, url, wait, data_mark, browser,
+                                        slow_mode, failed_screenshots,
+                                        passed_screenshots, adhoc_screenshots,
+                                        param_list)
+                            else:
+                                test_p = execute_test_paragraph(
+                                    test_case_str, filepath, tc_name,
+                                    scenario_title_line_num, line_num,
+                                    obj_dict,
+                                    driver, url, wait, data_mark, browser,
+                                    slow_mode, failed_screenshots,
+                                    passed_screenshots, adhoc_screenshots,
+                                    param_list)
                         tcs_list.append(f"PASSED {tc_id}")
                     else:
                         pass
@@ -187,59 +199,102 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                     if prerequisite:
                         pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
                         match = go_thru_prereq_file(
-                            url, driver, prerequisite, prerequisites,
-                            obj_dict, urls, wait, line_num, filepath)
+                            url, prerequisite, prerequisites, urls,
+                            line_num, filepath)
                         if match:
                             if browser == 'per_test':
                                 driver = po.define_browser(headless)
-                                browser_initialized = True
-                            test_p = execute_test_paragraph(
-                                test_case_str, filepath,
-                                scenario_title_line_num, tc_name, line_num,
-                                obj_dict, driver, url, wait, data_mark,
-                                browser, slow_mode,
-                                failed_screenshots, passed_screenshots,
-                                adhoc_screenshots, param_list,
-                                prereq_tcs=pre_tc_str,
-                                prereq_url=preq_url, prereq_path=prerequisites,
-                                prereq_str_to_type=pre_str_in_br)
+                                with driver:
+                                    test_p = execute_test_paragraph(
+                                        test_case_str, filepath,
+                                        scenario_title_line_num, tc_name,
+                                        line_num,
+                                        obj_dict, driver, url, wait, data_mark,
+                                        browser, slow_mode,
+                                        failed_screenshots, passed_screenshots,
+                                        adhoc_screenshots, param_list,
+                                        prereq_tcs=pre_tc_str,
+                                        prereq_url=preq_url,
+                                        prereq_path=prerequisites,
+                                        prereq_str_to_type=pre_str_in_br)
+                            else:
+                                test_p = execute_test_paragraph(
+                                    test_case_str, filepath,
+                                    scenario_title_line_num, tc_name, line_num,
+                                    obj_dict, driver, url, wait, data_mark,
+                                    browser, slow_mode,
+                                    failed_screenshots, passed_screenshots,
+                                    adhoc_screenshots, param_list,
+                                    prereq_tcs=pre_tc_str,
+                                    prereq_url=preq_url,
+                                    prereq_path=prerequisites,
+                                    prereq_str_to_type=pre_str_in_br)
                     else:
                         if browser == 'per_test':
                             driver = po.define_browser(headless)
-                            browser_initialized = True
-                        test_p = execute_test_paragraph(
-                            test_case_str, filepath, tc_name,
-                            scenario_title_line_num, line_num, obj_dict,
-                            driver, url, wait, data_mark, browser,
-                            slow_mode, failed_screenshots, passed_screenshots,
-                            adhoc_screenshots, param_list)
+                            with driver:
+                                test_p = execute_test_paragraph(
+                                    test_case_str, filepath, tc_name,
+                                    scenario_title_line_num, line_num,
+                                    obj_dict,
+                                    driver, url, wait, data_mark, browser,
+                                    slow_mode, failed_screenshots,
+                                    passed_screenshots,
+                                    adhoc_screenshots, param_list)
+                        else:
+                            test_p = execute_test_paragraph(
+                                test_case_str, filepath, tc_name,
+                                scenario_title_line_num, line_num, obj_dict,
+                                driver, url, wait, data_mark, browser,
+                                slow_mode, failed_screenshots,
+                                passed_screenshots,
+                                adhoc_screenshots, param_list)
                     tcs_list.append(f"PASSED {tc_id}")
                     if passed_screenshots:
                         driver.save_screenshot(
                             f'{passed_screenshots}/PASS {tc_id_screenshot} '
                             f'[{filepath_for_screenshot}].png')
+
+            # TODO: Review Exception example below:
+            #     except Exception as e:
+            #         # Store trace info to allow postmortem debugging
+            #         sys.last_type = type(e)
+            #         sys.last_value = e
+            #         assert e.__traceback__ is not None
+            #         # Skip *this* frame
+            #         sys.last_traceback = e.__traceback__.tb_next
+            #         raise e
+
             except Exception as e:
                 tcs_list.append(f"FAILED {tc_id}")  # Research test.html
                 if failed_screenshots:
                     driver.save_screenshot(
                         f'{failed_screenshots}/FAIL {tc_id_screenshot} '
                         f'[{filepath_for_screenshot}].png')
-                print(e)
-                raise e
-            finally:
-                if browser == 'per_test' and browser_initialized:
-                    driver.quit()
-                    driver = po.driver
-                continue  # uncomment when testing Test summary output
-                if test_case_str.startswith('crazytomato -1'):
-                    print(f'crazytomato -1 found')
-                else:
-                    continue
+                # traceback.print_exc(limit=1)
+                # print(e)
+                print(repr(e))
+                # print(f'{Colors.FAIL}{repr(e)}{Colors.ENDC}')
+                # continue
+                # raise
+                # finally:
+                #     if browser == 'per_test' and browser_initialized:
+                #         if type(driver) == str:
+                #             raise Exception(f'{Colors.FAIL}PomidorERROR\nCheck '
+                #                             f'webdriver path or consider upgrading '
+                #                             f'the webdriver{Colors.ENDC}')
+                #         driver.quit()
+                #         driver = po.driver
+                #     continue  # uncomment when testing Test summary output
+                # if test_case_str.startswith('crazytomato -1'):
+                #     print(f'crazytomato -1 found')
+                # else:
+                #     continue
     return scenario_number, tc_name, tcs_list
 
 
-def go_thru_prereq_file(base_url, driver, story, prereq_filepath, obj_dict,
-                        urls, wait, line_num, path):
+def go_thru_prereq_file(base_url, story, prereq_filepath, urls, line_num,
+                        path):
     spl = get_all_file_paragraphs_into_list(prereq_filepath)
     counter = 1
     tc_name = ''
@@ -338,33 +393,21 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     act_obj_list, objects, orig_obj_dict = prep_acts_n_objs(
         filepath, line_num, obj_dict, scenarioSteps)
 
-    try:
-        # TODO: research on how driver can be created outside
-        if prereq_tcs:
-            driver.get(prereq_url)
-            driver.delete_all_cookies()  # TODO: store and use cookies
-            # driver.maximize_window()
-            prereq_act_obj_list, prereq_objects, orig_obj_dict = \
-                prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
-            run_once(driver, prereq_objects, orig_obj_dict,
-                     prereq_act_obj_list,
-                     prereq_str_to_type, prereq_path, line_num, wait,
-                     slow_mode, failed_screenshots, passed_screenshots,
-                     adhoc_screenshots, params)
-        if str_in_angle_brackets:
-            for i in range(csv_list_of_dicts_range):
-                if slow_mode:
-                    time.sleep(slow_mode)
-                if driver.current_url == url or \
-                        str(driver.current_url).rstrip("/") == url:
-                    pass
-                else:
-                    driver.get(url)
-                run_once(driver, objects, orig_obj_dict, act_obj_list,
-                         angle_square_list, filepath, line_num, wait,
-                         slow_mode, failed_screenshots, passed_screenshots,
-                         adhoc_screenshots, params)
-        else:
+    # try:
+    # TODO: research on how driver can be created outside
+    if prereq_tcs:
+        driver.get(prereq_url)
+        driver.delete_all_cookies()  # TODO: store and use cookies
+        # driver.maximize_window()
+        prereq_act_obj_list, prereq_objects, orig_obj_dict = \
+            prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
+        run_once(driver, prereq_objects, orig_obj_dict,
+                 prereq_act_obj_list,
+                 prereq_str_to_type, prereq_path, line_num, wait,
+                 slow_mode, failed_screenshots, passed_screenshots,
+                 adhoc_screenshots, params)
+    if str_in_angle_brackets:
+        for i in range(csv_list_of_dicts_range):
             if slow_mode:
                 time.sleep(slow_mode)
             if driver.current_url == url or \
@@ -373,14 +416,26 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
             else:
                 driver.get(url)
             run_once(driver, objects, orig_obj_dict, act_obj_list,
-                     str_in_brackets, filepath, line_num, wait, slow_mode,
-                     failed_screenshots, passed_screenshots, adhoc_screenshots,
-                     params)
-    except Exception as e:
-        driver.save_screenshot(f'{filepath}::{tc_name}')
-        raise e
-    finally:
-        pass
+                     angle_square_list, filepath, line_num, wait,
+                     slow_mode, failed_screenshots, passed_screenshots,
+                     adhoc_screenshots, params)
+    else:
+        if slow_mode:
+            time.sleep(slow_mode)
+        if driver.current_url == url or \
+                str(driver.current_url).rstrip("/") == url:
+            pass
+        else:
+            driver.get(url)
+        run_once(driver, objects, orig_obj_dict, act_obj_list,
+                 str_in_brackets, filepath, line_num, wait, slow_mode,
+                 failed_screenshots, passed_screenshots, adhoc_screenshots,
+                 params)
+    # except Exception as e:
+    #     driver.save_screenshot(f'{filepath}::{tc_name}')
+    #     raise e
+    # finally:
+    #     pass
 
 
 def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
@@ -421,22 +476,22 @@ def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
 
 def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
                                      csv_list_of_dicts, line_num, data_mark):
-    try:
-        for k in csv_list_of_dicts * len(angle_n_square):
-            for i in angle_n_square:
-                if i[0] == '':
-                    angle_square_list.append(i[1])
-                else:
-                    key = i[0]
-                    value = csv_list_of_dicts[0].get(key)
-                    if value is None:
-                        raise PomidorDataFeedNoKeyError(path, line_num,
-                                                        key, data_mark)
-                    angle_square_list.append(value)
+    for k in csv_list_of_dicts * len(angle_n_square):
+        for i in angle_n_square:
+            if i[0] == '':
+                angle_square_list.append(i[1])
+            else:
+                key = i[0]
+                value = csv_list_of_dicts[0].get(key)
+                if value is None:
+                    raise PomidorDataFeedNoKeyError(path, line_num,
+                                                    key, data_mark)
+                angle_square_list.append(value)
+        if len(csv_list_of_dicts) == 1:
             del csv_list_of_dicts[0]
-    except IndexError as ie:
-        # print("Index error", repr(ie))
-        pass
+            break
+        else:
+            del csv_list_of_dicts[0]
 
 
 def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
@@ -445,14 +500,12 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
     type_list = ['type', 'types', 'typed']
     scroll_time = None
     for t in params:
-        if t.startswith('auto'):
+        if t.startswith('scroll'):
             if '=' in t:
-                scroll_time = t.replace('auto_scroll=', "")
+                scroll_time = t.replace('scroll=', "")
                 scroll_time = re.sub(r'^.*?=', '', t)
-                print(f'auto_scroll -> {scroll_time}')
             else:
                 scroll_time = 0.2
-                print(f'auto_scroll -> {scroll_time}')
         if t.startswith('max'):
             driver.maximize_window()
         if t.startswith('del'):
@@ -487,31 +540,46 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                     break
             if acti == 'selected' or acti == 'not_selected':
                 # TODO: work on asserts
-                fun_ex = WebDriverWait(driver, wait).until(
-                    ec.presence_of_element_located((
-                        loc_id, page_object_src))) \
-                    # .is_selected()
-                print('hey')
-                if fun_ex:
-                    print(f'Passed! - {fun_ex}')
-                if not fun_ex:
-                    print(f'Failed! - {fun_ex}')
+                try:
+                    fun_ex = WebDriverWait(driver, wait).until(
+                        ec.presence_of_element_located((
+                            loc_id, page_object_src)))
+                except TimeoutException:
+                    raise PageObjectNotFound(path=path,
+                                             line_num=line_num,
+                                             obj=obj_name)
+                try:
+                    assert fun_ex.is_selected()
+                except AssertionError:
+                    raise PomidorAssertError(path=path,
+                                             line_num=line_num,
+                                             obj=obj_name,
+                                             act=acti)
             if acti.lower().startswith('click') or \
                     acti.lower().startswith('type'):
-                a = WebDriverWait(driver, wait).until(
-                    ec.element_to_be_clickable((loc_id, page_object_src)))
+                try:
+                    a = WebDriverWait(driver, wait).until(
+                        ec.element_to_be_clickable((loc_id, page_object_src)))
+                except TimeoutException:
+                    raise PageObjectNotFound(path=path,
+                                             line_num=line_num,
+                                             obj=obj_name)
                 # print(f'a - {a.is_enabled()}')
                 if scroll_time:
                     webdriver.ActionChains(driver).move_to_element(a)
                     driver.execute_script("arguments[0].scrollIntoView();", a)
                     time.sleep(
                         float(scroll_time))
-                    print(f'auto_scrollski -> {scroll_time}')
                 if acti.lower().startswith('type'):
                     a.clear()
                     a.send_keys(str_in_brackets.pop(0))
                 elif acti.lower().startswith('click'):
-                    a.click()
+                    try:
+                        a.click()
+                    except ElementClickInterceptedException:
+                        raise ElementNotClickable(path=path,
+                                                  line_num=line_num,
+                                                  obj=obj_name)
         if present_mode:
             time.sleep(present_mode)
 
@@ -538,7 +606,7 @@ def all_markers(base_url, markers_list, urls):
                             if x.startswith("@param")])
     param = param_string.replace("@param", '').strip()
     param_list = re.split(r'[;,!?\s]', param)
-    print(f'param_list - >{param_list}: {type(param_list)}')
+    # print(f'param_list - >{param_list}: {type(param_list)}')  # TODO: print params
 
     tc_name_line = ''.join([x for x in
                             markers_list
@@ -569,8 +637,7 @@ def all_markers(base_url, markers_list, urls):
         if param.startswith('data') or param.startswith('<<data>>'):
             data_mark = param.replace("data=", '')
 
-
-    print(f'url - {url} :: prereq - {prereq_val}::data_mark -> {data_mark}')
+    # print(f'url - {url} :: prereq - {prereq_val}::data_mark -> {data_mark}')
 
     return data_mark, feature_mark_list, tc_name_value, url, prereq_val, \
            param_list
@@ -692,7 +759,7 @@ class Pomidor:
         if self.driver == 'Chrome':
             chrome_options = Options()
             # chrome_options.add_argument("--start-maximized") # not working
-            if headless:    # TODO: add set_window_size option
+            if headless:  # TODO: add set_window_size option
                 chrome_options.add_argument("--window-size=1400,600")
                 chrome_options.add_argument("--headless")
             driver = webdriver.Chrome(options=chrome_options)

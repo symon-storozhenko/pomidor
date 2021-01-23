@@ -1,7 +1,7 @@
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
 @Feature CSV_data
-@param delete_cookies, max, data=pageObjects/csv_data_source2.csv , url=practice_page , prereq=google_search
+@params del, max, data=pageObjects/csv_data_source2.csv , url=practice_page , prereq=google_search
 @name CSV_Test_case#1
 !!Comment first line - First, click on login_field #practice_menu_button page title
 First paragraph: type <<FirstName>> in #name_field. Then, type [[ŽŽSSSSSŽtypes]]
@@ -10,9 +10,8 @@ Birth>> in #name_field and again and then type <<LastName>> in #name_field
 
 !!Used for test_pomidor_run_all_and_nested_dir #2!!
 @Feature CSV_data1
-@param delete_cookies, max, data=pageObjects/csv_data_source.csv, url=practice_page, prereq=google_search
-@name CSV_Test_case#2
-!!Comment first line - First, click on login_field #practice_menu_button page title
+@params del, max, data=pageObjects/csv_data_source.csv, url=practice_page, prereq=google_search
+CSV_Test_case#2
 Second paragraph: type <<FirstName>> in #name_field. Then, type [[some
 free text @param delete_cookies, max,
 data=pageObjects/csv_data_source.csv, url=practice_page, prereq=google_search

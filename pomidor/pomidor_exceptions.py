@@ -1,4 +1,7 @@
+from selenium.webdriver.support.color import Colors
+
 pomidor = 'Pomidor'
+
 
 class PomidorDataFeedError(KeyError):
     """ Pomidor syntax error class: more actions than objects """
@@ -16,6 +19,7 @@ class PomidorDataFeedError(KeyError):
 
 class PomidorKeyDoesNotExist(Exception):
     """PomidorCantRunOneBrowserInstanceInParallel Exception"""
+
     def __init__(self, key):
         self.key = key
         print(f'{Colors.FAIL}\n{pomidor}ERROR\nKeyboard key {key} does not '
@@ -24,6 +28,7 @@ class PomidorKeyDoesNotExist(Exception):
 
 class PomidorCantRunOneBrowserInstanceInParallel(Exception):
     """PomidorCantRunOneBrowserInstanceInParallel Exception"""
+
     def __init__(self):
         print(f'{Colors.FAIL}\n{pomidor}ERROR\nCannot run browser=\'one\' '
               f'with parallel enabled.\nEither set browser=\'per_file\' or '
@@ -43,6 +48,7 @@ class PomidorDataFeedNoKeyError(PomidorDataFeedError):
 
 class PomidorDataFeedNoAngleKeysProvided(PomidorDataFeedError):
     """ PomidorDataFeedNoAngleKeysProvided"""
+
     def __init__(self, path, line_num, data_file, *args, **kwargs):
         PomidorDataFeedError.print_error_header(path, line_num, data_file)
         print(f'{Colors.FAIL}Please include csv column names in double angle '
@@ -51,6 +57,7 @@ class PomidorDataFeedNoAngleKeysProvided(PomidorDataFeedError):
 
 class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
     """ PomidorDataFeedNoAngleKeysProvided"""
+
     def __init__(self, path, line_num, data_file, *args, **kwargs):
         PomidorDataFeedError.print_error_header(path, line_num, data_file)
         print(f'{Colors.FAIL}If you want to use keys from double angle '
@@ -61,7 +68,7 @@ class PomidorDataFeedNoCSVFileProvided(PomidorDataFeedError):
               f'\nSome paragraph text..."{Colors.ENDC}')
 
 
-class PomidorFileNotFoundError(Exception):
+class PomidorFileNotFoundError(FileNotFoundError):
     """ Pomidor syntax error class: more actions than objects """
 
     def __init__(self, path, *args, **kwargs):
@@ -113,19 +120,57 @@ class PomidorObjectDoesNotExistInCSVFile(Exception):
               f' Please check page object selector and value{Colors.ENDC}')
 
 
-class PomidorObjectDoesNotExistOnPage(Exception):
+class PageObjectNotFound(Exception):
     """ Pomidor syntax error class: Page object does not exist on the page """
 
-    def __init__(self, path, line_num, obj, *args, **kwargs):
+    def __init__(self, path, line_num, obj):
         self.path = path
         self.line_num = line_num
         self.obj = obj
-        print(f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}')
-        print(f'{Colors.FAIL}PomidorObjectDoesNotExistOnPageError{Colors.ENDC}')
-        print(f'{Colors.FAIL}FilePath: {path}\n'
-              f'Paragraph starts on line: {line_num}\nERROR:  {Colors.WARNING}'
-              f'#{obj}{Colors.FAIL} does not exist on page.'
-              f' Please check page object selector and value{Colors.ENDC}')
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}\n' \
+               f'{Colors.FAIL}PageObjectNotFound{Colors.ENDC}\n' \
+               f'{Colors.FAIL}FilePath: {self.path}\n' \
+               f'Paragraph starts on line: {self.line_num}\nERROR:  {Colors.WARNING}' \
+               f'#{self.obj}{Colors.FAIL} was not found on page.' \
+               f' Please check page object selector and value{Colors.ENDC}'
+
+
+class PomidorAssertError(Exception):
+    """ Pomidor syntax error class: Page object does not exist on the page """
+
+    def __init__(self, path, line_num, obj, act):
+        self.path = path
+        self.line_num = line_num
+        self.obj = obj
+        self.act = act
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}\n' \
+               f'{Colors.FAIL}PomidorAssertError{Colors.ENDC}\n' \
+               f'{Colors.FAIL}FilePath: {self.path}\n' \
+               f'Paragraph starts on line: {self.line_num}\nERROR:  ' \
+               f'{Colors.WARNING}#{self.obj} is {self.act}{Colors.FAIL} ' \
+               f'is FALSE {Colors.ENDC}'
+
+
+class ElementNotClickable(Exception):
+    """ Pomidor syntax error class: Page object does not exist on the page """
+
+    def __init__(self, path, line_num, obj):
+        self.path = path
+        self.line_num = line_num
+        self.obj = obj
+
+    def __repr__(self):
+        return f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}\n' \
+               f'{Colors.FAIL}ElementNotClickable{Colors.ENDC}\n' \
+               f'{Colors.FAIL}FilePath: {self.path}\n' \
+               f'Paragraph starts on line: {self.line_num}\nERROR:  ' \
+               f'{Colors.WARNING}#{self.obj}{Colors.FAIL} is ' \
+               f'hidden from view. Consider using \'max\' and/or \'scroll\'\n'\
+               f'Example:\n{Colors.WARNING}@params max, scroll\n{Colors.ENDC}'
 
 
 class PomidorPrerequisiteScenarioNotFoundError(Exception):

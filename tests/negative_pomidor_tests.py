@@ -1,12 +1,11 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-from tests.pageObjects.page_factory import PageObject, BaseURL
 from pomidor.pomidor_runner import Pomidor
 from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
     PomidorDataFeedNoAngleKeysProvided, PomidorDataFeedNoCSVFileProvided, \
     PomidorSyntaxErrorTooManyActions, PomidorSyntaxErrorTooManyObjects, \
-    PomidorObjectDoesNotExistInCSVFile, PomidorObjectDoesNotExistOnPage, \
+    PomidorObjectDoesNotExistInCSVFile, PageObjectNotFound, \
     PomidorPrerequisiteScenarioNotFoundError
 import pytest
 import concurrent.futures
@@ -21,7 +20,7 @@ failed_screenshots = 'failed_screenshots'
 po = Pomidor("Chrome", page_obj, url, urls=addtl_urls,
              prerequisite_file=prereqs,
              passed_screenshots='passed_screenshots',
-             failed_screenshots='failed_screenshots') # TODO: move screenshots here
+             failed_screenshots='failed_screenshots')
 
 root_dir = ''
 empty_str = 'negative_pomidory/empty_dir'
@@ -67,7 +66,7 @@ class TestPomidorRunAll:
     # 76 - 80s - headless, passed'n'failed screenshots with dirs, all prereqs
     def test_pomidor_run_all_browser_per_file(self):
         po.run(parallel=4, browser='per_file', prerequisite='Google_search',
-               headless=True, wait=2) # 26 failed, 52 passed in 78.31s; 38/78
+               headless=True, wait=2) # 28 failed, 51 passed in 74.38s; 38/79
     #     28 failed, 50 passed in 78.90s
     #   27 failed, 51 passed in 110.50s - not headless
 
@@ -107,8 +106,8 @@ class TestPomidorParallel:
         scenario_num = po.run(nested_dir4,  # shows visual differences
                               prerequisite='google_search',
                               # browser='one',
-                              parallel=1,
-                              slow_mode=.1
+                              parallel=4,
+                              # slow_mode=.1
                               )
         assert scenario_num == 12  # 8.3 sec
 
@@ -132,8 +131,11 @@ class TestPomidorPro:
 
 class TestPomidorKeys:
     def test_pomidor_arrow_left(self):
-        scenario_num = po.run(key_presses, wait=2, headless=False)
-        assert scenario_num == 1
+        scenario_num = po.run(key_presses,
+                              # feature='csv_data3',
+                              # browser='per_test',
+                              wait=1, headless=True)
+        assert scenario_num == 2
 
 
 class TestPomidorPrerequisites:
@@ -254,11 +256,11 @@ class TestPomidorSyntaxExceptions:  # 14 exception tests
     # has 'crazytomato -1' in front
     # prints Exception
     def test_pomidor_obj_in_page_factory_but_not_on_webpage(self):
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
+        with pytest.raises(PageObjectNotFound):
             po.run(obj_in_page_factory_but_not_on_webpage, wait=2)
 
     def test_pomidor_empty_page_object_in_csv(self):
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
+        with pytest.raises(PageObjectNotFound):
             po.run(empty_page_object_in_csv, wait=2)
 
     # has 'crazytomato -1' in front
@@ -279,7 +281,7 @@ class TestPomidorSyntaxExceptions:  # 14 exception tests
     # Final Test Summary NOT printed: crazytomato -1 found
     # prints Exception
     def test_pomidor_run_is_displayed_negative(self):  #
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
+        with pytest.raises(PageObjectNotFound):
             po.run(assert_actions, feature="Is_displayed", wait=3)
 
     def test_pomidor_prereq_not_found(self):
@@ -292,5 +294,5 @@ class TestPomidorSyntaxExceptions:  # 14 exception tests
             print("Sucess")  # Exception printed
 
     def test_pomidor_prerequisite_file_timeout_on_type_action(self):
-        with pytest.raises(PomidorObjectDoesNotExistOnPage):
+        with pytest.raises(PageObjectNotFound):
             po.run(prereqs2, wait=2, feature="timeout_test")  # raised
