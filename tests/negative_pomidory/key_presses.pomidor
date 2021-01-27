@@ -1,19 +1,31 @@
 
 !!test_pomidor_PomidorDataFeedNoAngleKeysProvided!!
 @feature csv_data3
-@params  del, iw, prereq=, data=pageobjects/csv_data_source.csv
+@params scroll=.3, del, iw, prereq=, data=pageobjects/csv_data_source.csv
 JIRA-13989
 First, clicked on login_field #practice_menu_button page title
-Then, click on #male_rb, seconds and make sure that #male_rb is selected.
+then click on #musician_drop_down
+and select #Milli_Vanilli_dd
+and verify that #Milli_Vanilli_dd is selected
+Then, select #female_rb, seconds and make sure that #female_rb is selected.
+then click on #musician_drop_down
+and verify that #Milli_Vanilli_dd is selected
 and typed [[text-1]] in #phone_field. Then, typed <<FirstName>>
-in #name_field and press #ARROW_LEFT and press #NUMPAD9 wait #0.2 seconds
+in #name_field and press #ARROW_LEFT and press #NUMPAD9
+ and then then click on #musician_drop_down
+select #Jimmy_Hendrix_dd
+!!click on #musician_drop_down and verify
+that #Jimmy_Hendrix_dd equals [[Jimmy Hendrix]]
+and #Milli_Vanilli_dd is selected
+and #back_home_button not_equals [[BACK HOME]]
 
 
-@feature csv_data3
+@feature csv_data
 @params max, scroll=.2, del, prereq=, data=pageobjects/csv_data_source.csv
 JIRA-13989
 First, clicked on login_field #practice_menu_button page title
-Then, click on #male_rb, seconds and make sure that #female_rb is selected.
+Then, select #male_rb, seconds and make sure that #male_rb is selected.
 and typed [[text-1]] in #phone_field. Then, typed <<FirstName>>
-in #name_field and press #ARROW_LEFT and press #NUMPAD9 wait #0.2 seconds
+in #name_field and press #ARROW_LEFT and press #NUMPAD9
+click on the #musician_drop_down and select #Mozart_dd and wait #0.2 seconds
 

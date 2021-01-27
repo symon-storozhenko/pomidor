@@ -15,19 +15,22 @@ from selenium.common.exceptions import TimeoutException, \
 from selenium.webdriver.chrome.options import Options
 from pomidor.actions import ForwardAction, BackwardAction, InputKeys, Locators
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as ec
+# from selenium.webdriver.support.select import Select
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
 from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
-    PomidorDataFeedNoAngleKeysProvidedException, PomidorDataFeedNoCSVFileProvided, \
+    PomidorDataFeedNoAngleKeysProvidedException, \
+    PomidorDataFeedNoCSVFileProvided, \
     PomidorFileNotFoundError, PomidorSyntaxErrorTooManyActions, \
     PomidorSyntaxErrorTooManyObjects, PomidorObjectDoesNotExistInCSVFile, \
     Colors, PageObjectNotFound, \
     PomidorPrerequisiteScenarioNotFoundError, \
     PomidorCantRunOneBrowserInstanceInParallel, PomidorKeyDoesNotExist, \
-    PomidorAssertError, ElementNotClickable
+    PomidorAssertError, ElementNotClickable, PomidorEqualAssertError
 
 
 def generate_list_of_pomidor_files(tomato_directory: str) -> list:
@@ -43,7 +46,6 @@ def generate_list_of_pomidor_files(tomato_directory: str) -> list:
         tomato_files_list.append(str(path))
     try:
         assert len(tomato_files_list) > 0
-        print('True')
     # if not tomato_files_list:
     except Exception as e:
         raise Exception(PomidorFileNotFoundError(str(tom_dir)), e)
@@ -259,16 +261,6 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                             f'{passed_screenshots}/PASS {tc_id_screenshot} '
                             f'[{filepath_for_screenshot}].png')
 
-            # TODO: Review Exception example below:
-            #     except Exception as e:
-            #         # Store trace info to allow postmortem debugging
-            #         sys.last_type = type(e)
-            #         sys.last_value = e
-            #         assert e.__traceback__ is not None
-            #         # Skip *this* frame
-            #         sys.last_traceback = e.__traceback__.tb_next
-            #         raise e
-
             except Exception as e:
                 tcs_list.append(f"FAILED {tc_id}")  # Research test.html
                 if failed_screenshots:
@@ -278,22 +270,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                 # traceback.print_exc(limit=1)
                 # print(e)
                 print(repr(e))
-                # print(f'{Colors.FAIL}{repr(e)}{Colors.ENDC}')
-                # continue
-                # raise
-                # finally:
-                #     if browser == 'per_test' and browser_initialized:
-                #         if type(driver) == str:
-                #             raise Exception(f'{Colors.FAIL}PomidorERROR\nCheck '
-                #                             f'webdriver path or consider upgrading '
-                #                             f'the webdriver{Colors.ENDC}')
-                #         driver.quit()
-                #         driver = po.driver
-                #     continue  # uncomment when testing Test summary output
-                # if test_case_str.startswith('crazytomato -1'):
-                #     print(f'crazytomato -1 found')
-                # else:
-                #     continue
+
     return scenario_number, tc_name, tcs_list
 
 
@@ -377,7 +354,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     csv_list_of_dicts_range = 0
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
     if data_mark and not str_in_angle_brackets:
-        raise PomidorDataFeedNoAngleKeysProvidedException(filepath, line_num, data_mark)
+        raise PomidorDataFeedNoAngleKeysProvidedException(filepath, line_num,
+                                                          data_mark)
 
     if not data_mark and str_in_angle_brackets:
         raise PomidorDataFeedNoCSVFileProvided(filepath, line_num, data_mark)
@@ -398,7 +376,6 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         filepath, line_num, obj_dict, scenarioSteps)
 
     # try:
-    # TODO: research on how driver can be created outside
     if prereq_tcs:
         driver.get(prereq_url)
         driver.delete_all_cookies()  # TODO: store and use cookies
@@ -503,6 +480,8 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
              passed_screenshots, adhoc_screenshots, params):
     type_list = ['type', 'types', 'typed']
     scroll_time = None
+    web_el = None
+    previous_obj = None
     for t in params:
         if t.startswith('scroll'):
             if '=' in t:
@@ -523,12 +502,13 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
             webdriver.ActionChains(driver).key_down(key).perform()
             if present_mode:
                 time.sleep(present_mode)
-        elif acti.lower() == 'wait':  # TODO: add dropdown, radiobutton sel.
+        elif acti.lower() == 'wait':
             time.sleep(float(i[1]))
         else:
             page_obj_loc = i[1][0]
             page_object_src = i[1][1]
             loc_id = None
+            last_str = str_in_brackets[0]
             obj_name = obj_dict[enum]
             if obj_name not in orig_obj_dict:
                 raise PomidorObjectDoesNotExistInCSVFile(path=path,
@@ -542,27 +522,98 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 if p == page_obj_loc.upper():
                     loc_id = locator_dict.get(p)
                     break
-            if acti == 'selected' or acti == 'not_selected':
+            if acti == 'selected' or acti == 'not_selected' or 'equal' in acti:
                 # TODO: work on asserts
                 try:
-                    fun_ex = WebDriverWait(driver, wait).until(
-                        ec.presence_of_element_located((
-                            loc_id, page_object_src)))
+                    if page_obj_loc.strip().startswith('DROP'):
+                        pass
+                    else:
+                        web_el = WebDriverWait(driver, wait).until(
+                            ec.presence_of_element_located((
+                                loc_id, page_object_src)))
                 except TimeoutException:
                     raise PageObjectNotFound(path=path,
                                              line_num=line_num,
                                              obj=obj_name)
-                try:
-                    assert fun_ex.is_selected()
-                except AssertionError:
-                    raise PomidorAssertError(path=path,
-                                             line_num=line_num,
-                                             obj=obj_name,
-                                             act=acti)
+                if acti.startswith('not'):
+                    try:
+                        # negative assert for drop downs
+                        if page_obj_loc.strip().startswith('DROP'):
+                            a = Select(web_el).first_selected_option.text
+                            if 'equal' in acti:
+                                assert a != str_in_brackets.pop(0)
+                            else:
+                                assert a != page_object_src
+                        else:
+                            if 'equal' in acti:
+                                assert web_el.text != str_in_brackets.pop(0)
+                            else:
+                                assert not web_el.is_selected()
+                    except AssertionError:
+                        if 'equal' in acti:
+                            raise PomidorEqualAssertError(path=path,
+                                                          line_num=line_num,
+                                                          obj=obj_name,
+                                                          act=acti,
+                                                          string=last_str)
+                        else:
+                            raise PomidorAssertError(path=path,
+                                                     line_num=line_num,
+                                                     obj=obj_name,
+                                                     act=acti)
+                else:
+                    try:
+                        # assert for drop downs
+                        if page_obj_loc.strip().startswith('DROP'):
+                            a = Select(web_el).first_selected_option.text
+                            if 'equal' in acti:
+                                assert a == str_in_brackets.pop(0)
+                            else:
+                                assert a.strip() == page_object_src.strip()
+                        else:
+                            if 'equal' in acti:
+                                assert web_el.text == str_in_brackets.pop(0)
+                            else:
+                                assert web_el.is_selected()
+                    except AssertionError:
+                        if 'equal' in acti:
+                            raise PomidorEqualAssertError(path=path,
+                                                          line_num=line_num,
+                                                          obj=obj_name,
+                                                          act=acti,
+                                                          string=last_str)
+                        else:
+                            raise PomidorAssertError(path=path,
+                                                     line_num=line_num,
+                                                     obj=obj_name,
+                                                     act=acti)
+            if acti.lower() == 'select' and \
+                    page_obj_loc.strip().startswith(
+                        'DROP'):  # TODO: add dropdown asserts
+                # For drop down selection
+                if page_obj_loc.strip() == 'DROP_DOWN_VISIBLE_TEXT':
+                    Select(web_el).select_by_visible_text(page_object_src)
+                if page_obj_loc.strip() == 'DROP_DOWN_INDEX':
+                    a = Select(web_el).select_by_index(int(page_object_src))
+                if page_obj_loc.strip() == 'DROP_DOWN_VALUE':
+                    Select(web_el).select_by_value(page_object_src)
+                # else:   # Radio button selection
+                #     web_el = WebDriverWait(driver, wait).until(
+                #         ec.element_to_be_clickable((loc_id, page_object_src)))
+                #     # if scroll_time:
+                #     #     webdriver.ActionChains(driver).move_to_element(web_el)
+                #     #     driver.execute_script("arguments[0].scrollIntoView();",
+                #     #                           web_el)
+                #     #     time.sleep(
+                #     #         float(scroll_time))
+                #     web_el.click()
+
             if acti.lower().startswith('click') or \
-                    acti.lower().startswith('type'):
+                    acti.lower().startswith('type') or \
+                    (acti.lower() == 'select' and not
+                    page_obj_loc.strip().startswith('DROP')):
                 try:
-                    a = WebDriverWait(driver, wait).until(
+                    web_el = WebDriverWait(driver, wait).until(
                         ec.element_to_be_clickable((loc_id, page_object_src)))
                 except TimeoutException:
                     raise PageObjectNotFound(path=path,
@@ -570,26 +621,31 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                              obj=obj_name)
                 # print(f'a - {a.is_enabled()}')
                 if scroll_time:
-                    webdriver.ActionChains(driver).move_to_element(a)
-                    driver.execute_script("arguments[0].scrollIntoView();", a)
+                    webdriver.ActionChains(driver).move_to_element(web_el)
+                    driver.execute_script("arguments[0].scrollIntoView();",
+                                          web_el)
                     time.sleep(
                         float(scroll_time))
                 if acti.lower().startswith('type'):
-                    a.clear()
-                    a.send_keys(str_in_brackets.pop(0))
-                elif acti.lower().startswith('click'):
+                    web_el.clear()
+                    web_el.send_keys(str_in_brackets.pop(0))
+                elif acti.lower().startswith('click') or \
+                        acti.lower() == 'select':
                     try:
-                        a.click()
+                        web_el.click()
                     except ElementClickInterceptedException:
                         raise ElementNotClickable(path=path,
                                                   line_num=line_num,
                                                   obj=obj_name)
+        previous_obj = page_object_src
+
         if present_mode:
             time.sleep(present_mode)
-
             # TODO add is_selected and is_enabled asserts
             # TODO add "page_title" assert
 
+
+# TODO: add login capability to the website
 
 def all_markers(base_url, markers_list, urls):
     #   TODO: implement adhoc_screenshot #page and screenshot #object

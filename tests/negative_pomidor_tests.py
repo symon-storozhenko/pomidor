@@ -132,9 +132,11 @@ class TestPomidorPro:
 class TestPomidorKeys:
     def test_pomidor_arrow_left(self):
         scenario_num = po.run(key_presses,
-                              # feature='csv_data3',
+                              feature='csv_data3',
                               # browser='per_test',
-                              wait=1, headless=True)
+                              wait=1, headless=False,
+                              # slow_mode=.3
+                              )
         assert scenario_num == 2
 
 
