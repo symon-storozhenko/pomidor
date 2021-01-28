@@ -180,20 +180,23 @@ class PomidorAssertError(Exception):
 class PomidorEqualAssertError(Exception):
     """ Pomidor syntax error class: Page object does not exist on the page """
 
-    def __init__(self, path, line_num, obj, act, string):
+    def __init__(self, path, line_num, obj, act, string, actual_string):
         self.path = path
         self.line_num = line_num
         self.obj = obj
         self.act = act
         self.string = string
+        self.actual_str = actual_string
 
     def __repr__(self):
         return f'{Colors.FAIL}\n{pomidor}ERROR{Colors.ENDC}\n' \
                f'{Colors.FAIL}PomidorAssertError{Colors.ENDC}\n' \
                f'{Colors.FAIL}FilePath: {self.path}\n' \
                f'Paragraph starts on line: {self.line_num}\nERROR:  ' \
-               f'{Colors.WARNING}#{self.obj} is {self.act} to [[{self.string}'\
-               f']]{Colors.FAIL} is FALSE {Colors.ENDC}'
+               f'{Colors.WARNING}#{self.obj} {self.act} [[{self.string}'\
+               f']]{Colors.FAIL} is FALSE. {Colors.OKGREEN}Actual ' \
+               f'#{self.obj} text equals [[{self.actual_str}]]{Colors.ENDC}'
+
 
 class ElementNotClickable(Exception):
     """ Pomidor syntax error class: Page object does not exist on the page """

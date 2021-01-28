@@ -101,8 +101,11 @@ class ForwardAction:
             'presses': "Key",
             'wait': 'wait',
             'select': 'select',
+            'not_selected': 'not_selected',
             'equals': 'equals',
-            'not_equals': 'not_equals'
+            'not_equals': 'not_equals',
+            'contains': 'contains',
+            'not_contains': 'not_contains'
             #     ActionChains:
         }
 

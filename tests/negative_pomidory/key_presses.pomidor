@@ -16,8 +16,10 @@ in #name_field and press #ARROW_LEFT and press #NUMPAD9
 select #Jimmy_Hendrix_dd
 !!click on #musician_drop_down and verify
 that #Jimmy_Hendrix_dd equals [[Jimmy Hendrix]]
-and #Milli_Vanilli_dd is selected
-and #back_home_button not_equals [[BACK HOME]]
+ and then then click on #musician_drop_down
+!!#Jimmy_Hendrix_dd is selected
+and #Milli_Vanilli_dd is not_selected
+and #back_home_button contains [[HOME]]
 
 
 @feature csv_data
