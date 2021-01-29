@@ -14,6 +14,7 @@ phone_field, CSS_SELECTOR , input#phone
 musician_drop_down, CSS_SELECTOR, select#musician
 Milli_Vanilli_dd, DROP_DOWN_VISIBLE_TEXT,Milli Vanilli
 Jimmy_Hendrix_dd, DROP_DOWN_INDEX,3
+first_dd, DROP_DOWN_INDEX,1
 Mozart_dd, DROP_DOWN_VALUE,Mozart
 
 

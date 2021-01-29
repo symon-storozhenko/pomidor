@@ -479,8 +479,9 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
              path, line_num, wait, present_mode, failed_screenshots,
              passed_screenshots, adhoc_screenshots, params):
     type_list = ['type', 'types', 'typed']
-    assert_list = ['selected', 'equals', 'contains']
-    negative_assert_list = ['not_selected', 'not_equals', 'not_contains']
+    assert_list = ['selected', 'equals', 'contains', 'enabled']
+    negative_assert_list = ['not_selected', 'not_equals', 'not_contains',
+                            'not_enabled']
     scroll_time = None
     web_el = None
     previous_obj = None
@@ -496,6 +497,8 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
         if t.startswith('del'):
             driver.delete_all_cookies()
     for enum, i in enumerate(act_obj_list):
+        # print(f'act_obj_list -> {act_obj_list}\n')
+        # print(f'str_in_brackets -> {str_in_brackets}')
         acti = i[0]
         if acti.lower().startswith('press'):
             if i[1] not in keys_dict:
@@ -506,17 +509,22 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 time.sleep(present_mode)
         elif acti.lower() == 'wait':
             time.sleep(float(i[1]))
+        # elif acti == ''
         else:
             page_obj_loc = i[1][0]
             page_object_src = i[1][1]
             loc_id = None
-            last_str = str_in_brackets[0]
+            if acti in ('contains', 'not_contains', 'equals', 'not_equals',
+                        'type', 'types', 'typed'):
+                last_str = str_in_brackets.pop(0)
             obj_name = obj_dict[enum]
-            if obj_name not in orig_obj_dict:
+            if obj_name == 'page_title':
+                pass
+            elif obj_name not in orig_obj_dict:
                 raise PomidorObjectDoesNotExistInCSVFile(path=path,
                                                          line_num=line_num,
                                                          obj=obj_name)
-            if orig_obj_dict.get(obj_name) is None:
+            elif orig_obj_dict.get(obj_name) is None:
                 raise PomidorObjectDoesNotExistInCSVFile(path=path,
                                                          line_num=line_num,
                                                          obj=obj_name)
@@ -525,14 +533,16 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                     loc_id = locator_dict.get(p)
                     break
             if acti in assert_list or acti in negative_assert_list:
-                # TODO: work on asserts
                 try:
                     if page_obj_loc.strip().startswith('DROP'):
-                        pass
+                        el_text = Select(web_el).first_selected_option.text
+                    elif obj_name == 'page_title':
+                        el_text = driver.title
                     else:
                         web_el = WebDriverWait(driver, wait).until(
                             ec.presence_of_element_located((
                                 loc_id, page_object_src)))
+                        el_text = web_el.text
                 except TimeoutException:
                     raise PageObjectNotFound(path=path,
                                              line_num=line_num,
@@ -540,25 +550,14 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 if acti in negative_assert_list:
                     try:
                         # negative assert for drop downs
-                        if page_obj_loc.strip().startswith('DROP'):
-                            a = Select(web_el).first_selected_option.text
-                            if acti == 'not_equals':
-                                actual_str = a
-                                assert a != str_in_brackets.pop(0)
-                            elif acti == 'not_contains':
-                                actual_str = a
-                                next_str = str_in_brackets.pop(0)
-                                assert next_str not in a
-                            else:
-                                assert a != page_object_src
+                        if page_obj_loc.strip().startswith('DROP') \
+                                and acti == 'not_selected':
+                            assert el_text != page_object_src
                         else:
                             if acti == 'not_equals':
-                                actual_str = web_el.text
-                                assert web_el.text != str_in_brackets.pop(0)
-                            if acti == 'not_contains':
-                                actual_str = web_el.text
-                                next_str = str_in_brackets.pop(0)
-                                assert next_str not in web_el.text
+                                assert el_text != last_str
+                            elif acti == 'not_contains':
+                                assert last_str not in el_text
                             else:
                                 assert not web_el.is_selected()
                     except AssertionError:
@@ -569,7 +568,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                                           act=acti,
                                                           string=last_str,
                                                           actual_string=
-                                                          actual_str)
+                                                          el_text)
                         else:
                             raise PomidorAssertError(path=path,
                                                      line_num=line_num,
@@ -577,24 +576,15 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                                      act=acti)
                 else:
                     try:
-                        # assert for drop downs
-                        if page_obj_loc.strip().startswith('DROP'):
-                            a = Select(web_el).first_selected_option.text
-                            if acti == 'equals':
-                                actual_str = a
-                                assert a == str_in_brackets.pop(0)
-                            elif acti == 'contains':
-                                actual_str = a
-                                assert str_in_brackets.pop(0) in a
-                            else:
-                                assert a.strip() == page_object_src.strip()
+                        # negative assert for drop downs
+                        if page_obj_loc.strip().startswith('DROP') \
+                                and acti == 'selected':
+                            assert el_text == page_object_src
                         else:
                             if acti == 'equals':
-                                actual_str = web_el.text
-                                assert web_el.text == str_in_brackets.pop(0)
+                                assert el_text == last_str
                             elif acti == 'contains':
-                                actual_str = web_el.text
-                                assert str_in_brackets.pop(0) in web_el.text
+                                assert last_str in el_text
                             else:
                                 assert web_el.is_selected()
                     except AssertionError:
@@ -605,7 +595,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                                           act=acti,
                                                           string=last_str,
                                                           actual_string=
-                                                          actual_str)
+                                                          el_text)
                         else:
                             raise PomidorAssertError(path=path,
                                                      line_num=line_num,
@@ -613,7 +603,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                                      act=acti)
             if acti.lower() == 'select' and \
                     page_obj_loc.strip().startswith(
-                        'DROP'):  # TODO: add dropdown asserts
+                        'DROP'):
                 # For drop down selection
                 if page_obj_loc.strip() == 'DROP_DOWN_VISIBLE_TEXT':
                     Select(web_el).select_by_visible_text(page_object_src)
@@ -642,7 +632,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                         float(scroll_time))
                 if acti.lower().startswith('type'):
                     web_el.clear()
-                    web_el.send_keys(str_in_brackets.pop(0))
+                    web_el.send_keys(last_str)
                 elif acti.lower().startswith('click') or \
                         acti.lower() == 'select':
                     try:
@@ -651,13 +641,11 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                         raise ElementNotClickable(path=path,
                                                   line_num=line_num,
                                                   obj=obj_name)
-        previous_obj = page_object_src
-
         if present_mode:
             time.sleep(present_mode)
 
-            # TODO add is_selected and is_enabled asserts
-            # TODO add "page_title" assert
+    # TODO add is_enabled asserts
+    # TODO add "page_title" assert
 
 
 # TODO: add login capability to the website
