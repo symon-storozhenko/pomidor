@@ -66,7 +66,7 @@ class TestPomidorRunAll:
     # 76 - 80s - headless, passed'n'failed screenshots with dirs, all prereqs
     def test_pomidor_run_all_browser_per_file(self):
         po.run(parallel=4, browser='per_file', prerequisite='Google_search',
-               headless=True, wait=2) # 26 failed, 53 passed in 85.69s; 38/79
+               headless=True, wait=2) #27 failed, 49 passed in 129.61s ; 37/76
     #     28 failed, 50 passed in 78.90s
     #   27 failed, 51 passed in 110.50s - not headless
 
@@ -90,7 +90,7 @@ class TestPomidorRunAll:
 
     def test_pomidor_run_all_one_browser_not_parallel(self):
         po.run(browser='one', prerequisite='Google_search',
-               headless=True, wait=2)  # 27 failed, 51 passed in 204.04s; 38/78
+               headless=True, wait=2)  # 27 failed, 49 passed in 478.61s; 37/76
 
 
 class TestPomidorParallel:
@@ -134,7 +134,7 @@ class TestPomidorKeys:
         scenario_num = po.run(key_presses,
                               feature='csv_data3',
                               # browser='per_test',
-                              wait=1, headless=False,
+                              wait=1, headless=True,
                               # slow_mode=.3
                               )
         assert scenario_num == 2

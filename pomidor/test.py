@@ -1,5 +1,7 @@
 import itertools
-import re
+import time
+
+import pretty_print_json
 from collections import defaultdict
 from csv import DictReader
 
@@ -105,7 +107,7 @@ print(f'url_dict -> {get_csv_data_values("urls.csv", "url")}')
 
 
 def get_list_of_dicts_from_csv(file):
-    with open(file) as read_obj:
+    with open(file, mode='r', encoding='utf-8-sig') as read_obj:
         # pass the file object to DictReader() to get the DictReader object
         dict_reader = DictReader(read_obj)
         # get a list of dictionaries from dct_reader
@@ -116,6 +118,7 @@ def get_list_of_dicts_from_csv(file):
 
 
 get_list_of_dicts_from_csv('../tests/pageObjects/csv_data_source.csv')
+
 
 import sys
 import io
@@ -138,8 +141,28 @@ a = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 keys = 'scroll_to_object=1'
 
-get_int = re.split('=', keys)[1]
+# get_int = re.split('=', keys)[1]
 
-print(f'get_int -> {get_int}')
+# print(f'get_int -> {get_int}')
 
-assert 43 in a
+cookies_file = get_list_of_dicts_from_csv("../tests/cookies/facebook_cookies"
+                                          ".csv")
+driver = webdriver.Chrome()
+driver.get('https://facebook.com')
+for cookie in cookies_file:
+    driver.add_cookie(cookie)
+driver.refresh()
+# email_field = driver.find_element_by_css_selector("input#email")
+# password_field = driver.find_element_by_css_selector("input#pass")
+# submit = driver.find_element_by_partial_link_text('Log In')
+# email_field.send_keys('stosimon@gmail.com')
+# password_field.send_keys('ilovemyhusband')
+# time.sleep(3)
+# submit.click()
+# time.sleep(3)
+# cookies = driver.get_cookies()
+# print(f'cookies -> {cookies}')
+
+
+
+print(f'cookies_file -> {cookies_file}')
