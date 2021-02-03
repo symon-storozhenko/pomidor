@@ -1,26 +1,26 @@
 # pomidor 0.0.2-Alpha
 
 :tomato:
-# **A BDD-style Selenium-driven browser automation on Python** 
+# **A BDD-style Selenium-driven browser automation(Python) - First Production release coming soon** 
 ## (with Agile in mind :nerd_face: )
-### Fast and flexible approach to automating `click()` and `send_keys()` selenium actions straight from your Jira stories 
+### Fast and flexible approach to automating `click()`, `send_keys()`, `is_displayed()` and many other selenium actions and asserts straight from your Jira/TFS stories 
 
 ### Example:
 ![Pomidor syntax](images/pomidor_1.png)
 
->Here, you can see that __action__ is prepended with a star (__*click__) and __page object__ is marked with hashtag (**#contact_us**).
+>In the picture above, you can see that __page objects__ are marked with hashtags. Ex. **#home_page**
 
-Note: To accomodate natural language, any variations of actions are allowed,
-as long as the root stays unchanged: 
-Example: ***Click**ed or ***tyPE**d
+### Markers:
 
+>Add __@feature__, __@params__  and __@params__ to personalize your tests:
+![Pomidor syntax](images/all_markers.png)
 
 ### Quick Start:
 Install pomidor
 
 ![Page factory](images/pip_install_pomidor2.png)
 
-Create a Page Factory class with a dictionary that contains page objects. (Example shown below)
+Create a csv file that contains page objects. (Example shown below)
 
 ![Page factory1](images/page_obj_dict.png)
 
@@ -41,11 +41,4 @@ In the same runner file, specify url and page object instance, and pass them to 
 
 
 Run your first Automation test! :rocket:
-
-# Next in development:
-- asserts with *displayed and *selected
-
-# PyCharm plugin developers for ".pomidor" extension needed!
-
-Clone it, fork it, bring any new ideas.
 

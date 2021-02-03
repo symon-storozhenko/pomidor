@@ -159,7 +159,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                             failed_screenshots,
                                             passed_screenshots,
                                             adhoc_screenshots, param_list,
-                                            cookie_dict,
+                                            cookie_dict, urls,
                                             prereq_tcs=pre_tc_str,
                                             prereq_url=preq_url,
                                             prereq_path=prerequisites,
@@ -173,7 +173,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                         browser, slow_mode,
                                         failed_screenshots, passed_screenshots,
                                         adhoc_screenshots, param_list,
-                                        cookie_dict,
+                                        cookie_dict, urls,
                                         prereq_tcs=pre_tc_str,
                                         prereq_url=preq_url,
                                         prereq_path=prerequisites,
@@ -189,7 +189,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                         driver, url, wait, data_mark, browser,
                                         slow_mode, failed_screenshots,
                                         passed_screenshots, adhoc_screenshots,
-                                        param_list, cookie_dict)
+                                        param_list, cookie_dict, urls)
                             else:
                                 test_p = execute_test_paragraph(
                                     test_case_str, filepath, tc_name,
@@ -198,7 +198,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                     driver, url, wait, data_mark, browser,
                                     slow_mode, failed_screenshots,
                                     passed_screenshots, adhoc_screenshots,
-                                    param_list, cookie_dict)
+                                    param_list, cookie_dict, urls)
                         tcs_list.append(f"PASSED {tc_id}")
                     else:
                         pass
@@ -208,7 +208,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                         pre_tc_name, pre_tc_str, preq_url, pre_str_in_br, \
                         match, cookie_dict = go_thru_prereq_file(
                             url, prerequisite, prerequisites, urls,
-                            line_num, filepath, cookie_dict )
+                            line_num, filepath, cookie_dict)
                         if match:
                             if browser == 'per_test':
                                 driver = po.define_browser(headless)
@@ -221,7 +221,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                         browser, slow_mode,
                                         failed_screenshots, passed_screenshots,
                                         adhoc_screenshots, param_list,
-                                        cookie_dict,
+                                        cookie_dict, urls,
                                         prereq_tcs=pre_tc_str,
                                         prereq_url=preq_url,
                                         prereq_path=prerequisites,
@@ -234,7 +234,7 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                     browser, slow_mode,
                                     failed_screenshots, passed_screenshots,
                                     adhoc_screenshots, param_list,
-                                    cookie_dict,
+                                    cookie_dict, urls,
                                     prereq_tcs=pre_tc_str,
                                     prereq_url=preq_url,
                                     prereq_path=prerequisites,
@@ -251,15 +251,15 @@ def go_thru_one_file(po, base_url, driver, feature, default_prerequisite,
                                     slow_mode, failed_screenshots,
                                     passed_screenshots,
                                     adhoc_screenshots, param_list,
-                                    cookie_dict)
+                                    cookie_dict, urls)
                         else:
                             test_p = execute_test_paragraph(
                                 test_case_str, filepath, tc_name,
                                 scenario_title_line_num, line_num, obj_dict,
                                 driver, url, wait, data_mark, browser,
                                 slow_mode, failed_screenshots,
-                                passed_screenshots,
-                                adhoc_screenshots, param_list, cookie_dict)
+                                passed_screenshots, adhoc_screenshots,
+                                param_list, cookie_dict, urls)
                     tcs_list.append(f"PASSED {tc_id}")
                     if passed_screenshots:
                         driver.save_screenshot(
@@ -354,7 +354,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                            line_num, obj_dict, driver, url, wait, data_mark,
                            browser, slow_mode, failed_screenshots,
                            passed_screenshots, adhoc_screenshots, params,
-                           cookie_dict, prereq_tcs=None, prereq_url=None,
+                           cookie_dict, urls, prereq_tcs=None, prereq_url=None,
                            prereq_path=None, prereq_str_to_type=None):
     csv_list_of_dicts = []
     csv_list_of_dicts_range = 0
@@ -381,18 +381,31 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     act_obj_list, objects, orig_obj_dict = prep_acts_n_objs(
         filepath, line_num, obj_dict, scenarioSteps)
 
-    # try:
+    # delete if mentioned in @params line
+    for i in params:
+        if i.startswith('del'):
+            driver.delete_all_cookies()
     if prereq_tcs:
         driver.get(prereq_url)
-        driver.delete_all_cookies()  # TODO: why cookies can't run in parallel
-        # driver.maximize_window()
+    else:
+        driver.get(url)
+        # TODO: why cookies can't run in parallel
+
+    # add cookies from a csv cookie file if mentioned in @params line
+    if cookie_dict:
+        for cookie in cookie_dict:
+            cookie = {k.lower(): v for k, v in cookie.items()}
+            driver.add_cookie(cookie)
+        driver.refresh()
+
+    if prereq_tcs:
         prereq_act_obj_list, prereq_objects, orig_obj_dict = \
             prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
         run_once(driver, prereq_objects, orig_obj_dict,
                  prereq_act_obj_list,
                  prereq_str_to_type, prereq_path, line_num, wait,
                  slow_mode, failed_screenshots, passed_screenshots,
-                 adhoc_screenshots, params, cookie_dict)
+                 adhoc_screenshots, params, cookie_dict, urls)
     if str_in_angle_brackets:
         for i in range(csv_list_of_dicts_range):
             if slow_mode:
@@ -405,7 +418,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
             run_once(driver, objects, orig_obj_dict, act_obj_list,
                      angle_square_list, filepath, line_num, wait,
                      slow_mode, failed_screenshots, passed_screenshots,
-                     adhoc_screenshots, params, cookie_dict)
+                     adhoc_screenshots, params, cookie_dict, urls)
     else:
         if slow_mode:
             time.sleep(slow_mode)
@@ -417,7 +430,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         run_once(driver, objects, orig_obj_dict, act_obj_list,
                  str_in_brackets, filepath, line_num, wait, slow_mode,
                  failed_screenshots, passed_screenshots, adhoc_screenshots,
-                 params, cookie_dict)
+                 params, cookie_dict, urls)
     # except Exception as e:
     #     driver.save_screenshot(f'{filepath}::{tc_name}')
     #     raise e
@@ -451,11 +464,11 @@ def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
         else:
             obj_source.append(i.upper())
 
-    for enum, i in enumerate(obj_source):
-        if i is None:
-            raise PomidorObjectDoesNotExistInCSVFile(path=filepath,
-                                                     line_num=line_num,
-                                                     obj=objects[enum])
+    # for enum, i in enumerate(obj_source):
+    #     if i is None:
+    #         raise PomidorObjectDoesNotExistInCSVFile(path=filepath,
+    #                                                  line_num=line_num,
+    #                                                  obj=objects[enum])
     act_obj_list = [list(a) for a in zip(actions, obj_source)]
 
     return act_obj_list, objects, obj_dict
@@ -483,7 +496,7 @@ def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
 
 def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
              path, line_num, wait, present_mode, failed_screenshots,
-             passed_screenshots, adhoc_screenshots, params, cookie_dict):
+             passed_screenshots, adhoc_screenshots, params, cookie_dict, urls):
     type_list = ['type', 'types', 'typed']
     assert_list = ['selected', 'equals', 'contains', 'enabled']
     negative_assert_list = ['not_selected', 'not_equals', 'not_contains',
@@ -491,14 +504,15 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
     scroll_time = None
     web_el = None
     previous_obj = None
-    if cookie_dict:
-        print(f'cookie_dict -> {cookie_dict}')
-        print(f'cookie_dict -> {cookie_dict}')
-        for cookie in cookie_dict:
-            cookie = {k.lower(): v for k, v in cookie.items()}
-            driver.add_cookie(cookie)
-        driver.refresh()
+    # for t in params:
+    #     if t.startswith('del') and cookie_dict:
+    #         pass
+    #     elif t.startswith('del') and not cookie_dict:
+    #         driver.delete_all_cookies()
+        # driver.refresh()
     for t in params:
+        if t.startswith('del'):
+            driver.delete_all_cookies()
         if t.startswith('scroll'):
             if '=' in t:
                 scroll_time = t.replace('scroll=', "")
@@ -507,13 +521,18 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 scroll_time = 0.2
         if t.startswith('max'):
             driver.maximize_window()
-        if t.startswith('del'):
-            driver.delete_all_cookies()
     for enum, i in enumerate(act_obj_list):
         # print(f'act_obj_list -> {act_obj_list}\n')
         # print(f'str_in_brackets -> {str_in_brackets}')
         acti = i[0]
-        if acti.lower().startswith('press'):
+        if acti.lower() == 'navigate':
+            url = i[1][0]
+            if url.startswith("http") and "://" in url:
+                url = url
+            else:
+                url = urls.get(url.lower())
+            driver.get(url)
+        elif acti.lower().startswith('press'):
             if i[1] not in keys_dict:
                 raise PomidorKeyDoesNotExist(i[1])
             key = keys_dict.get(i[1])
@@ -670,6 +689,9 @@ def all_markers(base_url, markers_list, urls):
                                    if x.startswith("@feature")])
     feature_mark_list = [x.strip(r'[;,]') for x in
                          feature_mark_string.split()]
+
+    urls = {k.lower(): v for k, v in urls.items()}
+    # TODO: capture url from page_onjects.csv file
 
     prereq_mark_string = ''.join([x for x in
                                   markers_list

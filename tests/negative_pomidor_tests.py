@@ -104,7 +104,7 @@ class TestPomidorParallel:
 
     def test_pomidor_parallel(self):
         scenario_num = po.run(nested_dir4,  # shows visual differences
-                              prerequisite='google_search',
+                              prerequisite='FB_cookies',
                               # browser='one',
                               parallel=4,
                               # slow_mode=.1
@@ -134,7 +134,7 @@ class TestPomidorKeys:
         scenario_num = po.run(key_presses,
                               feature='csv_data3',
                               # browser='per_test',
-                              wait=1, headless=True,
+                              wait=1, headless=False,
                               # slow_mode=.3
                               )
         assert scenario_num == 2

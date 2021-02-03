@@ -105,7 +105,8 @@ class ForwardAction:
             'equals': 'equals',
             'not_equals': 'not_equals',
             'contains': 'contains',
-            'not_contains': 'not_contains'
+            'not_contains': 'not_contains',
+            'navigate': 'navigate'
             #     ActionChains:
         }
 

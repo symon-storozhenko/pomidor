@@ -11,8 +11,9 @@ and type [[Login
 PREREQUISITE!!!]]in #name_field.
 
 @name FB_cookies
-@params url=https://facebook.com, cookies=cookies/facebook_cookies.csv
-Navigate to Facebook and wait for #0.1 sec
+@params url=https://facebook.com,
+!!cookies=cookies/facebook_cookies.csv
+Navigation to Facebook and wait for #0.5 sec
 
 
 !!@data pageObjects/csv_data_source.csv

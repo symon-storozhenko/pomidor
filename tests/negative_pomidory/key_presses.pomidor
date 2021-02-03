@@ -1,8 +1,32 @@
+!!
+!!@feature regression
+!!@params max_window, del_cookies, data=names.csv, cookies=site_cookies.csv, prereq=Load_cart
+!!@test JIRA-13989
+!!Navigate to the #reporting_page and type <<FirstName>> in the
+!!#fname_field, click on #submit_button and make sure the #greeting_banner
+!!contains [[Welcome, ]] verbiage.
+!!!!Angle <<brackets>> are used to display key value from data csv file
+!!!!User can pass domain cookies to bypass login and CAPTCHA
+!!!!User can create and reuse often-used scenarios as prerequisites
+!!
+!!click on the #reporting_menu_button. Validate that
+!!browser navigated to a new page and #page_title contains [[Report]] keyword
+!!and that #monthly_report_link is displayed.
+!!
+!!
+!!
+!!
+!!
+!!validate that #page_title contains [[Pomidor]]
+!!First, clicked on login_field #practice_menu_button
+!!validate that #page_title cont ains [[ – Pomidor]]
+
+
 
 !!used by test_pomidor_arrow_left!!
 @feature csv_data3
-@params scroll=.3, iw, data=pageobjects/csv_data_source.csv, prereq=FB_cookies,
-!!cookies=cookies/facebook_cookies.csv
+@params scroll=.3, iw, data=pageobjects/csv_data_source.csv,
+!!cookies=cookies/facebook_cookies.csv, prereq=FB_cookies
 JIRA-13989
 validate that #page_title contains [[Pomidor]]
 First, clicked on login_field #practice_menu_button
@@ -11,10 +35,12 @@ then click on #musician_drop_down
 and select #first_dd
 select #Jimmy_Hendrix_dd
 select #Milli_Vanilli_dd
-and verify that #first_dd not_contains [[what?]]
+and verify that #first_dd not_contains [[what?]].
+Then, navigate to #facebook and wait #3
+then, navigate back to #practice_page and
 Then, select #female_rb, seconds and make sure that #female_rb is selected.
 then click on #musician_drop_down
-and verify that #Milli_Vanilli_dd is selected
+!!and verify that #Milli_Vanilli_dd is selected
 and #Jimmy_Hendrix_dd is displayed
 and typed [[text-1]] in #phone_field. Then, typed <<FirstName>>
 in #name_field and press #ARROW_LEFT and press #NUMPAD9
