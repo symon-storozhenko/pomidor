@@ -12,7 +12,7 @@
 
 ### Markers:
 
->Add __@feature__, __@params__  and __@params__ to personalize your tests:
+>Add __@feature__, __@params__  and __@test__ to personalize your tests:
 ![Pomidor syntax](images/all_markers.png)
 
 ### Quick Start:
