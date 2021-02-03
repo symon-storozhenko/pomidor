@@ -6,7 +6,7 @@
 ### Fast and flexible approach to automating `click()`, `send_keys()`, `is_displayed()` and many other selenium actions and asserts straight from your Jira/TFS stories 
 
 ### Example:
-![Pomidor syntax](images/pomidor_1.png)
+![Pomidor syntax](images/pomidor_2.png)
 
 >In the picture above, you can see that __page objects__ are marked with hashtags. Ex. **#home_page**
 
