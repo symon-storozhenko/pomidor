@@ -11,9 +11,9 @@ and type [[Login
 PREREQUISITE!!!]]in #name_field.
 
 @name FB_cookies
-@params url=https://facebook.com,
-!!cookies=cookies/facebook_cookies.csv
-Navigation to Facebook and wait for #0.5 sec
+@params cookies=cookies/facebook_cookies.csv
+!!url=facebook
+Navigate to #Facebook and wait for #1 sec
 
 
 !!@data pageObjects/csv_data_source.csv
@@ -29,5 +29,4 @@ practice]]in #name_field.
 When I go to google, I type [[Pomidor]] in the #google_search_field_timeout
 
 @name Google_search
-@url https://www.google.com
-When I go to google, I type [[Pomidor]] in the #google_search_field
+When I navigate to #GOOGLE, I type [[Pomidor]] in the #google_search_field

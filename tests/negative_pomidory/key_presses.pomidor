@@ -8,12 +8,12 @@
 !!!!Angle <<brackets>> are used to display key value from data csv file
 !!!!User can pass domain cookies to bypass login and CAPTCHA
 !!!!User can create and reuse often-used scenarios as prerequisites
-!!
-!!click on the #reporting_menu_button. Validate that
-!!browser navigated to a new page and #page_title contains [[Report]] keyword
-!!and that #monthly_report_link is displayed.
-!!
-!!
+
+Navigate to the #home_page and click on the #reporting_menu_button.
+Validate that browser navigated to a new page and #page_title contains
+[[Report]] keyword and that #monthly_report_link is displayed.
+
+
 !!
 !!
 !!

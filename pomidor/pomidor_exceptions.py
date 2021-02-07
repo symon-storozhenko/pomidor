@@ -56,13 +56,15 @@ class PomidorDataFeedNoAngleKeysProvidedException(Exception):
         return f'{Colors.FAIL}\n{pomidor}ERROR\n' \
                f'PomidorDataFeedNoAngleKeysProvidedException\n' \
                f'File Path: {self.path}\nParagraph starts on line: ' \
-               f'{self.line_num}\nPlease include csv column ' \
-               f'names in double angle quotes: \nExample: {Colors.WARNING}' \
+               f'{self.line_num}\nYou have data csv file in @params line.' \
+               f' Either remove {Colors.WARNING} data=example.csv ' \
+               f'{Colors.FAIL}or include csv column ' \
+               f'name(s) in double angle brackets: \nExample: {Colors.WARNING}' \
                f'type <<FirstName>>\n{Colors.ENDC}'
 
 
 class PomidorDataFeedNoCSVFileProvided(Exception):
-    """ PomidorDataFeedNoAngleKeysProvidedException"""
+    """ PPomidorDataFeedNoCSVFileProvidedException"""
 
     def __init__(self, path, line_num, data_file):
         self.path = path
@@ -75,10 +77,9 @@ class PomidorDataFeedNoCSVFileProvided(Exception):
                f'File Path: {self.path}\nParagraph starts on line: ' \
                f'{self.line_num}\nIf you want to use keys from double angle ' \
                f'brackets {Colors.WARNING}<<key>>{Colors.FAIL}, add ' \
-               f'{Colors.WARNING}@data marker {Colors.FAIL} with a csv file ' \
-               f'in the beginning of your paragraph.\nExample: ' \
-               f'{Colors.WARNING}\n@data csv_file_name.csv{Colors.FAIL}' \
-               f'\nSome paragraph text..."{Colors.ENDC}'
+               f'data marker with a csv file ' \
+               f'in the @params line.\nExample: {Colors.WARNING}\n' \
+               f'@params data=csv_file_name.csv{Colors.ENDC}'
 
 
 class PomidorFileNotFoundError(Exception):

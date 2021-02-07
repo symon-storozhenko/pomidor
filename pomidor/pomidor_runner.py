@@ -385,8 +385,15 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     for i in params:
         if i.startswith('del'):
             driver.delete_all_cookies()
-    if prereq_tcs:
+
+    prereq_act_obj_list, prereq_objects, orig_obj_dict = \
+        prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
+    if prereq_act_obj_list[0][0].lower() == 'navigate':
+        prereq_url = prereq_act_obj_list[0][1][0]
         driver.get(prereq_url)
+    elif act_obj_list[0][0].lower() == 'navigate':
+        url = act_obj_list[0][1][0]
+        driver.get(url)
     else:
         driver.get(url)
         # TODO: why cookies can't run in parallel
@@ -396,11 +403,9 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         for cookie in cookie_dict:
             cookie = {k.lower(): v for k, v in cookie.items()}
             driver.add_cookie(cookie)
-        driver.refresh()
+        # driver.refresh()
 
     if prereq_tcs:
-        prereq_act_obj_list, prereq_objects, orig_obj_dict = \
-            prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
         run_once(driver, prereq_objects, orig_obj_dict,
                  prereq_act_obj_list,
                  prereq_str_to_type, prereq_path, line_num, wait,
@@ -410,11 +415,6 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         for i in range(csv_list_of_dicts_range):
             if slow_mode:
                 time.sleep(slow_mode)
-            if driver.current_url == url or \
-                    str(driver.current_url).rstrip("/") == url:
-                pass
-            else:
-                driver.get(url)
             run_once(driver, objects, orig_obj_dict, act_obj_list,
                      angle_square_list, filepath, line_num, wait,
                      slow_mode, failed_screenshots, passed_screenshots,
@@ -456,7 +456,8 @@ def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
     #               x for x in keys if x in keys]
 
     obj_source = []
-    for i in objects:
+    obj_lower = [k.lower()for k in objects]
+    for i in obj_lower:
         if i in obj_dict:
             obj_source.append(obj_dict.get(i))
         elif i.isdigit():
@@ -511,8 +512,6 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
     #         driver.delete_all_cookies()
         # driver.refresh()
     for t in params:
-        if t.startswith('del'):
-            driver.delete_all_cookies()
         if t.startswith('scroll'):
             if '=' in t:
                 scroll_time = t.replace('scroll=', "")
@@ -526,12 +525,12 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
         # print(f'str_in_brackets -> {str_in_brackets}')
         acti = i[0]
         if acti.lower() == 'navigate':
-            url = i[1][0]
-            if url.startswith("http") and "://" in url:
-                url = url
+            url = act_obj_list[0][1][0]
+            if driver.current_url == url or \
+                    str(driver.current_url).rstrip("/") == url:
+                pass
             else:
-                url = urls.get(url.lower())
-            driver.get(url)
+                driver.get(url)
         elif acti.lower().startswith('press'):
             if i[1] not in keys_dict:
                 raise PomidorKeyDoesNotExist(i[1])
@@ -832,9 +831,9 @@ class Pomidor:
     def get_page_objects(cls, obj_d: str) -> dict:
         with open(obj_d) as csv_file:
             csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
-            obj_dicto = {rows['name'].strip(): (rows['selector'].strip(),
-                                                rows['value']) for rows in
-                         csv_reader}
+            obj_dicto = {rows['name'].strip().lower():
+                             (rows['selector'].strip(),
+                              rows['value']) for rows in csv_reader}
         return obj_dicto
 
     @classmethod
