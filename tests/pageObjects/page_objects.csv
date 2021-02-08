@@ -1,6 +1,5 @@
-name,selector,value
-
-Page_urls,,
+name,value,selector
+Page urls,,
 Practice_page, https://pomidor-automation.com/practice,
 facebook,https://facebook.com,
 home_page,https://pomidor-automation.com,tests
@@ -8,24 +7,21 @@ reporting_page,https://www.google.com,
 google,https://www.google.com,
 practice_page,https://pomidor-automation.com/practice,
 patreon_home_url,http://www.patreon.com,
-
-Page_objects,,
-practice_menu_button, LINK_TEXT,Practice
+Page objects,,
+Home page,,
+practice_menu_button,Practice, LINK_TEXT
 Reporting page objects,,
-non_existent_obj,LINK_TEXT, Yo
-name_field, CSS_SELECTOR, input#name
-back_home_button, CSS_SELECTOR,a.wp-block-button__link
-google_search_field, NAME,q
-google_search_field_timeout, NAME, q
-female_rb, CSS_SELECTOR, input#male
-male_rb, CSS_SELECTOR, input#female
+non_existent_obj, Yo,LINK_TEXT
+name_field, input#name, CSS_SELECTOR
+back_home_button,a.wp-block-button__link, CSS_SELECTOR
+google_search_field,q, NAME
+google_search_field_timeout, q, NAME
+female_rb, input#male, CSS_SELECTOR
+male_rb, input#female, CSS_SELECTOR
 empty_page_obj,,
-phone_field, CSS_SELECTOR , input#phone
-musician_drop_down, CSS_SELECTOR, select#musician
-Milli_Vanilli_dd, DROP_DOWN_VISIBLE_TEXT,Milli Vanilli
-Jimmy_Hendrix_dd, DROP_DOWN_INDEX,3
-first_dd, DROP_DOWN_INDEX,1
-Mozart_dd, DROP_DOWN_VALUE,Mozart
-
-
-
+phone_field, input#phone, CSS_SELECTOR 
+musician_drop_down, select#musician, CSS_SELECTOR
+Milli_Vanilli_dd,Milli Vanilli, DROP_DOWN_VISIBLE_TEXT
+Jimmy_Hendrix_dd,3, DROP_DOWN_INDEX
+first_dd,1, DROP_DOWN_INDEX
+Mozart_dd,Mozart, DROP_DOWN_VALUE

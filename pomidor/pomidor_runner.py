@@ -357,6 +357,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                            cookie_dict, urls, prereq_tcs=None, prereq_url=None,
                            prereq_path=None, prereq_str_to_type=None):
     csv_list_of_dicts = []
+    prereq_act_obj_list = []
     csv_list_of_dicts_range = 0
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
     if data_mark and not str_in_angle_brackets:
@@ -372,8 +373,6 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
 
     angle_n_square = re.findall(r" <<(.+?)>>|\[\[(.+?)]]", scenarioSteps)
     angle_square_list = []
-    angle_n_square_print = [('FirstName', ''), ('', 'some free text'),
-                            ('City of Birth', '')]
     combine_angle_n_square_into_list(filepath, angle_n_square,
                                      angle_square_list,
                                      csv_list_of_dicts, line_num, data_mark)
@@ -385,17 +384,30 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     for i in params:
         if i.startswith('del'):
             driver.delete_all_cookies()
-
-    prereq_act_obj_list, prereq_objects, orig_obj_dict = \
+            break
+    if prereq_tcs:
+        prereq_act_obj_list, prereq_objects, orig_obj_dict = \
         prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
-    if prereq_act_obj_list[0][0].lower() == 'navigate':
-        prereq_url = prereq_act_obj_list[0][1][0]
-        driver.get(prereq_url)
-    elif act_obj_list[0][0].lower() == 'navigate':
+        if prereq_act_obj_list[0][0] == 'navigate':
+            prereq_url = prereq_act_obj_list[0][1][0]
+            if driver.current_url == url or \
+                    str(driver.current_url).rstrip("/") == url:
+                pass
+            else:
+                driver.get(prereq_url)
+    elif act_obj_list[0][0] == 'navigate':
         url = act_obj_list[0][1][0]
-        driver.get(url)
+        if driver.current_url == url or \
+                str(driver.current_url).rstrip("/") == url:
+            pass
+        else:
+            driver.get(url)
     else:
-        driver.get(url)
+        if driver.current_url == url or \
+                str(driver.current_url).rstrip("/") == url:
+            pass
+        else:
+            driver.get(url)
         # TODO: why cookies can't run in parallel
 
     # add cookies from a csv cookie file if mentioned in @params line
@@ -443,7 +455,7 @@ def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
     actions = [x.lower() for x in str_list
                if x.lower() in backward_action_dict or \
                x.lower() in forward_action_dict]
-    objects = [y.strip("#") for y in str_list
+    objects = [y.strip("#").lower() for y in str_list
                if y.startswith("#")]
     if len(actions) > len(objects):
         raise PomidorSyntaxErrorTooManyActions(path=filepath,
@@ -524,26 +536,26 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
         # print(f'act_obj_list -> {act_obj_list}\n')
         # print(f'str_in_brackets -> {str_in_brackets}')
         acti = i[0]
-        if acti.lower() == 'navigate':
-            url = act_obj_list[0][1][0]
+        if acti == 'navigate':
+            url = i[1][0]
             if driver.current_url == url or \
                     str(driver.current_url).rstrip("/") == url:
                 pass
             else:
                 driver.get(url)
-        elif acti.lower().startswith('press'):
+        elif acti.startswith('press'):
             if i[1] not in keys_dict:
                 raise PomidorKeyDoesNotExist(i[1])
             key = keys_dict.get(i[1])
             webdriver.ActionChains(driver).key_down(key).perform()
             if present_mode:
                 time.sleep(present_mode)
-        elif acti.lower() == 'wait':
+        elif acti == 'wait':
             time.sleep(float(i[1]))
         # elif acti == ''
         else:
-            page_obj_loc = i[1][0]
-            page_object_src = i[1][1]
+            page_obj_loc = i[1][1].strip()
+            page_object_src = i[1][0]
             loc_id = None
             if acti in ('contains', 'not_contains', 'equals', 'not_equals',
                         'type', 'types', 'typed'):
@@ -632,7 +644,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                                      line_num=line_num,
                                                      obj=obj_name,
                                                      act=acti)
-            if acti.lower() == 'select' and \
+            if acti == 'select' and \
                     page_obj_loc.strip().startswith(
                         'DROP'):
                 # For drop down selection
@@ -643,9 +655,9 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 if page_obj_loc.strip() == 'DROP_DOWN_VALUE':
                     Select(web_el).select_by_value(page_object_src)
 
-            if acti.lower().startswith('click') or \
-                    acti.lower().startswith('type') or \
-                    (acti.lower() == 'select' and not
+            if acti.startswith('click') or \
+                    acti.startswith('type') or \
+                    (acti == 'select' and not
                     page_obj_loc.strip().startswith('DROP')):
                 try:
                     web_el = WebDriverWait(driver, wait).until(
@@ -661,11 +673,11 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                           web_el)
                     time.sleep(
                         float(scroll_time))
-                if acti.lower().startswith('type'):
+                if acti.startswith('type'):
                     web_el.clear()
                     web_el.send_keys(last_str)
-                elif acti.lower().startswith('click') or \
-                        acti.lower() == 'select':
+                elif acti.startswith('click') or \
+                        acti == 'select':
                     try:
                         web_el.click()
                     except ElementClickInterceptedException:
@@ -832,8 +844,8 @@ class Pomidor:
         with open(obj_d) as csv_file:
             csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
             obj_dicto = {rows['name'].strip().lower():
-                             (rows['selector'].strip(),
-                              rows['value']) for rows in csv_reader}
+                             (rows['value'],
+                              rows['selector'].strip()) for rows in csv_reader}
         return obj_dicto
 
     @classmethod

@@ -1,18 +1,20 @@
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
 @Feature CSV_data1
-@params delete_cookies, data=pageObjects/csv_data_source.csv
+@params delete_cookies, cookies=cookies/facebook_cookies.csv,
 @id CSV_Test_case#1
-Navigate to #practice_page and
+NavigatE to #practice_Page and
 !!Comment first line - First, click on login_field #practice_menu_button page title
-First paragraph: type <<FirstName>> in #name_field.
+!!First paragraph: tYpe <<FirstName>> in #name_field.
 and type [[Yo!]] in #name_field
+navigate to #facebook
 
 
 !!Used for test_pomidor_run_all_and_nested_dir #2!!
 @Feature CSV_data1
 @params delete_cookies, data=pageObjects/csv_data_source.csv
 @name CSV_Test_case#2
+navigate to #facebook and wait #4
 Navigate to #practice_page and
 Second paragraph: type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field, and types <<City of

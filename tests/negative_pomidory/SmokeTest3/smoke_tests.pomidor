@@ -1,6 +1,6 @@
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
-@Feature CSV_data1
+@Feature CSV_data
 @params delete_cookies, data=pageObjects/csv_data_source.csv prereq=google_search
 @story CSV_Test_case!
 Navigate to  #practice_page and

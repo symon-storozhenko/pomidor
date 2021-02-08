@@ -7,12 +7,11 @@ Sprint:
 !!@data pageObjects/csv_data_source.csv
 @name Login
 @url practice_page
-and type [[Login
-PREREQUISITE!!!]]in #name_field.
+and tYpe [[Login
+PREREQUISITE!!!]]in #name_fieLD.
 
 @name FB_cookies
 @params cookies=cookies/facebook_cookies.csv
-!!url=facebook
 Navigate to #Facebook and wait for #1 sec
 
 

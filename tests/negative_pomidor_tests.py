@@ -120,7 +120,7 @@ class TestPomidorParallel:
     def test_pomidor_parallel_with_feature(self):
         scenario_num = po.run(nested_dir3, feature='CSV_data1', headless=False,
                               parallel=4,
-                              prerequisite='FB_cookies'
+                              # prerequisite='FB_cookies'
                               )
         assert scenario_num == 3  # 8.3 sec # Exception printed
 
