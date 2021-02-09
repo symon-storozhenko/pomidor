@@ -331,11 +331,11 @@ def go_thru_prereq_file(base_url, story, prereq_filepath, urls, line_num,
             cookie_dict
 
 
-act = ForwardAction()
+fact = ForwardAction()
 bact = BackwardAction()
 k = InputKeys()
 backward_action_dict = bact.backward_actions_dictionary
-forward_action_dict = act.forward_action_dictionary
+forward_action_dict = fact.forward_action_dictionary
 keys_dict = k.keys
 locator_dict = Locators.locator_dict
 
@@ -358,6 +358,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                            prereq_path=None, prereq_str_to_type=None):
     csv_list_of_dicts = []
     prereq_act_obj_list = []
+    prereq_objects = []
     csv_list_of_dicts_range = 0
     str_in_angle_brackets = re.findall(r"<<(.+?)>>", scenarioSteps)
     if data_mark and not str_in_angle_brackets:
@@ -390,8 +391,8 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
         if prereq_act_obj_list[0][0] == 'navigate':
             prereq_url = prereq_act_obj_list[0][1][0]
-            if driver.current_url == url or \
-                    str(driver.current_url).rstrip("/") == url:
+            if driver.current_url == prereq_url or \
+                    str(driver.current_url).rstrip("/") == prereq_url:
                 pass
             else:
                 driver.get(prereq_url)
@@ -415,9 +416,9 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         for cookie in cookie_dict:
             cookie = {k.lower(): v for k, v in cookie.items()}
             driver.add_cookie(cookie)
-        # driver.refresh()
+        driver.refresh()
 
-    if prereq_tcs:
+    if prereq_tcs: # TODO: handle prereq_url
         run_once(driver, prereq_objects, orig_obj_dict,
                  prereq_act_obj_list,
                  prereq_str_to_type, prereq_path, line_num, wait,
@@ -434,11 +435,6 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     else:
         if slow_mode:
             time.sleep(slow_mode)
-        if driver.current_url == url or \
-                str(driver.current_url).rstrip("/") == url:
-            pass
-        else:
-            driver.get(url)
         run_once(driver, objects, orig_obj_dict, act_obj_list,
                  str_in_brackets, filepath, line_num, wait, slow_mode,
                  failed_screenshots, passed_screenshots, adhoc_screenshots,
@@ -468,8 +464,7 @@ def prep_acts_n_objs(filepath, line_num, obj_dict, scenarioSteps):
     #               x for x in keys if x in keys]
 
     obj_source = []
-    obj_lower = [k.lower()for k in objects]
-    for i in obj_lower:
+    for i in objects:
         if i in obj_dict:
             obj_source.append(obj_dict.get(i))
         elif i.isdigit():
@@ -509,7 +504,8 @@ def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
 
 def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
              path, line_num, wait, present_mode, failed_screenshots,
-             passed_screenshots, adhoc_screenshots, params, cookie_dict, urls):
+             passed_screenshots, adhoc_screenshots, params, cookie_dict,
+             prereq_url):
     type_list = ['type', 'types', 'typed']
     assert_list = ['selected', 'equals', 'contains', 'enabled']
     negative_assert_list = ['not_selected', 'not_equals', 'not_contains',
@@ -533,31 +529,36 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
         if t.startswith('max'):
             driver.maximize_window()
     for enum, i in enumerate(act_obj_list):
-        # print(f'act_obj_list -> {act_obj_list}\n')
-        # print(f'str_in_brackets -> {str_in_brackets}')
-        acti = i[0]
-        if acti == 'navigate':
+        act = i[0]
+        if enum == 0 and act == 'navigate':
+            url = act_obj_list[0][1][0]
+            if driver.current_url == url or \
+                    str(driver.current_url).rstrip("/") == url:
+                pass
+            else:
+                driver.get(url)
+        elif enum !=0 and act == 'navigate':
             url = i[1][0]
             if driver.current_url == url or \
                     str(driver.current_url).rstrip("/") == url:
                 pass
             else:
                 driver.get(url)
-        elif acti.startswith('press'):
+        elif act.startswith('press'):
             if i[1] not in keys_dict:
                 raise PomidorKeyDoesNotExist(i[1])
             key = keys_dict.get(i[1])
             webdriver.ActionChains(driver).key_down(key).perform()
             if present_mode:
                 time.sleep(present_mode)
-        elif acti == 'wait':
+        elif act == 'wait':
             time.sleep(float(i[1]))
-        # elif acti == ''
+        # elif act == ''
         else:
             page_obj_loc = i[1][1].strip()
             page_object_src = i[1][0]
             loc_id = None
-            if acti in ('contains', 'not_contains', 'equals', 'not_equals',
+            if act in ('contains', 'not_contains', 'equals', 'not_equals',
                         'type', 'types', 'typed'):
                 last_str = str_in_brackets.pop(0)
             obj_name = obj_dict[enum]
@@ -575,7 +576,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 if p == page_obj_loc.upper():
                     loc_id = locator_dict.get(p)
                     break
-            if acti in assert_list or acti in negative_assert_list:
+            if act in assert_list or act in negative_assert_list:
                 try:
                     if page_obj_loc.strip().startswith('DROP'):
                         el_text = Select(web_el).first_selected_option.text
@@ -590,25 +591,25 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                     raise PageObjectNotFound(path=path,
                                              line_num=line_num,
                                              obj=obj_name)
-                if acti in negative_assert_list:
+                if act in negative_assert_list:
                     try:
                         # negative assert for drop downs
                         if page_obj_loc.strip().startswith('DROP') \
-                                and acti == 'not_selected':
+                                and act == 'not_selected':
                             assert el_text != page_object_src
                         else:
-                            if acti == 'not_equals':
+                            if act == 'not_equals':
                                 assert el_text != last_str
-                            elif acti == 'not_contains':
+                            elif act == 'not_contains':
                                 assert last_str not in el_text
                             else:
                                 assert not web_el.is_selected()
                     except AssertionError:
-                        if acti == 'not_equals' or acti == 'not_contains':
+                        if act == 'not_equals' or act == 'not_contains':
                             raise PomidorEqualAssertError(path=path,
                                                           line_num=line_num,
                                                           obj=obj_name,
-                                                          act=acti,
+                                                          act=act,
                                                           string=last_str,
                                                           actual_string=
                                                           el_text)
@@ -616,26 +617,26 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                             raise PomidorAssertError(path=path,
                                                      line_num=line_num,
                                                      obj=obj_name,
-                                                     act=acti)
+                                                     act=act)
                 else:
                     try:
                         # negative assert for drop downs
                         if page_obj_loc.strip().startswith('DROP') \
-                                and acti == 'selected':
+                                and act == 'selected':
                             assert el_text == page_object_src
                         else:
-                            if acti == 'equals':
+                            if act == 'equals':
                                 assert el_text == last_str
-                            elif acti == 'contains':
+                            elif act == 'contains':
                                 assert last_str in el_text
                             else:
                                 assert web_el.is_selected()
                     except AssertionError:
-                        if acti == 'equals' or acti == 'contains':
+                        if act == 'equals' or act == 'contains':
                             raise PomidorEqualAssertError(path=path,
                                                           line_num=line_num,
                                                           obj=obj_name,
-                                                          act=acti,
+                                                          act=act,
                                                           string=last_str,
                                                           actual_string=
                                                           el_text)
@@ -643,8 +644,8 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                             raise PomidorAssertError(path=path,
                                                      line_num=line_num,
                                                      obj=obj_name,
-                                                     act=acti)
-            if acti == 'select' and \
+                                                     act=act)
+            if act == 'select' and \
                     page_obj_loc.strip().startswith(
                         'DROP'):
                 # For drop down selection
@@ -655,9 +656,9 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 if page_obj_loc.strip() == 'DROP_DOWN_VALUE':
                     Select(web_el).select_by_value(page_object_src)
 
-            if acti.startswith('click') or \
-                    acti.startswith('type') or \
-                    (acti == 'select' and not
+            if act.startswith('click') or \
+                    act.startswith('type') or \
+                    (act == 'select' and not
                     page_obj_loc.strip().startswith('DROP')):
                 try:
                     web_el = WebDriverWait(driver, wait).until(
@@ -673,11 +674,11 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                           web_el)
                     time.sleep(
                         float(scroll_time))
-                if acti.startswith('type'):
+                if act.startswith('type'):
                     web_el.clear()
                     web_el.send_keys(last_str)
-                elif acti.startswith('click') or \
-                        acti == 'select':
+                elif act.startswith('click') or \
+                        act == 'select':
                     try:
                         web_el.click()
                     except ElementClickInterceptedException:
@@ -909,7 +910,6 @@ class Pomidor:
             slow_mode=False,
             adhoc_screenshots='adhoc_screenshots', headless=False):
         #   TODO: Remove adhoc_screenshot
-
         start = time.perf_counter()
         scenario_number = 0
         file_number = 0
@@ -931,10 +931,9 @@ class Pomidor:
                     futures_list.append(futures)
 
                 for future in futures_list:
-                    result, tc_name, tcs_list = future.result(timeout=60)
+                    result, tc_name, tcs_list = future.result()
                     scenario_number += result
                     results.append(tcs_list)
-
         else:
             if browser.lower() == 'one':
                 driver = po.define_browser(headless)

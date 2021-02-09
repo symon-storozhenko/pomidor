@@ -17,9 +17,9 @@
 
 !!used by test_pomidor_arrow_left!!
 @feature csv_data3
-@params scroll, iw, data=pageobjects/csv_data_source.csv, cookies=cookies/facebook_cookies.csv,
-prereq=FB_cookies
-JIRA-13989
+@params scroll, iw, cookies=cookies/facebook_cookies.csv, data=pageobjects/csv_data_source.csv,
+!!prereq=FB_cookies
+@id JIRA-13989
 Navigate to #Practice_page
 validate that #page_title contains [[Pomidor]]
 !!First, clicked on login_field #practice_menu_button
@@ -30,7 +30,7 @@ and select #first_dd
 select #Jimmy_Hendrix_dd
 select #Milli_Vanilli_dd
 and verify that #first_dd not_contains [[what?]].
-Then, navigate to #facebook and wait #10
+Then, navigate to #facebook and wait #1
 then, navigate back to #practice_page and
 Then, select #female_rb, seconds and make sure that #female_rb is SELEcted.
 then click on #musician_drop_down
