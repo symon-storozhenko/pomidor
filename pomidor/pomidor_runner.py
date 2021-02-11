@@ -709,7 +709,7 @@ def all_markers(base_url, markers_list, urls):
                             if x.startswith("@params")])
     param = param_string.replace("@params", '').strip()
     param_list = re.split(r'[;,!?\s]', param)
-    # print(f'param_list - >{param_list}: {type(param_list)}')  # TODO: print params
+    # print(f'param_list - >{param_list}: {type(param_list)}')
 
     tc_name_line = ''.join([x for x in
                             markers_list
