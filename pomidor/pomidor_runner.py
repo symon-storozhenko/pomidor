@@ -398,7 +398,6 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
         driver.get(url)
     else:
         driver.get(url)
-        # TODO: why cookies can't run in parallel
 
     # add cookies from a csv cookie file if mentioned in @params line
     if cookie_dict:
