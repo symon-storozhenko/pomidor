@@ -392,24 +392,12 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
 
     if prereq_tcs and prereq_act_obj_list[0][0] == 'navigate':
         prereq_url = prereq_act_obj_list[0][1][0]
-        if driver.current_url == prereq_url or \
-                str(driver.current_url).rstrip("/") == prereq_url:
-            pass
-        else:
-            driver.get(prereq_url)
+        driver.get(prereq_url)
     if act_obj_list[0][0] == 'navigate':
         url = act_obj_list[0][1][0]
-        if driver.current_url == url or \
-                str(driver.current_url).rstrip("/") == url:
-            pass
-        else:
-            driver.get(url)
+        driver.get(url)
     else:
-        if driver.current_url == url or \
-                str(driver.current_url).rstrip("/") == url:
-            pass
-        else:
-            driver.get(url)
+        driver.get(url)
         # TODO: why cookies can't run in parallel
 
     # add cookies from a csv cookie file if mentioned in @params line
