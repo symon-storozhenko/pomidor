@@ -406,7 +406,7 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
             driver.add_cookie(cookie)
         driver.refresh()
 
-    if prereq_tcs: # TODO: handle prereq_url
+    if prereq_tcs:
         run_once(driver, prereq_objects, orig_obj_dict,
                  prereq_act_obj_list,
                  prereq_str_to_type, prereq_path, line_num, wait,
