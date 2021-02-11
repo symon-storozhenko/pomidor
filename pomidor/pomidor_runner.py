@@ -698,7 +698,6 @@ def all_markers(base_url, markers_list, urls):
                          feature_mark_string.split()]
 
     urls = {k.lower(): v for k, v in urls.items()}
-    # TODO: capture url from page_onjects.csv file
 
     prereq_mark_string = ''.join([x for x in
                                   markers_list
