@@ -699,7 +699,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
     # TODO add is_enabled asserts
 
 
-# TODO: add login capability to the website
+# TODO: add login capability to the website - in progress
 
 def all_markers(base_url, markers_list, urls):
     # process all markers with markers_list
