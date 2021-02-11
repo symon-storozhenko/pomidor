@@ -389,14 +389,15 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
     if prereq_tcs:
         prereq_act_obj_list, prereq_objects, orig_obj_dict = \
         prep_acts_n_objs(prereq_path, line_num, obj_dict, prereq_tcs)
-        if prereq_act_obj_list[0][0] == 'navigate':
-            prereq_url = prereq_act_obj_list[0][1][0]
-            if driver.current_url == prereq_url or \
-                    str(driver.current_url).rstrip("/") == prereq_url:
-                pass
-            else:
-                driver.get(prereq_url)
-    elif act_obj_list[0][0] == 'navigate':
+
+    if prereq_tcs and prereq_act_obj_list[0][0] == 'navigate':
+        prereq_url = prereq_act_obj_list[0][1][0]
+        if driver.current_url == prereq_url or \
+                str(driver.current_url).rstrip("/") == prereq_url:
+            pass
+        else:
+            driver.get(prereq_url)
+    if act_obj_list[0][0] == 'navigate':
         url = act_obj_list[0][1][0]
         if driver.current_url == url or \
                 str(driver.current_url).rstrip("/") == url:
@@ -423,22 +424,34 @@ def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
                  prereq_act_obj_list,
                  prereq_str_to_type, prereq_path, line_num, wait,
                  slow_mode, failed_screenshots, passed_screenshots,
-                 adhoc_screenshots, params, cookie_dict, urls)
+                 adhoc_screenshots, params, cookie_dict, prereq_url,
+                 str_in_angle_brackets)
     if str_in_angle_brackets:
         for i in range(csv_list_of_dicts_range):
             if slow_mode:
                 time.sleep(slow_mode)
+            if driver.current_url == url or \
+                    str(driver.current_url).rstrip("/") == url:
+                pass
+            else:
+                driver.get(url)
             run_once(driver, objects, orig_obj_dict, act_obj_list,
                      angle_square_list, filepath, line_num, wait,
                      slow_mode, failed_screenshots, passed_screenshots,
-                     adhoc_screenshots, params, cookie_dict, urls)
+                     adhoc_screenshots, params, cookie_dict, url,
+                     str_in_angle_brackets)
     else:
         if slow_mode:
             time.sleep(slow_mode)
+        if driver.current_url == url or \
+                str(driver.current_url).rstrip("/") == url:
+            pass
+        else:
+            driver.get(url)
         run_once(driver, objects, orig_obj_dict, act_obj_list,
                  str_in_brackets, filepath, line_num, wait, slow_mode,
                  failed_screenshots, passed_screenshots, adhoc_screenshots,
-                 params, cookie_dict, urls)
+                 params, cookie_dict, url, str_in_angle_brackets)
     # except Exception as e:
     #     driver.save_screenshot(f'{filepath}::{tc_name}')
     #     raise e
@@ -505,7 +518,7 @@ def combine_angle_n_square_into_list(path, angle_n_square, angle_square_list,
 def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
              path, line_num, wait, present_mode, failed_screenshots,
              passed_screenshots, adhoc_screenshots, params, cookie_dict,
-             prereq_url):
+             initial_url, str_in_angle_brackets):
     type_list = ['type', 'types', 'typed']
     assert_list = ['selected', 'equals', 'contains', 'enabled']
     negative_assert_list = ['not_selected', 'not_equals', 'not_contains',
@@ -531,12 +544,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
     for enum, i in enumerate(act_obj_list):
         act = i[0]
         if enum == 0 and act == 'navigate':
-            url = act_obj_list[0][1][0]
-            if driver.current_url == url or \
-                    str(driver.current_url).rstrip("/") == url:
-                pass
-            else:
-                driver.get(url)
+            pass
         elif enum !=0 and act == 'navigate':
             url = i[1][0]
             if driver.current_url == url or \
@@ -719,8 +727,8 @@ def all_markers(base_url, markers_list, urls):
 
     tc_name_line = ''.join([x for x in
                             markers_list
-                            if x.startswith("@name")])
-    tc_name_value = tc_name_line.replace("@name", '').strip()
+                            if x.startswith("@id")])
+    tc_name_value = tc_name_line.replace("@id", '').strip()
 
     data_mark = ''.join([x.split()[1].strip(r'[;,]') for x in
                          markers_list

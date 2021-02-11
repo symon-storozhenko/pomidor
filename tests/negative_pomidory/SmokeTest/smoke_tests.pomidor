@@ -1,11 +1,9 @@
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
 @Feature CSV_data1
-@prereq Login
-@param delete_cookies, full_screen
-@DATA pageObjects/csv_data_source.csv
-@url practice_page
-@story CSV_Test_case!
+@params del, max, prereq=Login DATA=pageObjects/csv_data_source.csv
+@id CSV_Test_case!
+Navigate to #practice_page
 !!Comment first line - First, click on login_field #practice_menu_button page title
 and type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field,

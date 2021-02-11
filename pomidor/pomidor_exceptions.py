@@ -57,10 +57,10 @@ class PomidorDataFeedNoAngleKeysProvidedException(Exception):
                f'PomidorDataFeedNoAngleKeysProvidedException\n' \
                f'File Path: {self.path}\nParagraph starts on line: ' \
                f'{self.line_num}\nYou have data csv file in @params line.' \
-               f' Either remove {Colors.WARNING} data=example.csv ' \
+               f' Either remove {Colors.WARNING}data=example.csv ' \
                f'{Colors.FAIL}or include csv column ' \
                f'name(s) in double angle brackets: \nExample: {Colors.WARNING}' \
-               f'type <<FirstName>>\n{Colors.ENDC}'
+               f'type <<FirstName>> in #name_field\n{Colors.ENDC}'
 
 
 class PomidorDataFeedNoCSVFileProvided(Exception):

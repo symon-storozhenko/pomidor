@@ -5,27 +5,27 @@ Release date:
 Sprint:
 
 !!@data pageObjects/csv_data_source.csv
-@name Login
-@url practice_page
+@id Login
+Navigate to # practice_page
 and tYpe [[Login
 PREREQUISITE!!!]]in #name_fieLD.
 
-@name FB_cookies
+@id FB_cookies
 @params cookies=cookies/facebook_cookies.csv
 Navigate to #Facebook and wait for #1 sec
 
 
 !!@data pageObjects/csv_data_source.csv
-@name Logins
-@url practice_page
+@id Logins
+Navigate to #practice_page
 and type [[#2 Logins PREREQUISITE#2!!!First, on login_field
 practice]]in #name_field.
 
 !!Used for test_pomidor_prerequisite_file_timeout_on_type_action!!
 @feature timeout_test
-@name Google_search_timeout
-@url google
+@id Google_search_timeout
+Navigate to #google
 When I go to google, I type [[Pomidor]] in the #google_search_field_timeout
 
-@name Google_search
+@id Google_search
 When I navigate to #GOOGLE, I type [[Pomidor]] in the #google_search_field

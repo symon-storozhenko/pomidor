@@ -1,8 +1,8 @@
 
 !!Used for test_pomidor_run_all_and_nested_dir!!
-@Feature CSV_data
+@Feature CSV_data1
 @params delete_cookies, data=pageObjects/csv_data_source.csv prereq=google_search
-@story CSV_Test_case!
+@id CSV_Test_case!
 Navigate to  #practice_page and
 and type <<FirstName>> in #name_field. Then, type [[some
 free text]] in #name_field,
