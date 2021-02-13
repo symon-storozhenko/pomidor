@@ -10,17 +10,17 @@ from pomidor.pomidor_exceptions import PomidorDataFeedNoKeyError, \
 import pytest
 import concurrent.futures
 
-url = 'https://pomidor-automation.com/'
-page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
-# addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
-prereqs = "pageObjects/prerequisites.pomidor"
-passed_screenshots = "passed_screenshots"
-failed_screenshots = 'failed_screenshots'
-
-po = Pomidor("Chrome", page_obj, url,
-             prerequisite_file=prereqs,
-             passed_screenshots='passed_screenshots',
-             failed_screenshots='failed_screenshots')
+# url = 'https://pomidor-automation.com/'
+# page_obj = Pomidor.get_page_objects("pageObjects/page_objects.csv")
+# # addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
+# prereqs = "pageObjects/prerequisites.pomidor"
+# passed_screenshots = "passed_screenshots"
+# failed_screenshots = 'failed_screenshots'
+#
+# po = Pomidor("Chrome", page_obj, url,
+#              prerequisite_file=prereqs,
+#              passed_screenshots='passed_screenshots',
+#              failed_screenshots='failed_screenshots')
 
 root_dir = ''
 empty_str = 'negative_pomidory/empty_dir'
