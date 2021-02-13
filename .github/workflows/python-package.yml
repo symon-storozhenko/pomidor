@@ -12,9 +12,10 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
         python-version: [3.8, 3.9]
 
     steps:
@@ -29,7 +30,7 @@ jobs:
         python -m pip install flake8 pytest
         python -m pip install flake8 pytest
         python -m pip install selenium
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+ #        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
