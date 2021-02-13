@@ -697,7 +697,7 @@ def all_markers(base_url, markers_list, urls):
     feature_mark_list = [x.strip(r'[;,]') for x in
                          feature_mark_string.split()]
 
-    urls = {k.lower(): v for k, v in urls.items()}
+    # urls = {k.lower(): v for k, v in urls.items()}
 
     prereq_mark_string = ''.join([x for x in
                                   markers_list
