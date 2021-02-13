@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pomidor", # Replace with your own username
-    version="0.0.2",
+    version="0.0.3",
     author="Symon Storozhenko",
     author_email="symon.storozhenko@gmail.com",
     description="A BDD-style Selenium-driven browser automation in Python",
@@ -19,5 +19,5 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
 )

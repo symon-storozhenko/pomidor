@@ -128,6 +128,10 @@ def test_pomidor_arrow_left():
     #                       )
     assert scenario_num == 2
 
+def test_pomidor_open_chrome():
+    driver = webdriver.Chrome()
+    driver.get('https://www.hellofresh.com')
+
 #
 # class TestPomidorPrerequisites:
 #
