@@ -11,7 +11,7 @@ import pytest
 import concurrent.futures
 
 url = 'https://pomidor-automation.com/'
-page_obj = Pomidor.get_page_objects("/Users/myco/PycharmProjects/pomidor-selenium/tests/pageObjects/page_objects.csv")
+page_obj = Pomidor.get_page_objects("page_objects.csv")
 # addtl_urls = Pomidor.additional_urls("pageObjects/urls.csv")
 prereqs = "pageObjects/prerequisites.pomidor"
 passed_screenshots = "passed_screenshots"
@@ -40,7 +40,7 @@ last_orphan_obj = 'negative_pomidory/last_orphan_obj.pomidor'
 last_line_3_scenarios = 'negative_pomidory/last_line_is_read.pomidor'
 run_tests = "negative_pomidory/run_tests.pomidor"
 pro_pomidor = 'negative_pomidory/pro.pomidor'
-key_presses = '/Users/myco/PycharmProjects/pomidor-selenium/tests/negative_pomidory/key_presses.pomidor'
+key_presses = 'negative_pomidory/key_presses.pomidor'
 smoke_test_dir = 'negative_pomidory/SmokeTest'
 assert_actions = 'negative_pomidory/assert_actions.pomidor'
 data_file = 'negative_pomidory/data_file.pomidor'
