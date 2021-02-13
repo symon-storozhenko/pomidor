@@ -341,13 +341,13 @@ locator_dict = Locators.locator_dict
 
 
 def get_list_of_dicts_from_csv(file):
-    try:
-        with open(file, mode='r', encoding='utf-8-sig') as read_obj:
-            dict_reader = DictReader(read_obj)
-            list_of_dict = list(dict_reader)
-            return list_of_dict
-    except PomidorFileNotFoundError(file) as e:
-        raise e
+    # try:
+    with open(file, mode='r', encoding='utf-8-sig') as read_obj:
+        dict_reader = DictReader(read_obj)
+        list_of_dict = list(dict_reader)
+        return list_of_dict
+    # except PomidorFileNotFoundError(file) as e:
+    #     raise e
 
 
 def execute_test_paragraph(scenarioSteps, filepath, frst_prgrph_line, tc_name,
@@ -640,7 +640,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                                                      line_num=line_num,
                                                      obj=obj_name,
                                                      act=act)
-            if act == 'select' and \
+            elif act == 'select' and \
                     page_obj_loc.strip().startswith(
                         'DROP'):
                 # For drop down selection
@@ -651,7 +651,7 @@ def run_once(driver, obj_dict, orig_obj_dict, act_obj_list, str_in_brackets,
                 if page_obj_loc.strip() == 'DROP_DOWN_VALUE':
                     Select(web_el).select_by_value(page_object_src)
 
-            if act.startswith('click') or \
+            elif act.startswith('click') or \
                     act.startswith('type') or \
                     (act == 'select' and not
                     page_obj_loc.strip().startswith('DROP')):
@@ -697,7 +697,7 @@ def all_markers(base_url, markers_list, urls):
     feature_mark_list = [x.strip(r'[;,]') for x in
                          feature_mark_string.split()]
 
-    urls = {k.lower(): v for k, v in urls.items()}
+    # urls = {k.lower(): v for k, v in urls.items()}
 
     prereq_mark_string = ''.join([x for x in
                                   markers_list
@@ -833,6 +833,8 @@ class Pomidor:
         return f'Pomidor object with page object dictionary:\n' \
                f' {self.obj_dict}' \
                f'and driver {self.driver}'
+
+    # TODO: consider adding Pomidor.get_object(object) for pomidor-exec
 
     @classmethod
     def get_page_objects(cls, obj_d: str) -> dict:

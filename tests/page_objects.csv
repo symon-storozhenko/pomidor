@@ -1,0 +1,27 @@
+name,value,selector
+Page urls,,
+Practice_page, https://www.pomidor-automation.com/practice,
+facebook,https://www.facebook.com,
+home_page,https://www.pomidor-automation.com,tests
+reporting_page,https://www.google.com,
+google,https://www.google.com,
+--practice_page,https://pomidor-automation.com/practice,
+patreon_home_url,http://www.patreon.com,
+Page objects,,
+Home page,,
+practice_menu_button,Practice, LINK_TEXT
+Reporting page objects,,
+non_existent_obj, Yo,LINK_TEXT
+name_field, input#name, CSS_SELECTOR
+back_home_button,a.wp-block-button__link, CSS_SELECTOR
+google_search_field,Search, LINK_TEXT
+google_search_field_timeout,fake, NAME
+female_rb, input#male, CSS_SELECTOR
+male_rb, input#female, CSS_SELECTOR
+empty_page_obj,,
+phone_field, input#phone, CSS_SELECTOR 
+musician_drop_down, select#musician, CSS_SELECTOR
+Milli_Vanilli_dd,Milli Vanilli, DROP_DOWN_VISIBLE_TEXT
+Jimmy_Hendrix_dd,3, DROP_DOWN_INDEX
+first_dd,1, DROP_DOWN_INDEX
+Mozart_dd,Mozart, DROP_DOWN_VALUE

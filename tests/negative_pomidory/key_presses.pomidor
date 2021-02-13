@@ -17,7 +17,8 @@
 
 !!used by test_pomidor_arrow_left!!
 @feature csv_data3
-@params scroll, iw, cookies=cookies/facebook_cookies.csv, data=pageobjects/csv_data_source.csv,
+@params scroll, iw, data=pageobjects/csv_data_source.csv,
+!!cookies=cookies/facebook_cookies.csv,
 !!prereq=FB_cookies
 @id JIRA-13989
 Navigate to #Practice_page
@@ -48,7 +49,7 @@ and #Milli_Vanilli_dd is NOT_selected
 and #back_home_button contains [[HOME]]
 
 
-@feature csv_data
+@feature csv_data3
 @params max, scroll=.2, del, prereq=, data=pageobjects/csv_data_source.csv
 JIRA-13989
 First, clicked on login_field #practice_menu_button page title

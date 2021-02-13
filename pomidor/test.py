@@ -5,12 +5,12 @@ import pretty_print_json
 from collections import defaultdict
 from csv import DictReader
 
+from pomidor.pomidor_runner import Pomidor
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 import pytest
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-from pomidor.pomidor_init import BrowserInit, PomidorObjAndURL, Pom
 from selenium.webdriver.support import expected_conditions as ec
 from selenium import webdriver
 from pomidor.actions import ForwardAction, BackwardAction
@@ -54,7 +54,7 @@ def get_csv_data_first_row(file: str) -> dict:
     return title
 
 
-print(get_csv_data_first_row("urls.csv"))
+# print(get_csv_data_first_row("urls.csv"))
 
 
 def additional_urls(urls_file: str) -> dict:
@@ -65,18 +65,18 @@ def additional_urls(urls_file: str) -> dict:
     return url_dict
 
 
-print(additional_urls("urls.csv"))
+# print(additional_urls("urls.csv"))
 
-f = 'urls.csv'
-dr = DictReader(open(f))
-dict_of_lists = {}
-for k in dict_of_lists.keys():
-    dict_of_lists[k] = [dict_of_lists[k]]
-for line in dr:
-    for k in dict_of_lists.keys():
-        dict_of_lists[k].append(line[k])
-
-print(f'dict_of_lists-> {dict_of_lists}')
+# f = 'urls.csv'
+# dr = DictReader(open(f))
+# dict_of_lists = {}
+# for k in dict_of_lists.keys():
+#     dict_of_lists[k] = [dict_of_lists[k]]
+# for line in dr:
+#     for k in dict_of_lists.keys():
+#         dict_of_lists[k].append(line[k])
+#
+# print(f'dict_of_lists-> {dict_of_lists}')
 
 
 def get_csv_data_values(file: str, key: str) -> dict:
@@ -103,7 +103,7 @@ def get_csv_data_values(file: str, key: str) -> dict:
     return url_dict
 
 
-print(f'url_dict -> {get_csv_data_values("urls.csv", "url")}')
+# print(f'url_dict -> {get_csv_data_values("urls.csv", "url")}')
 
 
 def get_list_of_dicts_from_csv(file):
@@ -145,24 +145,33 @@ keys = 'scroll_to_object=1'
 
 # print(f'get_int -> {get_int}')
 
-cookies_file = get_list_of_dicts_from_csv("../tests/cookies/facebook_cookies"
+cookies_file = get_list_of_dicts_from_csv("../tests/cookies/helloFresh_cookies"
                                           ".csv")
-driver = webdriver.Chrome()
-driver.get('https://facebook.com')
-for cookie in cookies_file:
-    driver.add_cookie(cookie)
-driver.refresh()
-# email_field = driver.find_element_by_css_selector("input#email")
-# password_field = driver.find_element_by_css_selector("input#pass")
-# submit = driver.find_element_by_partial_link_text('Log In')
-# email_field.send_keys('stosimon@gmail.com')
-# password_field.send_keys('ilovemyhusband')
+# driver = webdriver.Chrome()
+# driver.get('https://www.hellofresh.com')
+# for cookie in cookies_file:
+#     driver.add_cookie(cookie)
+# driver.refresh()
+# # email_field = driver.find_element_by_css_selector("input#email")
+# # password_field = driver.find_element_by_css_selector("input#pass")
+# # submit = driver.find_element_by_partial_link_text('Log In')
+# # email_field.send_keys('stosimon@gmail.com')
+# # password_field.send_keys('ilovemyhusband')
 # time.sleep(3)
-# submit.click()
+# # submit.click()
 # time.sleep(3)
 # cookies = driver.get_cookies()
 # print(f'cookies -> {cookies}')
+# print(f'cookies_file -> {cookies_file}')
 
+def get_page_objects(obj_d: str) -> dict:
+    with open(obj_d) as csv_file:
+        csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
+        obj_dicto = {rows['name'].strip().lower():
+                         (rows['value'],
+                          rows['selector'].strip()) for rows in csv_reader}
+    return obj_dicto
 
+print(get_page_objects("../tests/pageObjects/page_objects.csv"))
 
-print(f'cookies_file -> {cookies_file}')
+page_obj = Pomidor.get_page_objects("../tests/pageObjects/page_objects.csv")

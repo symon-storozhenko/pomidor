@@ -82,7 +82,7 @@ class PomidorDataFeedNoCSVFileProvided(Exception):
                f'@params data=csv_file_name.csv{Colors.ENDC}'
 
 
-class PomidorFileNotFoundError(Exception):
+class PomidorFileNotFoundError(BaseException):
     """ Pomidor syntax error class: more actions than objects """
 
     def __init__(self, path):

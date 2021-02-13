@@ -1,9 +1,9 @@
-FirstName,LastName,City of Birth
-,Storozhenko,Nikopol
-Tatiane,Silva da Paz,Sao Paulo
-Zoey,Storozhenko,Charlotte
-Joey,Stor-Paz,Melbourne
-Symon,Storozhenko,Nikopol
-Tatiane,Silva da Paz,Sao Paulo
-Zoey,Storozhenko,Charlotte
-Joey,Stor-Paz,Melbourne
+FirstName,MusicianDropdown,LastName,City of Birth
+,Choose a musician,Storozhenko,Nikopol
+Tatiane,Choose a musician,Silva da Paz,Sao Paulo
+Zoey,Choose a musician,Storozhenko,Charlotte
+Joey,Choose a musician,Stor-Paz,Melbourne
+Symon,Choose a musician,Storozhenko,Nikopol
+Tatiane,Choose a musician,Silva da Paz,Sao Paulo
+Zoey,Choose a musician,Storozhenko,Charlotte
+Joey,Choose a musician,Stor-Paz,Melbourne

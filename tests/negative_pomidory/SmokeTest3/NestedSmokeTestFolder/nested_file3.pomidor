@@ -7,16 +7,16 @@ NavigatE to #practice_Page
 !!Comment first line - First, click on login_field #practice_menu_button page title
 !!First paragraph: tYpe <<FirstName>> in #name_field.
 and type [[Yo!]] in #name_field
-navigate to #facebook
+navigate to #facebook3
 
 
 !!Used for test_pomidor_run_all_and_nested_dir #2!!
-@Feature CSV_data
+@Feature CSV_data1
 @params delete_cookies,
 !!data=pageObjects/csv_data_source.csv
 !!@name CSV_Test_case#2
 navigate to #facebook and wait #3
-Navigate to #practice_page and wait #4
+Navigate to #practice_page
 !!Second paragraph: type <<FirstName>> in #name_field. Then, type [[some
 !!free text]] in #name_field, and types <<City of
 !!Birth>> in #name_field and then type <<LastName>> in #name_field
