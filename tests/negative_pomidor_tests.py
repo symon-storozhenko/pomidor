@@ -19,8 +19,9 @@ failed_screenshots = 'failed_screenshots'
 
 po = Pomidor("Chrome", page_obj, url,
              prerequisite_file=prereqs,
-             passed_screenshots='passed_screenshots',
-             failed_screenshots='failed_screenshots')
+             # passed_screenshots='passed_screenshots',
+             # failed_screenshots='failed_screenshots'
+             )
 
 root_dir = ''
 empty_str = 'negative_pomidory/empty_dir'
