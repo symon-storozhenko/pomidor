@@ -17,8 +17,7 @@
 
 !!used by test_pomidor_arrow_left!!
 @feature csv_data3
-@params scroll, iw, data=pageobjects/csv_data_source.csv,
-!!cookies=cookies/facebook_cookies.csv,
+@params scroll, iw, data=pageobjects/csv_data_source.csv, cookies=cookies/facebook_cookies.csv,
 !!prereq=FB_cookies
 @id JIRA-13989
 Navigate to #Practice_page

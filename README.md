@@ -20,7 +20,7 @@ Install pomidor
 
 ![Page factory](images/pip_install_pomidor2.png)
 
-Create a csv file that contains page objects. (Example shown below)
+Create a csv file that contains page objects additional urls. (Example shown below)
 
 ![Page factory1](images/page_obj_dict.png)
 
@@ -31,13 +31,12 @@ Write your first test_case.pomidor file (extension must be ".pomidor") and place
 ![Pomidor syntax](images/pomidor_file.png)
 
 
-Create a runner file, import page factory dictionary, Pomidor class and exceptions (keep in mind, your page objects package name may differ from what's shown below)
-
-![Runner file](images/import_pomidor_methods.png)
-
-In the same runner file, specify url and page object instance, and pass them to Pomidor class instance. Then, run your first test case as shown below:
-
+Create a runner file, import Pomidor class and run your first test as shown below:
 ![Runner file1](images/init_pomidor_class.png)
+
+Add additional functionality to your test:
+
+![Runner file1](images/additional_features.png)
 
 
 Run your first Automation test! :rocket:

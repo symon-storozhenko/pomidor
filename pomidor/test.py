@@ -117,7 +117,7 @@ def get_list_of_dicts_from_csv(file):
     return list_of_dict
 
 
-get_list_of_dicts_from_csv('../tests/pageObjects/csv_data_source.csv')
+# get_list_of_dicts_from_csv('../tests/pageObjects/csv_data_source.csv')
 
 
 import sys
@@ -145,8 +145,8 @@ keys = 'scroll_to_object=1'
 
 # print(f'get_int -> {get_int}')
 
-cookies_file = get_list_of_dicts_from_csv("../tests/cookies/helloFresh_cookies"
-                                          ".csv")
+# cookies_file = get_list_of_dicts_from_csv("../tests/cookies/helloFresh_cookies"
+#                                           ".csv")
 # driver = webdriver.Chrome()
 # driver.get('https://www.hellofresh.com')
 # for cookie in cookies_file:
@@ -164,6 +164,10 @@ cookies_file = get_list_of_dicts_from_csv("../tests/cookies/helloFresh_cookies"
 # print(f'cookies -> {cookies}')
 # print(f'cookies_file -> {cookies_file}')
 
+def test_open_chrome():
+    driver = webdriver.Chrome()
+    driver.get('https://www.hellofresh.com')
+
 def get_page_objects(obj_d: str) -> dict:
     with open(obj_d) as csv_file:
         csv_reader = DictReader(csv_file, delimiter=',', quotechar='"')
@@ -172,6 +176,6 @@ def get_page_objects(obj_d: str) -> dict:
                           rows['selector'].strip()) for rows in csv_reader}
     return obj_dicto
 
-print(get_page_objects("../tests/pageObjects/page_objects.csv"))
+# print(get_page_objects("../tests/pageObjects/page_objects.csv"))
 
-page_obj = Pomidor.get_page_objects("../tests/pageObjects/page_objects.csv")
+# page_obj = Pomidor.get_page_objects("../tests/pageObjects/page_objects.csv")

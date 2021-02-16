@@ -1,17 +1,17 @@
-App Name:
-Version:
-Release date:
+Version: 2.08.9
+Sprint: 136
 
-Sprint:
+@Feature smoke_test
+@params cookies=cookies/facebook_cookies.csv
+@test Jira-13244
+Once on the landing page, click on #practice_menu_button and make sure the
+#non_existent_obj is not_displayed. Then, type [[Some_text]] in #name_field
 
-@Feature: Is_Displayed
-@name sStory 2
-crazytomato -1
-first paragraph click on #practice_menu_button and make sure the
-#non_existent_obj is displayed
-
-
-@Feature: Not_Displayed
-first paragraph click on #practice_menu_button and make sure the
-#non_existent_obj is not_displayed
+@Feature Regression
+@params delete_cookies, data=pageobjects/csv_data_source.csv
+!! "data=" is needed when passing many data records in a loop using <<'key'>>
+@test Jira-13245
+Once on the landing page, click on #practice_menu_button and
+type <<FirstName>> in the #name_field and make sure
+the #greeting_section contains [[Welcome, ]] text
 
