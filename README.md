@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/symon-storozhenko/pomidor/branch/master/graph/badge.svg?token=J4KR9CWL9G)](https://codecov.io/gh/symon-storozhenko/pomidor)
+
 # pomidor 0.0.2-Alpha
 
 :tomato:
